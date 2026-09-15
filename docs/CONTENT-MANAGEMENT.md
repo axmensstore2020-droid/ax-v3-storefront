@@ -81,7 +81,7 @@ Edit Shopify **Online Store → Pages**:
 | `about-us` | `/about` | Existing AX brand story |
 | `careers` | `/careers` | Add actual vacancies, store location and application instructions |
 | `faqs` | `/faqs` | Customer questions and answers |
-| `ax-stylist-info` | `/ax-stylist` | Feature guide and accurate data/storage information |
+| `ax-stylist-info` | `/ax-stylist` | Legacy handle redirects to the code-maintained live feature/privacy guide |
 | `contact` | `/policies#refund-policy` | Existing Refund and Cancellation Policy (its historical handle is `contact`) |
 | `shipping-and-delivery-policy` | `/policies#shipping-policy` | Existing delivery policy |
 | `terms-of-service` | `/policies#terms-of-service` | Existing terms |
@@ -96,7 +96,7 @@ Store branch names, directions and hours are in `lib/store-info.js`. Both branch
 
 The existing Storefront token needs `unauthenticated_read_content` for menus and Pages plus permission to read published metaobjects. Keep private tokens server-side. If content is unavailable, the catalog remains usable with initial navigation/copy, while Policies shows an availability message. Verify the store's live policies after deployment; no legal terms are invented for the sample preview.
 
-The current Stylist is a catalog browsing/search UI. There is no AI chat, photo upload, measurement database or saved style profile. Its guide documents query addresses/browser history and the existing bag storage. Update the guide when those features actually launch.
+The Stylist now has a configuration-gated AI implementation. It stays disabled until OpenAI, private Supabase storage and safety checks are configured. The live `/ax-stylist` guide is code-maintained to prevent stale Shopify page text from misrepresenting privacy or feature availability. Use [AX-STYLIST-SETUP.md](AX-STYLIST-SETUP.md) for activation, data entry and testing; update the merchant FAQ/policies to match before launch.
 
 Zara's inspected navigation uses Helvetica Now Text, 13px, weight 300. V3 uses a light Helvetica stack with matching compact uppercase navigation and product text. The exact font requires an AX-licensed webfont; no Zara font file was copied. Font tokens are in `app/refinements.css`.
 

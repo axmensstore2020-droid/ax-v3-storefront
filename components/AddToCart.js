@@ -4,15 +4,22 @@ import {useCart} from './CartProvider';
 import {StylistButton} from './StylistProvider';
 import {formatMoney} from '../lib/catalog';
 import {findVariant} from '../lib/commerce';
-import {recommendedSizeFromMeasurements} from '../lib/product-data';
 import Icon from './Icon';
-export default function AddToCart({product}){
- const {addItem,busy}=useCart(),options=product.options||[],variants=product.variants||[],initial=variants.find(v=>v.availableForSale)||variants[0];
- const [selected,setSelected]=useState(()=>Object.fromEntries(initial?.selectedOptions?.map(o=>[o.name,o.value])||[]));
- const [measurementInput,setMeasurementInput]=useState('');
- const variant=findVariant(variants,selected),available=product.demo||Boolean(variant?.availableForSale),price=variant?Number(variant.price.amount):product.price;
- const sizeOption=options.find(option=>/size/i.test(option.name)),selectedSize=sizeOption && selected[sizeOption.name],sizeFit=selectedSize ? product.sizeFits?.[selectedSize] : null;
- const chartRecommendation=measurementInput ? recommendedSizeFromMeasurements(product.sizeMeasurements,measurementInput,'chest') : '';
- const hasMeasurementChart=Object.keys(product.sizeMeasurements||{}).length > 0;
- return <div className="buy-box"><div className="pdp-price-row"><strong>{formatMoney(price,variant?.price?.currencyCode||product.currency)}</strong><span>{product.demo?'Sample piece':available?'Available':'Sold out'}</span></div>{options.filter(o=>!(o.name==='Title'&&o.values.length===1&&o.values[0]==='Default Title')).map(option=><fieldset className="option-block" key={option.name}><legend>{option.name}: {selected[option.name]||'Choose an option'}</legend><div className="option-values">{option.values.map(value=>{const possible=findVariant(variants,{...selected,[option.name]:value});return <button key={value} aria-pressed={selected[option.name]===value} className={`${selected[option.name]===value?'selected':''} ${possible?.availableForSale?'':'unavailable'}`} onClick={()=>setSelected(current=>({...current,[option.name]:value}))}>{value}<span className="sr-only">{possible?.availableForSale?'':' — unavailable with this selection'}</span></button>;})}</div></fieldset>)}{sizeOption && sizeFit?.text && <div className="size-recommendation" aria-live="polite"><p><strong>{selectedSize}</strong> · {sizeFit.text}</p>{product.recommendedSize===selectedSize && <span>Recommended based on the measurements provided.</span>}</div>}{hasMeasurementChart && <details className="measurement-check"><summary>Check your recommended size</summary><p>Enter your body chest measurement to compare it with this garment’s size chart.</p><label htmlFor="chest-measurement">Chest measurement <span>({product.measurementUnit || 'inches'})</span></label><div className="measurement-input"><input id="chest-measurement" inputMode="decimal" type="number" min="1" step="0.1" value={measurementInput} onChange={event=>setMeasurementInput(event.target.value)} placeholder="e.g. 38"/><span>{product.measurementUnit || 'in'}</span></div>{chartRecommendation && <p className="measurement-result" aria-live="polite"><strong>{chartRecommendation}</strong> is the closest recommended size for this measurement.</p>}</details>}<StylistButton className="find-size" mode="size" product={{title:product.title}}>FIND MY SIZE WITH AX <Icon name="arrow" size={17}/></StylistButton><button className="add-bag" disabled={!available||busy} onClick={()=>addItem({merchandiseId:variant?.id,product})}>{busy?'UPDATING BAG…':product.demo?'ADD TO PREVIEW BAG':available?'ADD TO BAG':'UNAVAILABLE'}</button>{product.demo && <p className="cart-note">Sample catalog. Sizes and availability will appear when the store opens.</p>}</div>;
+
+export default function AddToCart({product}) {
+  const {addItem,busy}=useCart(),options=product.options||[],variants=product.variants||[],initial=variants.find(v=>v.availableForSale)||variants[0];
+  const [selected,setSelected]=useState(()=>Object.fromEntries(initial?.selectedOptions?.map(o=>[o.name,o.value])||[]));
+  const variant=findVariant(variants,selected),available=product.demo||Boolean(variant?.availableForSale),price=variant?Number(variant.price.amount):product.price;
+  const sizeOption=options.find(option=>/^size$/i.test(option.name)),selectedSize=sizeOption && selected[sizeOption.name],sizeFit=selectedSize ? product.sizeFits?.[selectedSize] : null;
+  return <div className="buy-box">
+    <div className="pdp-price-row"><strong>{formatMoney(price,variant?.price?.currencyCode||product.currency)}</strong><span>{product.demo?'Sample piece':available?'Available':'Sold out'}</span></div>
+    {options.filter(o=>!(o.name==='Title'&&o.values.length===1&&o.values[0]==='Default Title')).map(option=><fieldset className="option-block" key={option.name}>
+      <legend>{option.name}: {selected[option.name]||'Choose an option'}</legend>
+      <div className="option-values">{option.values.map(value=>{const possible=findVariant(variants,{...selected,[option.name]:value});return <button key={value} aria-pressed={selected[option.name]===value} className={`${selected[option.name]===value?'selected':''} ${possible?.availableForSale?'':'unavailable'}`} onClick={()=>setSelected(current=>({...current,[option.name]:value}))}>{value}<span className="sr-only">{possible?.availableForSale?'':' — unavailable with this selection'}</span></button>;})}</div>
+    </fieldset>)}
+    {sizeOption && sizeFit?.text && <div className="size-recommendation" aria-live="polite"><p><strong>{selectedSize}</strong> · {sizeFit.text}</p><span>AX’s garment note—not a personal size recommendation.</span></div>}
+    <StylistButton className="find-size" mode="size" product={{title:product.title,handle:product.handle,selectedOptions:selected}}>FIND MY SIZE WITH AX <Icon name="arrow" size={17}/></StylistButton>
+    <button className="add-bag" disabled={!available||busy} onClick={()=>addItem({merchandiseId:variant?.id,product})}>{busy?'UPDATING BAG…':product.demo?'ADD TO PREVIEW BAG':available?'ADD TO BAG':'UNAVAILABLE'}</button>
+    {product.demo && <p className="cart-note">Sample catalog. Sizes and availability will appear when the store opens.</p>}
+  </div>;
 }

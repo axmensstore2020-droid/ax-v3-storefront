@@ -20,7 +20,7 @@ Without credentials, the preview displays the supplied sample catalog, labels it
 
 Live product sizes, colors, availability and prices come from Shopify variants. The bag supports add, quantity updates and removal. Native account access is linked only for a configured store.
 
-The Stylist currently provides working catalog/style navigation and product search. Conversational AI, photo matching, personalized sizing, saved preferences and outfit recommendations are **not connected**. No customer measurement database has been created.
+AX Stylist now includes a configuration-gated AI backend, read-only live Shopify tools, approved-chart fit guidance, optional photo input, explicit consent, private browser-linked profiles, deletion, moderation and shared usage limits. It is **disabled by default** and requires OpenAI/Supabase credentials plus a reviewed SQL migration and purge schedule before activation. No cloud database or API project is provisioned by the code. See [AX Stylist setup](docs/AX-STYLIST-SETUP.md), [product data](docs/PRODUCT-DATA.md), and [live evaluation cases](docs/AX-STYLIST-EVALS.md).
 
 ## Development
 
@@ -44,4 +44,4 @@ See [Hostinger staging](docs/HOSTINGER-STAGING.md) and [verification](docs/VERIF
 
 The current catalog/collection queries read up to 100 products; each PDP reads up to 100 variants and 8 images. Add pagination before the catalog exceeds these limits. Style edits depend on actual product titles, descriptions and tags; sparse categories remain empty until the catalog is enriched. Instagram is optional through the verified `AX_INSTAGRAM_URL` setting.
 
-Next: staging visual review, private Shopify configuration, real cart/checkout verification, finalized product photography and exchange-policy copy. Then implement the catalog-grounded AI and customer data layer.
+Next: configure the AI and private database on staging, enter real product guides, complete live-model/security and mobile checks, and verify the existing checkout. Do not enable public AI styling until those checks pass.
