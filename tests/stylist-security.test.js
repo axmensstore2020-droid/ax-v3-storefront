@@ -46,7 +46,7 @@ test('catalog facts discard payment helpers and unsafe image links',()=>{
 });
 test('database calls are server-only, no-store, hashed and consent-limited',async()=>{
   const requests=[];
-  const env={SUPABASE_URL:'https://test-project.supabase.co',SUPABASE_SECRET_KEY:'new-secret',SUPABASE_SERVICE_ROLE_KEY:'legacy-key',AX_STYLIST_SECRET:secret};
+  const env={SUPABASE_URL:'https://test-project.supabase.co',SUPABASE_SECRET_KEY:'sb_secret_test-only',SUPABASE_SERVICE_ROLE_KEY:'legacy-key',AX_STYLIST_SECRET:secret};
   const db=createDatabase(env,async(url,init)=>{requests.push({url,init});return Response.json(url.includes('/rpc/')?true:[]);});
   assert.equal(databaseConfigured(env),true);
   assert.equal(await db.reserve('visitor'),true);
@@ -54,8 +54,20 @@ test('database calls are server-only, no-store, hashed and consent-limited',asyn
   const saved=JSON.parse(requests[1].init.body);
   assert.equal(saved.profile.email,undefined);assert.equal(saved.id,hash('profile:visitor',secret));
   assert.equal(requests[0].init.cache,'no-store');assert.ok(!requests[0].init.body.includes('"visitor"'));
-  assert.equal(requests[0].init.headers.apikey,'new-secret');
+  assert.equal(requests[0].init.headers.apikey,'sb_secret_test-only');
+  assert.equal(requests[0].init.headers.Authorization,undefined);
   await db.deleteProfile('visitor');assert.equal(requests[2].init.method,'DELETE');
+});
+test('legacy Supabase variable accepts old JWTs and new Secret keys with appropriate headers',async()=>{
+  for(const key of ['eyJ.test.signature','sb_secret_test-only']) {
+    let headers;
+    const env={SUPABASE_URL:'https://test-project.supabase.co',SUPABASE_SERVICE_ROLE_KEY:key,AX_STYLIST_SECRET:secret};
+    const db=createDatabase(env,async(url,init)=>{headers=init.headers;return Response.json(true);});
+    assert.equal(databaseConfigured(env),true);
+    assert.equal(await db.reserve('visitor'),true);
+    assert.equal(headers.apikey,key);
+    assert.equal(headers.Authorization,key === 'eyJ.test.signature' ? 'Bearer eyJ.test.signature' : undefined);
+  }
 });
 test('database outages fail closed rather than bypassing the limiter',async()=>{
   const db=createDatabase({SUPABASE_URL:'https://test-project.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'test',AX_STYLIST_SECRET:secret},async()=>new Response('error',{status:500}));
