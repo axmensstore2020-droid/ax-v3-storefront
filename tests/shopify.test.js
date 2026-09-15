@@ -31,6 +31,14 @@ test('connected empty catalog stays empty; API failures do not fall back',async 
  globalThis.fetch=async()=>new Response('Service unavailable',{status:503});
  await assert.rejects(live.getProducts(),/Store unavailable/);
 });
+test('a merchant-cleared collection is not silently repopulated',async t=>{
+ t.after(()=>{globalThis.fetch=realFetch;});
+ globalThis.fetch=async(url,init)=>{
+  assert.match(JSON.parse(init.body).query,/query Collection/);
+  return Response.json({data:{collection:{id:'empty-shirts',title:'Shirts',products:{nodes:[]}}}});
+ };
+ assert.deepEqual((await live.getCollection('shirts')).products,[]);
+});
 test('payment helper product is removed from list, collection and detail',async t=>{
  t.after(()=>{globalThis.fetch=realFetch;});
  const payment={...sample,title:' Partial Payment ',handle:'partial-payment'};
