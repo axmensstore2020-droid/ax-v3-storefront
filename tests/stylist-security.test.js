@@ -46,7 +46,7 @@ test('catalog facts discard payment helpers and unsafe image links',()=>{
 });
 test('database calls are server-only, no-store, hashed and consent-limited',async()=>{
   const requests=[];
-  const env={SUPABASE_URL:'https://test-project.supabase.co',SUPABASE_SERVICE_ROLE_KEY:'test-only',AX_STYLIST_SECRET:secret};
+  const env={SUPABASE_URL:'https://test-project.supabase.co',SUPABASE_SECRET_KEY:'new-secret',SUPABASE_SERVICE_ROLE_KEY:'legacy-key',AX_STYLIST_SECRET:secret};
   const db=createDatabase(env,async(url,init)=>{requests.push({url,init});return Response.json(url.includes('/rpc/')?true:[]);});
   assert.equal(databaseConfigured(env),true);
   assert.equal(await db.reserve('visitor'),true);
@@ -54,6 +54,7 @@ test('database calls are server-only, no-store, hashed and consent-limited',asyn
   const saved=JSON.parse(requests[1].init.body);
   assert.equal(saved.profile.email,undefined);assert.equal(saved.id,hash('profile:visitor',secret));
   assert.equal(requests[0].init.cache,'no-store');assert.ok(!requests[0].init.body.includes('"visitor"'));
+  assert.equal(requests[0].init.headers.apikey,'new-secret');
   await db.deleteProfile('visitor');assert.equal(requests[2].init.method,'DELETE');
 });
 test('database outages fail closed rather than bypassing the limiter',async()=>{

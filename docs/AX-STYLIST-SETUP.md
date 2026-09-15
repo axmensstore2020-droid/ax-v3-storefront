@@ -41,7 +41,7 @@ Create or select an approved Supabase project for AX. Provisioning a paid plan i
 1. In its SQL Editor, review and run [the migration](../supabase/migrations/20260915_ax_stylist.sql).
 2. Confirm `ax_stylist_profiles` and `ax_stylist_limits` have Row Level Security enabled. `anon` and `authenticated` must have no access. The server-only service-role/secret key accesses them.
 3. Enable Supabase Cron in the dashboard. Create a daily job with schedule `0 3 * * *`, command `select public.ax_stylist_purge_expired();`. This deletes expired records even when no one opens the store. Never enable chat without arranging this purge.
-4. Copy the project URL and server-side secret/service-role key privately to Hostinger. Do not put either key into browser code. The normal public/anon key is not suitable for the server-only tables.
+4. Copy the project URL and the server-side **Secret key** privately to Hostinger. If your dashboard only exposes the legacy `service_role` key, that is accepted as a fallback. Do not put either key into browser code. The normal public/publishable/anon key is not suitable for the server-only tables.
 5. Review backups and retention. Deleting live rows does not immediately purge all provider backups. Review [Supabase RLS guidance](https://supabase.com/docs/guides/database/postgres/row-level-security).
 
 Data kept: a random-browser-derived hash, the explicitly saved measurement/style profile, consent version, dates and short-lived request counters. No chat transcripts, photos, Shopify customer IDs or order records. Profiles expire after 30 days; live reads exclude expired data. Deletion removes the live profile and clears the open chat. Cookies lost before deletion make that anonymous profile inaccessible from the browser until normal expiry/purge; explain this to customers.
@@ -58,7 +58,7 @@ On your phone: open the AX web-app dashboard → deployment/build settings → E
 | `OPENAI_STYLIST_MODEL` | `gpt-5.6-terra`, if available in your API project |
 | `AX_STYLIST_SECRET` | Independently generated random secret, at least 32 characters; keep private and stable |
 | `SUPABASE_URL` | `https://YOUR_PROJECT_REF.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Private Supabase server-side secret/service-role key |
+| `SUPABASE_SECRET_KEY` | Private Supabase server-side Secret key (use the legacy `SUPABASE_SERVICE_ROLE_KEY` only when the dashboard has no Secret key) |
 | `AX_STYLIST_DAILY_LIMIT` | Start with `150` total attempts per UTC day across all visitors |
 | `AX_STYLIST_VISITOR_HOURLY_LIMIT` | Start with `12` per anonymous browser per UTC hour |
 | `AX_STYLIST_IMAGES_ENABLED` | Start `false`; set `true` only after photo safety/quality checks |
