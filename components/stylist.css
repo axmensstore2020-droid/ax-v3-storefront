@@ -1,0 +1,55 @@
+.ax-chat-dialog{width:min(600px,calc(100% - 24px));height:min(790px,calc(100dvh - 120px));max-height:calc(100dvh - 120px);border-radius:16px;margin:auto auto 100px}
+.ax-chat-dialog .dialog-inner{height:100%;display:flex;flex-direction:column;padding:22px 24px 14px;overflow:hidden}
+.ax-chat-dialog .dialog-heading{margin:0 0 16px;padding-bottom:12px;flex-shrink:0}
+.ax-chat-intro .eyebrow{font-size:9px!important;letter-spacing:.13em}
+.ax-chat-intro p{margin:5px 0 12px;font-size:13px}
+.ax-chat-context{font-size:12px!important;background:#e9eee7;padding:8px 12px;margin:0 0 8px;overflow-wrap:anywhere}
+.ax-chat-tabs{display:flex;gap:20px;border-bottom:1px solid var(--line);flex-shrink:0}
+.ax-chat-tabs button{font-size:12px;min-height:44px}
+.ax-chat-tabs [aria-selected=true]{border-bottom:2px solid var(--ink)}
+.ax-chat-tabs .ax-clear-chat{margin-left:auto;font-size:11px;text-decoration:underline;text-underline-offset:3px}
+.ax-chat-body{display:flex;flex-direction:column;min-height:0;flex:1}
+.ax-transcript{overflow-y:auto;overscroll-behavior:contain;flex:1;min-height:100px;padding:18px 2px 14px;scrollbar-width:thin}
+.ax-chat-welcome{padding:8px 0 20px}
+.ax-chat-welcome h3{font-size:26px;font-weight:400;line-height:1.2;margin:0 0 12px;max-width:300px}
+.ax-chat-welcome p{font-size:14px;max-width:370px;color:#55564e}
+.ax-starters{display:flex;flex-direction:column;align-items:stretch;margin:18px 0 0;gap:8px}
+.ax-starters button{border:1px solid var(--line);border-radius:3px;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;min-height:44px;text-align:left;font-size:12px;background:#edf0e9}
+.ax-starters button:nth-child(2){background:#f0e8df}.ax-starters button:nth-child(3){background:#e9edf1}
+.ax-message{padding:16px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.ax-message p{white-space:pre-wrap;font-size:14px;line-height:1.65;margin:6px 0}
+.ax-message-role{font-size:9px;letter-spacing:.12em;color:#595c53}
+.ax-message-user{padding:12px 14px;background:#e9eee7;border:0;margin:12px 0 0 26px;border-radius:8px 8px 0 8px}
+.ax-message-user .ax-message-role{font-size:9px}
+.ax-chat-notice{padding:14px;background:#eeeae2;font-size:13px;border:1px solid var(--line)}
+.ax-chat-notice p{font-size:13px;margin:0 0 12px}
+.ax-chat-products{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}
+.ax-chat-product{display:flex;gap:12px;align-items:center;border:1px solid var(--line);padding:8px;background:var(--paper)}
+.ax-chat-product .product-image,.ax-chat-product .image-fallback{height:100px;width:75px;flex:0 0 75px;object-fit:cover}
+.ax-chat-product>div{min-width:0;display:flex;flex-direction:column;gap:5px;font-size:12px}
+.ax-chat-product strong{font-size:12px;font-weight:500}.ax-chat-product small{font-size:10px;color:#55564e}
+.ax-fit-result{padding:12px;background:#edf0e9;margin:10px 0;font-size:13px}.ax-fit-result p{font-size:13px}.ax-fit-result button{text-decoration:underline;font-size:12px;min-height:44px}
+.ax-suggestions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.ax-suggestions button{padding:10px;border:1px solid var(--line);font-size:11px;min-height:44px;text-align:left}
+.ax-source-link{display:inline-block;font-size:12px;margin:10px 18px 0 0;text-decoration:underline;min-height:32px}
+.ax-working{font-size:13px!important;color:#55564e;padding:12px 0}
+.ax-composer{flex-shrink:0;border-top:1px solid var(--line);padding-top:12px}
+.ax-message-input{display:flex;gap:8px;border:1px solid #a8aaa0;border-radius:4px;align-items:center;padding:6px 8px}
+.ax-message-input textarea{flex:1;min-width:0;resize:none;max-height:100px;border:0;background:transparent;padding:4px;font:inherit;font-size:16px;color:var(--ink)}
+.ax-message-input button{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:var(--ink);color:var(--paper);flex-shrink:0}
+.ax-chat-dialog button:disabled{opacity:.4;cursor:not-allowed}
+.ax-checkbox{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:10px;font-size:11px!important;line-height:1.5;margin:12px 0}
+.ax-checkbox input{appearance:auto;width:16px!important;height:16px;margin:2px 0 0;accent-color:var(--ink);flex-shrink:0}
+.ax-chat-dialog .ax-small{font-size:11px;line-height:1.6;color:#55564e;margin:8px 0}
+.ax-chat-footer{display:flex;flex-wrap:wrap;gap:10px 16px;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;margin-top:8px;flex-shrink:0}
+.ax-chat-footer a{font-size:10px;text-decoration:underline;text-underline-offset:3px;min-height:26px}
+.ax-photo-button{display:block;font-size:11px;position:relative;cursor:pointer;margin-bottom:8px;padding:8px 0;text-decoration:underline}.ax-photo-button input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+.ax-photo-preview{display:flex;align-items:center;gap:10px;font-size:11px;margin-bottom:10px}.ax-photo-preview img{object-fit:cover}.ax-photo-preview button{margin-left:auto;min-width:44px;min-height:44px}
+.ax-chat-error{background:#f5e8e5;color:#8a2c1e;padding:10px;margin:8px 0;font-size:13px!important;flex-shrink:0}
+.ax-fit-form{overflow-y:auto;overscroll-behavior:contain;padding:16px 2px;scrollbar-width:thin}
+.ax-fit-form>p{font-size:13px;margin:0 0 14px}.ax-fit-form label{display:flex;flex-direction:column;gap:6px;font-size:12px;margin-bottom:14px}
+.ax-fit-form input:not([type=checkbox]),.ax-fit-form select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);background:var(--paper);font:inherit;font-size:16px;border-radius:2px;color:var(--ink)}
+.ax-fit-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.ax-profile-actions{display:flex;gap:10px;flex-wrap:wrap}.ax-profile-actions button{padding:12px 14px;min-height:44px;border:1px solid var(--line);font-size:12px}
+.ax-fit-form .solid-button{margin-top:16px;font-size:11px;width:100%}
+@media(max-width:700px){.ax-chat-dialog{width:100%;height:94dvh;max-height:94dvh;margin:auto auto 0;border-radius:16px 16px 0 0;padding-bottom:env(safe-area-inset-bottom)}.ax-chat-dialog .dialog-inner{padding:16px 18px 10px}.ax-chat-intro{display:none}.ax-chat-dialog .dialog-heading{margin-bottom:8px}.ax-chat-tabs{gap:16px}.ax-chat-welcome h3{font-size:25px}.ax-chat-footer{gap:8px}.ax-chat-dialog .ax-small{font-size:10px}.ax-fit-form .ax-small{font-size:12px}.ax-checkbox{font-size:10px!important}}
+@media(prefers-reduced-motion:reduce){.ax-transcript{scroll-behavior:auto}}

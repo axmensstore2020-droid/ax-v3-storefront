@@ -32,7 +32,7 @@ test('measurement checker chooses the smallest size that covers the input',()=>{
  const measurements={S:{chest:'38'},M:{chest:'40'},L:{chest:'42'}};
  assert.equal(recommendedSizeFromMeasurements(measurements,37),'S');
  assert.equal(recommendedSizeFromMeasurements(measurements,40),'M');
- assert.equal(recommendedSizeFromMeasurements(measurements,44),'L');
+ assert.equal(recommendedSizeFromMeasurements(measurements,44),'');
  assert.equal(recommendedSizeFromMeasurements(measurements,'not a measurement'),'');
 });
 

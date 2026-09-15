@@ -20,4 +20,15 @@ try{
   assert.equal(response.status,status);assert.equal(response.headers.get('cache-control'),'no-store');
  }
  console.log('PASS missing product and malformed/unconnected cart requests');
+ const stylist=await fetch('http://127.0.0.1:3008/api/stylist');
+ assert.equal((await stylist.json()).available,false);
+ assert.ok(stylist.headers.get('cache-control').includes('no-store'));
+ const foreign=await fetch('http://127.0.0.1:3008/api/stylist',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://evil.example'},body:JSON.stringify({message:'hello',consent:true})});
+ assert.equal(foreign.status,403);
+ const profile=await fetch('http://127.0.0.1:3008/api/stylist/profile');
+ assert.equal((await profile.json()).profile,null);
+ const info=await (await fetch('http://127.0.0.1:3008/ax-stylist')).text();
+ assert.match(info,/not a promise|does not mean zero retention/);
+ assert.match(info,/Delete saved profile/);
+ console.log('PASS disabled Stylist, cross-site rejection, anonymous profile and privacy disclosures');
 }finally{server.kill('SIGTERM');}

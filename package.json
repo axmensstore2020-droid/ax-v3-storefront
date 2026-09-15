@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "test": "node --conditions=react-server --test tests/*.test.js"
+    "test": "node --conditions=react-server --test tests/*.test.js",
+    "stylist:check": "node scripts/check-stylist.mjs"
   },
   "engines": {
     "node": ">=22.0.0"
