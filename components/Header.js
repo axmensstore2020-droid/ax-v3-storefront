@@ -7,8 +7,9 @@ import Brand from './Brand';
 import Icon from './Icon';
 import Dialog from './Dialog';
 import {useNavigation} from './NavigationProvider';
+const isSpecialPrices = item => item?.key === 'special-prices' || String(item?.label || '').trim().toLowerCase() === 'special prices';
 function MenuItems({items,path,onClose}) {
- return items.map(item=><div key={item.key} className="category-menu-item"><Link href={item.href} aria-current={path===item.href?'page':undefined} onClick={onClose}>{item.label}</Link>{item.items?.length>0 && <div className="category-menu-children"><MenuItems items={item.items} path={path} onClose={onClose}/></div>}</div>);
+ return items.map(item=><div key={item.key} className={`category-menu-item${isSpecialPrices(item)?' special-prices':''}`}><Link href={item.href} aria-current={path===item.href?'page':undefined} onClick={onClose}>{item.label}</Link>{item.items?.length>0 && <div className="category-menu-children"><MenuItems items={item.items} path={path} onClose={onClose}/></div>}</div>);
 }
 export default function Header() {
  const [menu,setMenu] = useState(false), path = usePathname();
