@@ -104,7 +104,7 @@ export default function StylistPanel({request,onClose}) {
     try {const data=await prepareImage(file);if(mounted.current)setPhoto(data);} catch(e) {setError(e.message);} finally {if(mounted.current)setPhotoBusy(false);}
   }
   return <Dialog title="AX Stylist" className="stylist-dialog ax-chat-dialog" onClose={onClose}>
-    {request.product && <p className="ax-chat-context">Styling: {request.product.title}{request.product.selectedOptions?.Size ? ` · ${request.product.selectedOptions.Size}` : ''}</p>}
+    {request.product && <p className="ax-chat-context">{request.product.title ? `Styling: ${request.product.title}${request.product.selectedOptions?.Size ? ` · ${request.product.selectedOptions.Size}` : ''}` : 'Styling this piece'}</p>}
     <div className="ax-chat-tabs" role="tablist" aria-label="Stylist view">
       {['chat','fit'].map(value => <button key={value} role="tab" tabIndex={tab===value?0:-1} aria-selected={tab === value} aria-controls={'ax-panel-'+value} id={'ax-tab-'+value} onKeyDown={event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const next=event.key==='Home'?'chat':event.key==='End'?'fit':tab==='chat'?'fit':'chat';setTab(next);document.getElementById('ax-tab-'+next)?.focus();}}} onClick={()=>setTab(value)}>{value === 'chat' ? 'Ask AX' : 'My fit & style'}</button>)}
       {messages.length > 0 && <button className="ax-clear-chat" onClick={resetChat}>Clear chat</button>}
@@ -123,7 +123,7 @@ export default function StylistPanel({request,onClose}) {
         <label className="ax-checkbox"><input type="checkbox" checked={saveConsent} onChange={e=>setSaveConsent(e.target.checked)}/><span>Save my measurements and preferences privately for 30 days, for this browser.</span></label>
         <div className="ax-profile-actions"><button onClick={saveProfile} disabled={!saveConsent || !status?.profiles || profileBusy}>Save profile</button><button onClick={forgetProfile} disabled={profileBusy}>Delete saved profile</button></div>
         <p role="status" className="ax-small">{profileNotice}</p>
-        <button className="solid-button" onClick={()=>{setTab('chat');setDraft(request.product ? 'Please check my size for this piece using My fit.' : 'Help me find my size.');}}>USE THESE DETAILS <Icon name="arrow"/></button>
+        <button className="solid-button" onClick={()=>{setTab('chat');setDraft(request.product ? 'Check my fit for this piece and tell me how the cut will wear and what to pair it with.' : 'Help me find a piece that suits my fit and style.');}}>USE THESE DETAILS <Icon name="arrow"/></button>
       </div> : <>
         <div className="ax-transcript" ref={transcript} role="log" aria-label="Stylist conversation" aria-live="polite" aria-relevant="additions">
           {!messages.length && status?.available && <div className="ax-quick-actions" aria-label="Quick asks">{quickActions.map(action=><button type="button" key={action.label} onClick={()=>useQuickAction(action)}><span className="ax-quick-icon"><Icon name={action.icon} size={17}/></span><span>{action.label}</span></button>)}</div>}
@@ -141,7 +141,7 @@ export default function StylistPanel({request,onClose}) {
           {status?.images && <label className="ax-photo-button"><Icon name="wide" size={14}/>{photoBusy ? 'Preparing photo…' : 'Add photo'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={selectPhoto} disabled={busy || photoBusy}/></label>}
           <label className="sr-only" htmlFor="ax-message">Message AX Stylist</label><div className="ax-message-input"><textarea id="ax-message" rows={1} maxLength={1200} value={draft} onChange={e=>setDraft(e.target.value)} placeholder={request.product ? 'Ask about this piece…' : 'Ask AX…'} disabled={busy}/><button type="submit" aria-label="Send to AX Stylist" disabled={busy || photoBusy || !consent || !status?.available || !draft.trim()}><Icon name="arrow"/></button></div>
           <label className="ax-checkbox"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/><span>Send this chat and optional fit/photo details to OpenAI for styling.</span></label>
-          <p className="ax-small">AI can make mistakes. Check product details before buying.</p>
+          <p className="ax-small">Fit suggestions are estimates based on AX product data and any measurements you provide; actual fit can vary by cut and preference.</p>
         </form>
       </>}
       {error && <div className="ax-chat-error" role="alert"><p>{error}</p>{tab==='chat' && <button type="submit" form="ax-chat-form" disabled={busy || !consent || !status?.available || !draft.trim()}>Try again</button>}</div>}
