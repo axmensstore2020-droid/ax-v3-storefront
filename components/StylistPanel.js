@@ -9,7 +9,7 @@ import {formatMoney} from '../lib/catalog';
 import {CONSENT_VERSION,normalizeProfile} from '../lib/stylist/validation';
 import './stylist.css';
 
-const blankProfile = {unit:'cm',chest:'',waist:'',hip:'',height:'',inseam:'',fit:'regular',styles:'',colors:'',avoid:''};
+const blankProfile = {unit:'cm',chest:'',waist:'',hip:'',height:'',inseam:'',fit:'regular',styles:'',colors:'',avoid:'',usualSize:''};
 const starters = ['Build an old money outfit','Find linen shirts','Help me find my size'];
 async function prepareImage(file) {
   if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 8000000) throw new Error('Choose a JPEG, PNG or WebP photo under 8 MB.');
@@ -106,10 +106,11 @@ export default function StylistPanel({request,onClose}) {
         <label>Measurement unit<select value={profile.unit} onChange={e=>changeUnit(e.target.value)}><option value="cm">Centimetres (cm)</option><option value="inches">Inches</option></select></label>
         <div className="ax-fit-grid">{['chest','waist','hip','height','inseam'].map(key => <label key={key}>{key === 'hip' ? 'Hips' : key.charAt(0).toUpperCase()+key.slice(1)} ({profile.unit})<input type="number" inputMode="decimal" min="0" step="0.01" value={profile[key] ?? ''} onChange={e=>changeProfile(key,e.target.value)}/></label>)}</div>
         <label>Preferred fit<select value={profile.fit} onChange={e=>changeProfile('fit',e.target.value)}><option value="regular">Regular</option><option value="relaxed">Relaxed</option><option value="oversized">Oversized</option></select></label>
+        <label>Usual size (optional)<input value={profile.usualSize} maxLength={40} onChange={e=>changeProfile('usualSize',e.target.value)} placeholder="Tops M, trousers 32…"/></label>
         <label>Styles you like<input value={profile.styles} maxLength={180} onChange={e=>changeProfile('styles',e.target.value)} placeholder="Old money, Korean fits…"/></label>
         <label>Colours you like<input value={profile.colors} maxLength={180} onChange={e=>changeProfile('colors',e.target.value)} placeholder="Black, sage, cream…"/></label>
         <label>Anything to avoid?<input value={profile.avoid} maxLength={180} onChange={e=>changeProfile('avoid',e.target.value)} placeholder="Large prints, tight sleeves…"/></label>
-        <p className="ax-small">These details are sent to the AI when you send a message. Saving is optional. Personal fit checks need AX’s approved size guide for that product; height alone is not used to choose a size.</p>
+        <p className="ax-small">Relevant details are used when you ask about styling or fit. Saving is optional. Personal fit checks need AX’s approved size guide for that product; height alone is not used to choose a size.</p>
         <label className="ax-checkbox"><input type="checkbox" checked={saveConsent} onChange={e=>setSaveConsent(e.target.checked)}/><span>Save my measurements and preferences privately for 30 days, for this browser.</span></label>
         <div className="ax-profile-actions"><button onClick={saveProfile} disabled={!saveConsent || !status?.profiles || profileBusy}>Save profile</button><button onClick={forgetProfile} disabled={profileBusy}>Delete saved profile</button></div>
         <p role="status" className="ax-small">{profileNotice}</p>
@@ -119,15 +120,15 @@ export default function StylistPanel({request,onClose}) {
           {!messages.length && <div className="ax-chat-welcome"><h3>Your wardrobe, with a little help.</h3><p>Tell me the occasion, your budget, or what you’re pairing. I’ll look in AX’s catalog.</p><div className="ax-starters">{starters.map(text=><button key={text} onClick={()=>setDraft(text)}>{text}<Icon name="arrow" size={15}/></button>)}</div></div>}
           {status === null && <p role="status">Checking availability…</p>}
           {status && !status.available && <div className="ax-chat-notice"><p>Personal AI styling is not enabled yet. Explore a style or contact AX while we finish setup.</p><div className="style-links">{styles.slice(0,4).map(style=><Link key={style.key} href={style.href} onClick={onClose}>{style.label}<Icon name="arrow" size={15}/></Link>)}</div></div>}
-          {messages.map((item,i)=><article className={'ax-message ax-message-'+item.role} key={i}><span className="ax-message-role">{item.role === 'user' ? 'YOU' : 'AX STYLIST · AI'}</span><p>{item.message}</p>{item.photo && <p className="ax-small">Photo used for this reply; not saved in the chat.</p>}
+          {messages.map((item,i)=><article className={'ax-message ax-message-'+item.role} key={i}><span className="ax-message-role">{item.role === 'user' ? 'YOU' : 'AX STYLIST'}</span><p>{item.message}</p>{item.photo && <p className="ax-small">Photo used for this reply; not saved in the chat.</p>}
             {item.fits?.map(fit=><div className="ax-fit-result" key={fit.handle}><strong>{fit.title}</strong><p>{fit.message}</p>{fit.status === 'needs_data' && <button onClick={()=>setTab('fit')}>Open My fit & style</button>}</div>)}
-            {item.products?.length > 0 && <div className="ax-chat-products">{item.products.map(product=><Link href={product.href} onClick={onClose} className="ax-chat-product" key={product.handle}><ProductImage src={product.image} alt={product.title} sizes="100px"/><div><span>{product.title}</span><small>{product.productNumber}</small>{product.price && <strong>From {formatMoney(Number(product.price.amount),product.price.currencyCode)}</strong>}<small>Choose size & colour →</small></div></Link>)}</div>}
+            {item.products?.length > 0 && <div className="ax-chat-products">{item.products.map(product=><Link href={product.href} onClick={onClose} className="ax-chat-product" key={product.handle}><ProductImage src={product.image} alt={product.title} sizes="100px"/><div><span>{product.title}</span><small>{product.productNumber}</small>{product.price && <strong>{!product.variantId && 'From '}{formatMoney(Number(product.price.amount),product.price.currencyCode)}</strong>}<small>{product.selectedOptions?.filter(o=>o.name!=='Title' && !(product.requiresSize && /size/i.test(o.name))).map(o=>o.name+': '+o.value).join(' · ')}</small><small>{product.requiresSize ? 'Choose your size' : 'View options'} →</small></div></Link>)}</div>}
             {item.links?.map(link=><Link className="ax-source-link" key={link.href} href={link.href} onClick={onClose}>{link.label} →</Link>)}
             {i === messages.length-1 && item.suggestions?.length > 0 && <div className="ax-suggestions">{item.suggestions.map((text,j)=><button key={j} onClick={()=>setDraft(text)}>{text}</button>)}</div>}
           </article>)}
           {busy && <p className="ax-working" role="status">AX is checking your request…</p>}
         </div>
-        <form className="ax-composer" onSubmit={send}>
+        <form id="ax-chat-form" className="ax-composer" onSubmit={send}>
           {photo && <div className="ax-photo-preview"><img src={photo} width="60" height="60" alt="Your selected clothing photo"/><span>Clothing photo ready</span><button type="button" onClick={()=>setPhoto('')} aria-label="Remove photo"><Icon name="close" size={18}/></button></div>}
           {status?.images && <label className="ax-photo-button">{photoBusy ? 'Preparing photo…' : '+ Add clothing photo'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={selectPhoto} disabled={busy || photoBusy}/></label>}
           <label className="sr-only" htmlFor="ax-message">Message AX Stylist</label><div className="ax-message-input"><textarea id="ax-message" rows={2} maxLength={1200} value={draft} onChange={e=>setDraft(e.target.value)} placeholder="An outfit for dinner, under ₹3,000…" disabled={busy}/><button type="submit" aria-label="Send to AX Stylist" disabled={busy || photoBusy || !consent || !status?.available || !draft.trim()}><Icon name="arrow"/></button></div>
@@ -135,7 +136,7 @@ export default function StylistPanel({request,onClose}) {
           <p className="ax-small">AI can make mistakes. Check product details before buying. Don’t share passwords, payment details or private documents.</p>
         </form>
       </>}
-      {error && <p className="ax-chat-error" role="alert">{error}</p>}
+      {error && <div className="ax-chat-error" role="alert"><p>{error}</p>{tab==='chat' && <button type="submit" form="ax-chat-form" disabled={busy || !consent || !status?.available || !draft.trim()}>Try again</button>}</div>}
     </div>
     <div className="ax-chat-footer"><Link href="/ax-stylist" onClick={onClose}>Privacy & how it works</Link><a href="mailto:contact@axstore.in">Contact AX</a><Link href="/products" onClick={onClose}>Explore catalog</Link></div>
   </Dialog>;

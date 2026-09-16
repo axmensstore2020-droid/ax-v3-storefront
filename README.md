@@ -20,7 +20,7 @@ Without credentials, the preview displays the supplied sample catalog, labels it
 
 Live product sizes, colors, availability and prices come from Shopify variants. The bag supports add, quantity updates and removal. Native account access is linked only for a configured store.
 
-AX Stylist now includes a configuration-gated AI backend, read-only live Shopify tools, approved-chart fit guidance, optional photo input, explicit consent, private browser-linked profiles, deletion, moderation and shared usage limits. It is **disabled by default** and requires OpenAI/Supabase credentials plus a reviewed SQL migration and purge schedule before activation. No cloud database or API project is provisioned by the code. See [AX Stylist setup](docs/AX-STYLIST-SETUP.md), [product data](docs/PRODUCT-DATA.md), and [live evaluation cases](docs/AX-STYLIST-EVALS.md).
+AX Stylist uses a configuration-gated Luna/Terra Responses backend with central routing, bounded context, silent fallback and private usage analytics, read-only live Shopify tools, approved-chart fit guidance, optional photo input, explicit consent, private browser-linked profiles, deletion, moderation and shared usage limits. It is **disabled by default** and requires OpenAI/Supabase credentials plus a reviewed SQL migration and purge schedule before activation. No cloud database or API project is provisioned by the code. See [AX Stylist setup](docs/AX-STYLIST-SETUP.md), [product data](docs/PRODUCT-DATA.md), and [live evaluation cases](docs/AX-STYLIST-EVALS.md).
 
 ## Development
 

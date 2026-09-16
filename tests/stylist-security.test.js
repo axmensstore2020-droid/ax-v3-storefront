@@ -79,7 +79,7 @@ test('OpenAI uses Responses, no application-state storage and fixed server crede
   await ai.respond({input:[{role:'user',content:'shirt'}]},'anonymous-hash');
   const body=JSON.parse(request.body);
   assert.equal(request.url,'https://api.openai.com/v1/responses');assert.equal(body.store,false);
-  assert.equal(body.model,'gpt-5.6-terra');assert.equal(body.max_output_tokens,1600);
+  assert.equal(body.model,'gpt-5.6-luna');assert.equal(body.max_output_tokens,1000);
   assert.equal(body.safety_identifier,'anonymous-hash');assert.equal(body.previous_response_id,undefined);
 });
 test('upstream refusals, outages and incomplete responses do not leak diagnostics',async()=>{

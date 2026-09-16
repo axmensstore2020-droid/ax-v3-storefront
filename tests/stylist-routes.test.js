@@ -21,6 +21,7 @@ function mockServices(t,{reserve=true}={}) {
   globalThis.fetch=async(url,options={})=>{
     calls.push({url,options});
     if(url.endsWith('/rpc/ax_stylist_reserve'))return Response.json(reserve);
+    if(url.includes('/rest/v1/ax_stylist_usage'))return Response.json([]);
     if(url.includes('/rest/v1/ax_stylist_profiles')){
       if(options.method==='POST'){const data=JSON.parse(options.body);rows.set(data.id,data);return Response.json([data]);}
       const id=new URL(url).searchParams.get('id')?.slice(3);
@@ -46,7 +47,7 @@ test('chat sets an HttpOnly session and returns only signed continuation',async 
   assert.match(response.headers.get('Cache-Control'),/no-store/);
   const data=await response.json();assert.equal(data.scope,'off_topic');assert.ok(data.conversation);
   const raw=JSON.stringify(data);assert.ok(!raw.includes('test-only-ai'));assert.ok(!raw.includes('test-only-db'));
-  assert.equal(mock.calls.filter(c=>c.url.endsWith('/responses')).length,1);
+  assert.equal(mock.calls.filter(c=>c.url.endsWith('/responses')).length,0);
 });
 test('shared quota blocks before OpenAI calls even on a newly generated cookie',async t=>{
   const mock=mockServices(t,{reserve:false});

@@ -21,12 +21,12 @@ export function CartProvider({children,demo=false}) {
  },[demo]);
  function saveDemo(lines){demoRef.current=lines;setDemoLines(lines);write(DEMO_LINES,JSON.stringify(lines));}
  function saveCart(value){setCart(value);currentCartId.current=value.id;write(CART_ID,value.id);}
- async function addItem({merchandiseId,product}){
+ async function addItem({merchandiseId,variant,product}){
   if(locked.current)return;locked.current=true;setBusy(true);setNotice('');
   try{
    if(demo && product.demo){
-    const lines=demoRef.current,found=lines.find(line => line.key===product.handle);
-    saveDemo(found?lines.map(line => line.key===product.handle?{...line,quantity:Math.min(99,line.quantity+1)}:line):[...lines,{key:product.handle,product,quantity:1}]);
+    const lines=demoRef.current,key=merchandiseId||product.handle,found=lines.find(line => line.key===key);
+    saveDemo(found?lines.map(line => line.key===key?{...line,quantity:Math.min(99,line.quantity+1)}:line):[...lines,{key,product,variant,quantity:1}]);
    }else{
     if(!merchandiseId || product.demo)throw new Error('Please select an available option.');
     const cartId=currentCartId.current;

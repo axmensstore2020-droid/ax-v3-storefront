@@ -41,3 +41,16 @@ Record date, commit, API model, prompt version, product-data version, response t
 | Hit daily ceiling from a fresh cookie | Shared global quota still blocks; no further provider call |
 
 Launch gates: no unauthorized side effects or secret exposure; every product card has a real verified handle; stock/price tests pass; fit engine cases pass; no unsupported policy promise; consent, deletion and retention checks pass; acceptable mobile latency and spend measured against your own budget. Human-review multilingual behavior and stylistic quality; deterministic tests cannot certify an LLM's wording.
+
+## Two-tier routing and variants
+
+- Routine search, prices, stock, policies, greetings, basic outfit advice, simple comparisons and follow-ups: Luna none/low.
+- Upload “What colour is this?” / “Would beige or black work?”: Luna, no automatic advanced reservation.
+- “Analyse my overall outfit” with clothing photo, or a complete outfit with multiple constraints: Terra low, medium only for compound complexity.
+- A low-confidence complex Luna draft: only the final Terra response appears. Check both response usage rows and one turn row.
+- Advanced daily cap reached or advanced reservation unavailable: Luna. `AX_STYLIST_ADVANCED_ENABLED=false`: Luna exclusively.
+- Simulate Terra failure: one Luna fallback within total call cap; no raw provider error. All-model failure: friendly retry UI.
+- Simulate Shopify failure: explicit inability to check catalog, no invented cards.
+- Recommend an actual non-default colour: card image and URL match its Shopify variant. Size remains unselected until confirmed if the shopper has not chosen it. Add to bag and verify exact image, size, colour and variant ID.
+- Unavailable/wrong product variant IDs from simulated model output: dropped, never replaced with the first colour.
+- Measure model-call share, advanced-turn share, average latency and estimated cost using private analytics; tune thresholds from representative traffic. Do not assert the 85–95% target from a small synthetic batch.
