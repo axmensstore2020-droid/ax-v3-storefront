@@ -1,7 +1,14 @@
 import ProductGridClient from '../../components/ProductGridClient';
 import {getProducts} from '../../lib/shopify';
 import {navigation} from '../../lib/navigation';
-export const metadata={title:'Explore the collection'};
+import {pageMetadata} from '../../lib/seo';
+
+export const metadata=pageMetadata({
+ title:'New Men’s Clothing & Latest Drops',
+ description:'Shop the latest AX shirts, T-shirts, denim, trousers, Korean fits, streetwear and everyday menswear. Curated in Coimbatore and delivered across India.',
+ path:'/products'
+});
+
 export default async function ProductsPage({searchParams}) {
  const [products,params]=await Promise.all([getProducts(),searchParams]);
  const value=key => typeof params?.[key]==='string' ? params[key] : '';
