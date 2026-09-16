@@ -1,7 +1,7 @@
 .orders{margin-top:72px;max-width:760px;border-top:1px solid var(--line);padding-top:38px}
 .ordersHeading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:28px}
 .ordersHeading p{margin-bottom:10px}.ordersHeading h2{font-size:clamp(34px,5vw,54px);margin:0}.ordersHeading>span{font-size:10px;letter-spacing:.04em;color:var(--muted);padding-bottom:7px}
-.ordersEmpty{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:30px 0}.ordersEmpty p{margin:0 0 8px}.ordersEmpty .underlined-link{margin-top:18px}
+.ordersEmpty{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:30px 0}.ordersEmpty p{margin:0 0 8px}.ordersEmpty :global(.underlined-link){margin-top:18px}
 .orderList{border-bottom:1px solid var(--line)}
 .order{border-top:1px solid var(--line);padding:30px 0 38px}
 .orderHead{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:start}
