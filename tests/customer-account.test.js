@@ -90,7 +90,7 @@ test('Customer Account GraphQL endpoint uses Shopify API discovery',async()=>{
   assert.equal(apiEndpoint,discovery.graphql_api);
 });
 
-test('customer API refresh preserves a prior refresh token and uses bearer auth',async()=>{
+test('customer API refresh preserves a prior refresh token and sends the access token directly',async()=>{
   const config=customerAccountConfig({
     ...baseEnv,
     SHOPIFY_CUSTOMER_ACCOUNT_AUTHORIZATION_URL:discovery.authorization_endpoint,
@@ -109,7 +109,8 @@ test('customer API refresh preserves a prior refresh token and uses bearer auth'
   assert.equal(result.session.accessToken,'new-access');
   assert.equal(result.session.refreshToken,'old-refresh');
   const apiCalls=calls.filter(item=>item.url===discovery.graphql_api);
-  assert.equal(apiCalls[1].init.headers.Authorization,'Bearer new-access');
+  assert.equal(apiCalls[0].init.headers.Authorization,'expired-access');
+  assert.equal(apiCalls[1].init.headers.Authorization,'new-access');
   const refreshCall=calls.find(item=>item.url===discovery.token_endpoint);
   const refreshBody=new URLSearchParams(refreshCall.init.body);
   assert.equal(refreshBody.get('refresh_token'),'old-refresh');
