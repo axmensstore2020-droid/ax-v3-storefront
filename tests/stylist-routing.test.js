@@ -50,6 +50,11 @@ test('off-topic redirects vary, and do not invoke Responses',async()=>{
   const second=await runStylist({...f,history:[{role:'assistant',content:first.message}]});
   assert.notEqual(first.message,second.message);assert.equal(f.routes.length,0);
 });
+test('simple greetings get a local welcome and do not spend a Responses call',async()=>{
+  const f=fixture('Hi',[]);const result=await runStylist(f);
+  assert.equal(result.message,'Hi! What are you looking for today—an outfit, a specific piece, or help with fit?');
+  assert.deepEqual(result.products,[]);assert.equal(f.routes.length,0);assert.equal(f.inputs.length,0);
+});
 test('only selected profile fields and bounded history/products reach context',()=>{
   const p={unit:'cm',chest:94,styles:'old money',colors:'sage',avoid:'neon',email:'private'};
   assert.deepEqual(relevantProfile(p,'catalog'),{});assert.equal(relevantProfile(p,'styling').chest,undefined);assert.equal(relevantProfile(p,'fit').chest,94);
