@@ -10,6 +10,7 @@ function readConsent(){
  const pair=document.cookie.split(';').map(item=>item.trim()).find(item=>item.startsWith(MARKETING_CONSENT_COOKIE+'='));
  return pair?decodeURIComponent(pair.slice(MARKETING_CONSENT_COOKIE.length+1)):'';
 }
+function currentConsent(){const value=readConsent();return value===MARKETING_GRANTED||value===MARKETING_DENIED?value:'';}
 function writeConsent(value){
  const secure=typeof location!=='undefined'&&location.protocol==='https:'?'; Secure':'';
  document.cookie=`${MARKETING_CONSENT_COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=15552000; SameSite=Lax${secure}`;
@@ -42,7 +43,7 @@ function ensurePixel(pixelId){
 }
 
 export function trackMarketingEvent(eventName,customData={}){
- if(typeof window==='undefined'||readConsent()!==MARKETING_GRANTED)return '';
+ if(typeof window==='undefined'||currentConsent()!==MARKETING_GRANTED)return '';
  const id=eventId();sendBrowserEvent(eventName,customData,id);
  if(window.__axMetaCapiEnabled===true){
   fetch('/api/meta/events',{method:'POST',headers:{'Content-Type':'application/json'},keepalive:true,body:JSON.stringify({eventName,eventId:id,eventSourceUrl:window.location.href,customData})}).catch(()=>{});
@@ -57,7 +58,7 @@ export default function MetaMarketing({pixelId='',capiEnabled=false}){
  const lastPath=useRef('');
  useEffect(()=>{
   if(!pixelId)return;
-  const current=readConsent();setConsent(current);setOpen(!current);
+  const current=currentConsent();setConsent(current);setOpen(!current);
   window.__axMarketingAvailable=true;window.__axMetaCapiEnabled=Boolean(capiEnabled);
   const reopen=()=>setOpen(true);window.addEventListener('ax:open-marketing-preferences',reopen);
   window.dispatchEvent(new Event('ax:marketing-ready'));
