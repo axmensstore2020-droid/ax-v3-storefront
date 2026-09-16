@@ -73,6 +73,8 @@ test('OAuth uses PKCE, the registered callback and confidential token exchange',
   assert.equal(session.refreshToken,'refresh-token');
   assert.equal(tokenCall.url,discovery.token_endpoint);
   assert.equal(tokenCall.init.headers.Authorization,`Basic ${Buffer.from('client-id:client-secret').toString('base64')}`);
+  assert.equal(tokenCall.init.headers.Origin,'https://ax.test');
+  assert.equal(tokenCall.init.headers['User-Agent'],'AX-Mens-Store-Headless/1.0');
   const body=new URLSearchParams(tokenCall.init.body);
   assert.equal(body.get('grant_type'),'authorization_code');
   assert.equal(body.get('client_id'),'client-id');
@@ -82,11 +84,13 @@ test('OAuth uses PKCE, the registered callback and confidential token exchange',
 
 test('Customer Account GraphQL endpoint uses Shopify API discovery',async()=>{
   const config=customerAccountConfig(baseEnv),calls=[];
-  const apiEndpoint=await discoverCustomerAccountApi(config,async url=>{
-    calls.push(url);
+  const apiEndpoint=await discoverCustomerAccountApi(config,async(url,init)=>{
+    calls.push({url,init});
     return Response.json({graphql_api:discovery.graphql_api,mcp_api:'https://shopify.test/customer/mcp'});
   });
-  assert.deepEqual(calls,['https://axunisexstore.myshopify.com/.well-known/customer-account-api']);
+  assert.equal(calls[0].url,'https://axunisexstore.myshopify.com/.well-known/customer-account-api');
+  assert.equal(calls[0].init.headers.Origin,'https://ax.test');
+  assert.equal(calls[0].init.headers['User-Agent'],'AX-Mens-Store-Headless/1.0');
   assert.equal(apiEndpoint,discovery.graphql_api);
 });
 
@@ -111,7 +115,11 @@ test('customer API refresh preserves a prior refresh token and sends the access 
   const apiCalls=calls.filter(item=>item.url===discovery.graphql_api);
   assert.equal(apiCalls[0].init.headers.Authorization,'expired-access');
   assert.equal(apiCalls[1].init.headers.Authorization,'new-access');
+  assert.equal(apiCalls[0].init.headers.Origin,'https://ax.test');
+  assert.equal(apiCalls[0].init.headers['User-Agent'],'AX-Mens-Store-Headless/1.0');
   const refreshCall=calls.find(item=>item.url===discovery.token_endpoint);
+  assert.equal(refreshCall.init.headers.Origin,'https://ax.test');
+  assert.equal(refreshCall.init.headers['User-Agent'],'AX-Mens-Store-Headless/1.0');
   const refreshBody=new URLSearchParams(refreshCall.init.body);
   assert.equal(refreshBody.get('refresh_token'),'old-refresh');
   assert.equal(refreshBody.get('client_id'),'client-id');
