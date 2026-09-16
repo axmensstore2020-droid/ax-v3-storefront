@@ -9,8 +9,8 @@ export async function generateMetadata({params}) {
  const hasProducts=(collection.products || []).length>0;
  return {
   ...pageMetadata({
-   title:`${collection.title} for Men`,
-   description:collection.description || `Explore ${collection.title} at AX Men’s Store. Curated menswear from Coimbatore with delivery across India.`,
+   title:collection.seo?.title || `${collection.title} for Men`,
+   description:collection.seo?.description || collection.description || `Explore ${collection.title} at AX Men’s Store. Curated menswear from Coimbatore with delivery across India.`,
    path:`/collections/${collection.handle}`,
    image:collection.products?.find(product=>product.image)?.image
   }),
