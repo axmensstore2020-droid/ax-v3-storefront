@@ -21,6 +21,7 @@ const {
   authorizationUrl,
   callbackUrl,
   customerAccountConfig,
+  discoverCustomerAccountApi,
   exchangeCode,
   logoutRedirectUrl,
   pkce,
@@ -74,8 +75,19 @@ test('OAuth uses PKCE, the registered callback and confidential token exchange',
   assert.equal(tokenCall.init.headers.Authorization,`Basic ${Buffer.from('client-id:client-secret').toString('base64')}`);
   const body=new URLSearchParams(tokenCall.init.body);
   assert.equal(body.get('grant_type'),'authorization_code');
+  assert.equal(body.get('client_id'),'client-id');
   assert.equal(body.get('code_verifier'),verifier);
   assert.equal(body.get('redirect_uri'),callbackUrl(config));
+});
+
+test('Customer Account GraphQL endpoint uses Shopify API discovery',async()=>{
+  const config=customerAccountConfig(baseEnv),calls=[];
+  const apiEndpoint=await discoverCustomerAccountApi(config,async url=>{
+    calls.push(url);
+    return Response.json({graphql_api:discovery.graphql_api,mcp_api:'https://shopify.test/customer/mcp'});
+  });
+  assert.deepEqual(calls,['https://axunisexstore.myshopify.com/.well-known/customer-account-api']);
+  assert.equal(apiEndpoint,discovery.graphql_api);
 });
 
 test('customer API refresh preserves a prior refresh token and uses bearer auth',async()=>{
@@ -99,7 +111,9 @@ test('customer API refresh preserves a prior refresh token and uses bearer auth'
   const apiCalls=calls.filter(item=>item.url===discovery.graphql_api);
   assert.equal(apiCalls[1].init.headers.Authorization,'Bearer new-access');
   const refreshCall=calls.find(item=>item.url===discovery.token_endpoint);
-  assert.equal(new URLSearchParams(refreshCall.init.body).get('refresh_token'),'old-refresh');
+  const refreshBody=new URLSearchParams(refreshCall.init.body);
+  assert.equal(refreshBody.get('refresh_token'),'old-refresh');
+  assert.equal(refreshBody.get('client_id'),'client-id');
 });
 
 test('provider logout keeps the post-logout target on AX',()=>{

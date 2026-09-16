@@ -37,16 +37,21 @@ Add these as server-side environment variables in the V3 deployment. Do not add 
 
 `SHOPIFY_STORE_DOMAIN` and `AX_SITE_ORIGIN` must already point to the same environment. Use the staging origin while testing, then redeploy with the production origin when `axstore.in` is live.
 
-The app discovers Shopify's authorization, token, logout and Customer Account GraphQL endpoints from the store's OpenID configuration. Endpoint override variables are not required.
+The app dynamically discovers Shopify endpoints instead of hardcoding them:
+
+- `/.well-known/openid-configuration` provides authorization, token and logout endpoints.
+- `/.well-known/customer-account-api` provides the Customer Account GraphQL endpoint.
+
+Endpoint override variables remain available for troubleshooting, but are not required for the normal setup.
 
 ## Flow
 
 - `/account/login` starts OAuth with state and PKCE.
 - Shopify sends the browser to `/account/authorize` after sign-in.
-- The server exchanges the code, encrypts the short-lived token session in an HttpOnly secure cookie and returns to `/account`.
+- The server exchanges the code, sends the client ID plus confidential client credentials, encrypts the short-lived token session in an HttpOnly secure cookie and returns to `/account`.
 - `/account` queries only the signed-in customer's basic profile; tokens never reach browser JavaScript.
 - `/account/logout` clears the local session and uses Shopify's logout endpoint when available.
 
 AX Stylist's anonymous Supabase profile remains separate from Shopify identity until a separately approved account-linking design is added.
 
-References: [Getting started with the Customer Account API](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/getting-started) and [Using the Customer Account API with Hydrogen](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/hydrogen).
+References: [Getting started with the Customer Account API](https://shopify.dev/docs/storefronts/headless/building-with-the-customer-account-api/getting-started) and [Customer Account API reference](https://shopify.dev/docs/api/customer/latest).
