@@ -152,7 +152,7 @@ export default function StylistPanel({request,onClose}) {
           {photo && <div className="ax-photo-preview"><img src={photo} width="52" height="52" alt="Your selected clothing photo"/><span>Photo ready</span><button type="button" onClick={()=>setPhoto('')} aria-label="Remove photo"><Icon name="close" size={18}/></button></div>}
           {status?.images && <label className="ax-photo-button"><Icon name="wide" size={14}/>{photoBusy ? 'Preparing photo…' : 'Add photo'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={selectPhoto} disabled={busy || photoBusy}/></label>}
           <label className="sr-only" htmlFor="ax-message">Message AX Stylist</label><div className="ax-message-input"><textarea id="ax-message" rows={1} maxLength={1200} value={draft} onChange={e=>setDraft(e.target.value)} placeholder={request.product ? 'Ask about this piece…' : 'Ask AX…'} disabled={busy}/><button type="submit" aria-label="Send to AX Stylist" disabled={busy || photoBusy || !consent || !status?.available || !draft.trim()}><Icon name="arrow"/></button></div>
-          <label className="ax-checkbox"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/><span>Send this chat and optional fit/photo details to OpenAI for styling.</span></label>
+          <label className="ax-checkbox"><input type="checkbox" checked={consent} onChange={e=>setConsent(e.target.checked)}/><span>Allow AX Stylist to process this chat and optional fit/photo details using trusted service providers.</span></label>
           <p className="ax-small">Fit suggestions are estimates based on AX product data and any measurements you provide; actual fit can vary by cut and preference.</p>
         </form>
       </>}
