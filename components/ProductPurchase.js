@@ -5,15 +5,22 @@ import ProductImage from './ProductImage';
 import {StylistButton} from './StylistProvider';
 import Icon from './Icon';
 import {findVariant} from '../lib/commerce';
+import {productMarketingData} from '../lib/marketing';
 import {initialSelection,productOptions,selectionImage} from '../lib/product-variants';
+import {trackMarketingEvent} from './MetaMarketing';
 
 export default function ProductPurchase({product,initialVariantId,chooseSize=false,children}) {
   const [selected,setSelected] = useState(() => initialSelection(product,initialVariantId,chooseSize));
-  const galleryRef = useRef(null);
+  const galleryRef = useRef(null), trackedView = useRef('');
   const variant = findVariant(product.variants || [],selected);
   const primary = selectionImage(product,selected,variant);
   const gallery = [...new Map([primary,...(product.images || [])].filter(image => image?.url).map(image => [image.url,image])).values()];
   useEffect(() => {galleryRef.current?.scrollTo({left:0,behavior:'instant'});},[primary?.url]);
+  useEffect(()=>{
+    if(product.demo || trackedView.current===product.handle)return;
+    trackedView.current=product.handle;
+    trackMarketingEvent('ViewContent',productMarketingData(product,variant,1));
+  },[product,variant]);
   return <section className="pdp">
     <div ref={galleryRef} className={`pdp-gallery${gallery.length===1?' single-image':''}`} aria-label="Product photos">
       {gallery.map((image,index) => <div className="pdp-image" key={image.url}><ProductImage src={image.url} alt={image.altText || product.title+', view '+(index+1)} sizes="(max-width:700px) 100vw,56vw" eager={index===0}/></div>)}
