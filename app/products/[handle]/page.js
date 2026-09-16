@@ -11,8 +11,8 @@ export async function generateMetadata({params}) {
  const {handle}=await params,product=await getProduct(handle);
  if(!product) return {title:'Product'};
  return pageMetadata({
-  title:product.title,
-  description:product.description || `${product.title} from AX Men’s Store. Explore fit, fabric, available sizes and delivery across India.`,
+  title:product.seo?.title || product.title,
+  description:product.seo?.description || product.description || `${product.title} from AX Men’s Store. Explore fit, fabric, available sizes and delivery across India.`,
   path:`/products/${product.handle}`,
   image:product.image || product.images?.[0]?.url,
   type:'website'
