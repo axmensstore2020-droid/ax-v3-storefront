@@ -1,9 +1,33 @@
 import {notFound} from 'next/navigation';
 import ProductGridClient from '../../../components/ProductGridClient';
 import {getCollection} from '../../../lib/shopify';
-export async function generateMetadata({params}) {const {handle}=await params; const collection=await getCollection(handle); return {title:collection?.title || 'Collection'};}
+import {breadcrumbJsonLd,collectionJsonLd,jsonLd,pageMetadata} from '../../../lib/seo';
+
+export async function generateMetadata({params}) {
+ const {handle}=await params,collection=await getCollection(handle);
+ if(!collection) return {title:'Collection'};
+ const hasProducts=(collection.products || []).length>0;
+ return {
+  ...pageMetadata({
+   title:`${collection.title} for Men`,
+   description:collection.description || `Explore ${collection.title} at AX Men’s Store. Curated menswear from Coimbatore with delivery across India.`,
+   path:`/collections/${collection.handle}`,
+   image:collection.products?.find(product=>product.image)?.image
+  }),
+  robots:{index:hasProducts,follow:true}
+ };
+}
+
 export default async function CollectionPage({params}) {
  const {handle}=await params, collection=await getCollection(handle);
  if(!collection) notFound();
- return <main id="main-content" className="products-page"><ProductGridClient products={collection.products} title={collection.title} collection/></main>;
+ const structured=[
+  collectionJsonLd(collection),
+  breadcrumbJsonLd([{name:'Collections',path:'/collections'},{name:collection.title,path:`/collections/${collection.handle}`}])
+ ];
+ return <main id="main-content" className="products-page">
+  <script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/>
+  <ProductGridClient products={collection.products} title={collection.title} collection/>
+  {collection.description && <section className="collection-description" aria-label={`About ${collection.title}`}><h2>About {collection.title}</h2><p>{collection.description}</p></section>}
+ </main>;
 }
