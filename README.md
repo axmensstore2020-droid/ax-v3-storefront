@@ -18,7 +18,7 @@ A separate Next.js menswear storefront for AX Men’s Store. Shopify remains the
 
 Without credentials, the preview displays the supplied sample catalog, labels it clearly, and disables checkout. With credentials, failed requests surface errors; they never substitute sample products or a demo cart. The `Partial Payment` helper product is excluded from listings, collections and detail pages.
 
-Live product sizes, colors, availability and prices come from Shopify variants. The bag supports add, quantity updates and removal. Native account access is linked only for a configured store.
+Live product sizes, colors, availability and prices come from Shopify variants. The bag supports add, quantity updates and removal. The Profile panel uses the headless Shopify Customer Account API when configured, with a Shopify-hosted account fallback during setup.
 
 AX Stylist uses a configuration-gated Luna/Terra Responses backend with central routing, bounded context, silent fallback and private usage analytics, read-only live Shopify tools, approved-chart fit guidance, optional photo input, explicit consent, private browser-linked profiles, deletion, moderation and shared usage limits. It is **disabled by default** and requires OpenAI/Supabase credentials plus a reviewed SQL migration and purge schedule before activation. No cloud database or API project is provisioned by the code. See [AX Stylist setup](docs/AX-STYLIST-SETUP.md), [product data](docs/PRODUCT-DATA.md), and [live evaluation cases](docs/AX-STYLIST-EVALS.md).
 
@@ -40,7 +40,7 @@ Set values from `.env.example` privately in your hosting environment before buil
 
 ## Deployment and remaining work
 
-See [Hostinger staging](docs/HOSTINGER-STAGING.md) and [verification](docs/VERIFICATION.md).
+See [Hostinger staging](docs/HOSTINGER-STAGING.md), [customer account setup](docs/CUSTOMER-ACCOUNT-SETUP.md) and [verification](docs/VERIFICATION.md).
 
 The current catalog/collection queries read up to 100 products; each PDP reads up to 100 variants and 8 images. Add pagination before the catalog exceeds these limits. Style edits depend on actual product titles, descriptions and tags; sparse categories remain empty until the catalog is enriched. Instagram is optional through the verified `AX_INSTAGRAM_URL` setting.
 

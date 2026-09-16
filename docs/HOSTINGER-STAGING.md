@@ -15,6 +15,11 @@ Create a separate Node.js Web App with a temporary domain. Keep `axstore.in` att
 | `SHOPIFY_STOREFRONT_PRIVATE_TOKEN` | Enter the existing private Storefront token in hPanel |
 | `SHOPIFY_STOREFRONT_ACCESS_TOKEN` | Leave blank when using the private token |
 | `SHOPIFY_API_VERSION` | `2026-07` |
+| `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_ID` | Client ID from Shopify's Customer Account API application |
+| `SHOPIFY_CUSTOMER_ACCOUNT_CLIENT_SECRET` | Confidential Customer Account API secret; keep server-side and never commit it |
+| `SHOPIFY_CUSTOMER_ACCOUNT_SESSION_SECRET` | Separate random secret of at least 32 characters for the encrypted account session cookie |
+| `SHOPIFY_CUSTOMER_ACCOUNT_SCOPE` | `openid email customer-account-api:full` |
+| `AX_SITE_ORIGIN` | Exact HTTPS origin for this deployment, with no trailing slash (for staging, the Hostinger domain) |
 | `AX_ALLOW_INDEXING` | `false` on staging |
 | `SHOPIFY_BUYER_IP_HEADER` | Leave blank until Hostinger confirms a header it overwrites with the real buyer IP |
 | `AX_INSTAGRAM_URL` | Optional verified full Instagram profile URL |

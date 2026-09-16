@@ -16,7 +16,7 @@ This is the implementation and owner setup guide. The two-tier update and privat
 
 The customer still chooses a product's size/colour and confirms Add to bag on its page. Shopify checkout, Razorpay and Delhivery are unchanged. No automatic checkout, refunds, order changes or messages to staff.
 
-Not included: account-linked cross-device profiles, purchase-history access, automatic outfit-to-cart transactions, virtual try-on, vector search, live inventory at individual branches, or guaranteed personal fit. They need separate work and, for account data, verified customer authentication. This release does not infer a Shopify identity from a client-supplied customer ID.
+Not included in AX Stylist: account-linked cross-device stylist profiles, purchase-history access inside the Stylist, automatic outfit-to-cart transactions, virtual try-on, vector search, live inventory at individual branches, or guaranteed personal fit. Shopify account login is a separate optional headless storefront feature; it does not automatically link an AX Stylist profile to a Shopify customer. See [customer account setup](CUSTOMER-ACCOUNT-SETUP.md).
 
 ## 1. Prepare product information in Shopify
 
