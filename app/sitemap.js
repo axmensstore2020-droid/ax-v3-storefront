@@ -9,7 +9,7 @@ function modified(value){
 }
 
 export default async function sitemap(){
- const [products,collections]=await Promise.all([getProducts(),getCollections()]);
+ const [products,collections]=await Promise.all([getProducts(250),getCollections(250)]);
  const staticPages=[
   ['/',1,'daily'],['/products',0.9,'daily'],['/collections',0.8,'weekly'],['/stores',0.8,'monthly'],
   ['/about',0.6,'monthly'],['/help',0.5,'monthly'],['/faqs',0.5,'monthly'],['/contact',0.5,'monthly'],
