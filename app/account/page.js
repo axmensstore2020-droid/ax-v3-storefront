@@ -8,94 +8,71 @@ import {trackDelhiveryWaybills} from '../../lib/delhivery.js';
 export const dynamic='force-dynamic';
 export const metadata={title:'Your AX account'};
 
-const profileQuery=`query AXCustomerProfile { customer { firstName lastName } }`;
-const ordersQuery=`query AXCustomerOrders {
+const basicProfileQuery=`query AXCustomerProfile { customer { firstName lastName } }`;
+const detailsQuery=`query AXAccountHubProfile {
   customer {
-    orders(first: 10, reverse: true, sortKey: PROCESSED_AT) {
+    displayName
+    emailAddress { emailAddress }
+    phoneNumber { phoneNumber }
+    defaultAddress { id }
+    addresses(first: 10) {
       nodes {
-        id
-        name
-        processedAt
-        financialStatus
-        fulfillmentStatus
-        statusPageUrl
-        totalPrice { amount currencyCode }
-        lineItems(first: 25) {
-          nodes {
-            id
-            name
-            quantity
-            variantTitle
-            image { url altText width height }
-            currentTotalPrice { amount currencyCode }
-          }
-        }
-        fulfillments(first: 10) {
-          nodes {
-            id
-            status
-            latestShipmentStatus
-            estimatedDeliveryAt
-            trackingInformation { company number url }
-            events(first: 20, reverse: true) { nodes { id happenedAt status } }
-          }
-        }
+        id name firstName lastName company address1 address2 city province zoneCode country territoryCode zip phoneNumber
+        formatted(withName: true, withCompany: true)
       }
     }
   }
 }`;
-const statusCopy={cancelled:'Sign-in was cancelled. You can try again whenever you’re ready.',invalid:'That sign-in link has expired. Please start again.',error:'We couldn’t complete sign-in right now. Please try again.',expired:'Your session expired. Please sign in again.',signin:'Please sign in to continue.',unavailable:'Customer accounts are being connected to the AX storefront. Please try again soon.'};
+const ordersQuery=`query AXCustomerOrders {
+  customer {
+    orders(first: 10, reverse: true, sortKey: PROCESSED_AT) {
+      nodes {
+        id name processedAt financialStatus fulfillmentStatus statusPageUrl
+        totalPrice { amount currencyCode }
+        lineItems(first: 25) { nodes { id name quantity variantTitle image { url altText width height } currentTotalPrice { amount currencyCode } } }
+        fulfillments(first: 10) { nodes { id status latestShipmentStatus estimatedDeliveryAt trackingInformation { company number url } events(first: 20, reverse: true) { nodes { id happenedAt status } } } }
+      }
+    }
+  }
+}`;
+const statusCopy={
+  cancelled:'Sign-in was cancelled. You can try again whenever you’re ready.',invalid:'That sign-in link has expired. Please start again.',error:'We couldn’t complete sign-in right now. Please try again.',expired:'Your session expired. Please sign in again.',signin:'Please sign in to continue.',unavailable:'Customer accounts are being connected to the AX storefront. Please try again soon.',
+  'profile-saved':'Your name has been updated.','profile-error':'We couldn’t update your profile. Check the details and try again.','address-saved':'Your address has been saved.','address-deleted':'The address was removed.','address-error':'We couldn’t update that address. Check the details and try again.'
+};
 
 function ShopifyAccountLink({domain}) { return domain ? <a className="underlined-link" href={`https://${domain}/account`}>OPEN SHOPIFY ACCOUNT <span aria-hidden="true">↗</span></a> : null; }
 function label(value) { return String(value || '').toLowerCase().replaceAll('_',' ').replace(/^./,character=>character.toUpperCase()); }
 function dateLabel(value) { if(!value) return '';try{return new Intl.DateTimeFormat('en-IN',{day:'numeric',month:'short',year:'numeric'}).format(new Date(value));}catch{return String(value);} }
 function dateTimeLabel(value) { if(!value) return '';try{return new Intl.DateTimeFormat('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}).format(new Date(value));}catch{return String(value);} }
-function moneyLabel(value) {
-  const amount=Number(value?.amount),currency=value?.currencyCode || 'INR';
-  if(!Number.isFinite(amount)) return '';
-  try { return new Intl.NumberFormat('en-IN',{style:'currency',currency,maximumFractionDigits:2}).format(amount); }
-  catch { return `${currency} ${amount.toFixed(2)}`; }
-}
+function moneyLabel(value) { const amount=Number(value?.amount),currency=value?.currencyCode || 'INR';if(!Number.isFinite(amount)) return '';try{return new Intl.NumberFormat('en-IN',{style:'currency',currency,maximumFractionDigits:2}).format(amount);}catch{return `${currency} ${amount.toFixed(2)}`;} }
 function isDelhiveryTracking(info) { return /delhivery/i.test(`${info?.company || ''} ${info?.url || ''}`); }
-function collectDelhiveryWaybills(orders) {
-  return orders.flatMap(order=>order?.fulfillments?.nodes || []).flatMap(fulfillment=>fulfillment?.trackingInformation || []).filter(isDelhiveryTracking).map(info=>info.number).filter(Boolean);
-}
-function orderedTimeline(items) {
-  return [...(items || [])].sort((a,b)=>{
-    const aTime=Date.parse(a?.happenedAt || ''),bTime=Date.parse(b?.happenedAt || '');
-    return (Number.isFinite(bTime)?bTime:0)-(Number.isFinite(aTime)?aTime:0);
-  });
-}
+function collectDelhiveryWaybills(orders) { return orders.flatMap(order=>order?.fulfillments?.nodes || []).flatMap(fulfillment=>fulfillment?.trackingInformation || []).filter(isDelhiveryTracking).map(info=>info.number).filter(Boolean); }
+function orderedTimeline(items) { return [...(items || [])].sort((a,b)=>{const aTime=Date.parse(a?.happenedAt || ''),bTime=Date.parse(b?.happenedAt || '');return (Number.isFinite(bTime)?bTime:0)-(Number.isFinite(aTime)?aTime:0);}); }
 
 function Shipment({fulfillment,delhivery}) {
   const infos=fulfillment?.trackingInformation || [],shopifyEvents=orderedTimeline((fulfillment?.events?.nodes || []).map(event=>({status:label(event.status),happenedAt:event.happenedAt,location:''})));
   const fallbackStatus=label(fulfillment?.latestShipmentStatus || fulfillment?.status) || 'Processing';
   if(!infos.length) return <div className={styles.shipment}><div className={styles.shipmentHead}><div><span className={styles.kicker}>SHIPMENT</span><strong>{fallbackStatus}</strong></div>{fulfillment?.estimatedDeliveryAt && <span>Estimated {dateLabel(fulfillment.estimatedDeliveryAt)}</span>}</div><p className="muted">Tracking will appear here when the shipment is assigned a tracking number.</p></div>;
-  return <>{infos.map((info,index)=>{
-    const waybill=String(info?.number || ''),live=isDelhiveryTracking(info) ? delhivery?.shipments?.[waybill] : null;
-    const timeline=live?.scans?.length ? orderedTimeline(live.scans) : shopifyEvents;
-    const shipmentStatus=live?.status || fallbackStatus;
-    const estimated=live?.expectedDeliveryAt || fulfillment?.estimatedDeliveryAt;
-    return <div className={styles.shipment} key={`${waybill || fulfillment.id}-${index}`}>
-      <div className={styles.shipmentHead}><div><span className={styles.kicker}>{live ? 'LIVE · DELHIVERY' : (info?.company || 'SHIPMENT').toUpperCase()}</span><strong>{shipmentStatus}</strong></div>{estimated && <span>Estimated {dateLabel(estimated)}</span>}</div>
-      <div className={styles.trackingMeta}><span>{waybill ? `AWB ${waybill}` : 'Tracking number pending'}</span>{live?.location && <span>{live.location}</span>}{info?.url && <a href={info.url} target="_blank" rel="noreferrer">CARRIER TRACKING ↗</a>}</div>
-      {timeline.length>0 && <ol className={styles.timeline}>{timeline.slice(0,5).map((scan,scanIndex)=><li key={`${scan.happenedAt || scan.status}-${scanIndex}`}><span aria-hidden="true"/><div><strong>{scan.status || 'Shipment update'}</strong>{scan.location && <small>{scan.location}</small>}{scan.happenedAt && <small>{dateTimeLabel(scan.happenedAt)}</small>}</div></li>)}</ol>}
-      {isDelhiveryTracking(info) && delhivery?.configured && !live && <p className={styles.trackingNote}>Live carrier detail is temporarily unavailable; Shopify tracking is shown instead.</p>}
-    </div>;
-  })}</>;
+  return <>{infos.map((info,index)=>{const waybill=String(info?.number || ''),live=isDelhiveryTracking(info) ? delhivery?.shipments?.[waybill] : null,timeline=live?.scans?.length ? orderedTimeline(live.scans) : shopifyEvents,shipmentStatus=live?.status || fallbackStatus,estimated=live?.expectedDeliveryAt || fulfillment?.estimatedDeliveryAt;return <div className={styles.shipment} key={`${waybill || fulfillment.id}-${index}`}><div className={styles.shipmentHead}><div><span className={styles.kicker}>{live ? 'LIVE · DELHIVERY' : (info?.company || 'SHIPMENT').toUpperCase()}</span><strong>{shipmentStatus}</strong></div>{estimated && <span>Estimated {dateLabel(estimated)}</span>}</div><div className={styles.trackingMeta}><span>{waybill ? `AWB ${waybill}` : 'Tracking number pending'}</span>{live?.location && <span>{live.location}</span>}{info?.url && <a href={info.url} target="_blank" rel="noreferrer">CARRIER TRACKING ↗</a>}</div>{timeline.length>0 && <ol className={styles.timeline}>{timeline.slice(0,5).map((scan,scanIndex)=><li key={`${scan.happenedAt || scan.status}-${scanIndex}`}><span aria-hidden="true"/><div><strong>{scan.status || 'Shipment update'}</strong>{scan.location && <small>{scan.location}</small>}{scan.happenedAt && <small>{dateTimeLabel(scan.happenedAt)}</small>}</div></li>)}</ol>}{isDelhiveryTracking(info) && delhivery?.configured && !live && <p className={styles.trackingNote}>Live carrier detail is temporarily unavailable; Shopify tracking is shown instead.</p>}</div>;})}</>;
 }
 
 function OrderHistory({orders,ordersError,delhivery}) {
-  return <section className={styles.orders} aria-labelledby="order-history-title">
-    <header className={styles.ordersHeading}><div><p className="eyebrow">YOUR PURCHASES</p><h2 className="editorial" id="order-history-title">Order history.</h2></div><span>{orders.length ? `${orders.length} RECENT ORDER${orders.length===1?'':'S'}` : ''}</span></header>
-    {ordersError ? <div className={styles.ordersEmpty}><p>Order history is temporarily unavailable.</p><p className="muted">Your Shopify account is still connected. AX can show orders once order access is enabled for this storefront.</p></div> : !orders.length ? <div className={styles.ordersEmpty}><p>No orders yet.</p><p className="muted">When you place an order with this AX account, it will appear here.</p><Link className="underlined-link" href="/products">EXPLORE AX <span aria-hidden="true">→</span></Link></div> : <div className={styles.orderList}>{orders.map(order=><article className={styles.order} key={order.id}>
-      <header className={styles.orderHead}><div><span className={styles.kicker}>ORDER</span><h3>{order.name}</h3><p>{dateLabel(order.processedAt)}</p></div><div className={styles.orderTotal}><span>TOTAL</span><strong>{moneyLabel(order.totalPrice)}</strong></div></header>
-      <div className={styles.orderStatus}><span>PAYMENT · {label(order.financialStatus) || '—'}</span><span>FULFILLMENT · {label(order.fulfillmentStatus) || '—'}</span>{order.statusPageUrl && <a href={order.statusPageUrl} target="_blank" rel="noreferrer">ORDER STATUS ↗</a>}</div>
-      <div className={styles.lineItems}>{(order?.lineItems?.nodes || []).map(item=><div className={styles.lineItem} key={item.id}>{item?.image?.url ? <img src={item.image.url} alt={item.image.altText || item.name || 'Ordered AX item'} width="72" height="96" loading="lazy"/> : <div className={styles.lineImagePlaceholder} aria-hidden="true"/>}<div><strong>{item.name}</strong>{item.variantTitle && <span>{item.variantTitle}</span>}<span>QTY {item.quantity}</span></div><span>{moneyLabel(item.currentTotalPrice)}</span></div>)}</div>
-      <div className={styles.shipments}>{(order?.fulfillments?.nodes || []).length ? (order.fulfillments.nodes.map(fulfillment=><Shipment key={fulfillment.id} fulfillment={fulfillment} delhivery={delhivery}/>)) : <div className={styles.shipment}><span className={styles.kicker}>SHIPMENT</span><strong>{label(order.fulfillmentStatus) || 'Unfulfilled'}</strong><p className="muted">Tracking will appear after this order is fulfilled.</p></div>}</div>
-    </article>)}</div>}
-    {delhivery?.error && orders.length>0 && <p className={styles.trackingNote}>Live Delhivery updates are temporarily unavailable. Shopify order and tracking information is still shown.</p>}
-  </section>;
+  return <section className={styles.section} id="orders" aria-labelledby="order-history-title"><header className={styles.sectionHeading}><div><p className="eyebrow">YOUR PURCHASES</p><h2 className="editorial" id="order-history-title">Order history.</h2></div><span>{orders.length ? `${orders.length} RECENT ORDER${orders.length===1?'':'S'}` : ''}</span></header>{ordersError ? <div className={styles.empty}><p>Order history is temporarily unavailable.</p><p className="muted">Your Shopify account is still connected. AX can show orders once order access is enabled for this storefront.</p></div> : !orders.length ? <div className={styles.empty}><p>No orders yet.</p><p className="muted">When you place an order with this AX account, it will appear here.</p><Link className="underlined-link" href="/products">EXPLORE AX <span aria-hidden="true">→</span></Link></div> : <div className={styles.orderList}>{orders.map(order=><details className={styles.order} key={order.id}><summary className={styles.orderSummary}><div><span className={styles.kicker}>ORDER</span><strong>{order.name}</strong><small>{dateLabel(order.processedAt)}</small></div><div className={styles.orderSummaryStatus}><span>{label(order.fulfillmentStatus) || 'Processing'}</span><strong>{moneyLabel(order.totalPrice)}</strong><span className={styles.chevron} aria-hidden="true">⌄</span></div></summary><div className={styles.orderBody}><div className={styles.orderStatus}><span>PAYMENT · {label(order.financialStatus) || '—'}</span><span>FULFILLMENT · {label(order.fulfillmentStatus) || '—'}</span>{order.statusPageUrl && <a href={order.statusPageUrl} target="_blank" rel="noreferrer">ORDER STATUS ↗</a>}</div><div className={styles.lineItems}>{(order?.lineItems?.nodes || []).map(item=><div className={styles.lineItem} key={item.id}>{item?.image?.url ? <img src={item.image.url} alt={item.image.altText || item.name || 'Ordered AX item'} width="72" height="96" loading="lazy"/> : <div className={styles.lineImagePlaceholder} aria-hidden="true"/>}<div><strong>{item.name}</strong>{item.variantTitle && <span>{item.variantTitle}</span>}<span>QTY {item.quantity}</span></div><span>{moneyLabel(item.currentTotalPrice)}</span></div>)}</div><div className={styles.shipments}>{(order?.fulfillments?.nodes || []).length ? order.fulfillments.nodes.map(fulfillment=><Shipment key={fulfillment.id} fulfillment={fulfillment} delhivery={delhivery}/>) : <div className={styles.shipment}><span className={styles.kicker}>SHIPMENT</span><strong>{label(order.fulfillmentStatus) || 'Unfulfilled'}</strong><p className="muted">Tracking will appear after this order is fulfilled.</p></div>}</div></div></details>)}</div>}{delhivery?.error && orders.length>0 && <p className={styles.trackingNote}>Live Delhivery updates are temporarily unavailable. Shopify order and tracking information is still shown.</p>}</section>;
+}
+
+function ProfileSection({basic,details,detailsError}) {
+  const name=details?.displayName || [basic?.firstName,basic?.lastName].filter(Boolean).join(' ') || 'AX customer',email=details?.emailAddress?.emailAddress || 'Not available',phone=details?.phoneNumber?.phoneNumber || 'Not added';
+  return <section className={styles.section} id="profile" aria-labelledby="profile-title"><header className={styles.sectionHeading}><div><p className="eyebrow">YOUR DETAILS</p><h2 className="editorial" id="profile-title">Profile.</h2></div></header>{detailsError && <p className="account-notice" role="status">Your account is connected, but some profile details are temporarily unavailable.</p>}<div className={styles.profileGrid}><div><span>NAME</span><strong>{name}</strong></div><div><span>EMAIL</span><strong>{email}</strong></div><div><span>PHONE</span><strong>{phone}</strong></div></div><details className={styles.editor}><summary>EDIT NAME <span aria-hidden="true">＋</span></summary><form className={styles.form} action="/account/actions/profile" method="post"><label>First name<input name="firstName" type="text" maxLength="80" defaultValue={basic?.firstName || ''} autoComplete="given-name"/></label><label>Last name<input name="lastName" type="text" maxLength="80" defaultValue={basic?.lastName || ''} autoComplete="family-name"/></label><p className={styles.formNote}>Your sign-in email is managed by Shopify and stays tied to passwordless account access.</p><button className="solid-button" type="submit">SAVE NAME <span aria-hidden="true">→</span></button></form></details></section>;
+}
+
+function AddressFields({address}) {
+  const territory=(address?.territoryCode || 'IN').toUpperCase();
+  return <div className={styles.formGrid}><label>First name<input name="firstName" type="text" maxLength="80" defaultValue={address?.firstName || ''} autoComplete="given-name"/></label><label>Last name<input name="lastName" type="text" maxLength="80" defaultValue={address?.lastName || ''} autoComplete="family-name"/></label><label className={styles.full}>Company · optional<input name="company" type="text" maxLength="120" defaultValue={address?.company || ''} autoComplete="organization"/></label><label className={styles.full}>Address<input name="address1" type="text" maxLength="160" required defaultValue={address?.address1 || ''} autoComplete="address-line1"/></label><label className={styles.full}>Apartment / floor · optional<input name="address2" type="text" maxLength="160" defaultValue={address?.address2 || ''} autoComplete="address-line2"/></label><label>City<input name="city" type="text" maxLength="100" required defaultValue={address?.city || ''} autoComplete="address-level2"/></label><label>State code<input name="zoneCode" type="text" maxLength="10" placeholder="TN" defaultValue={address?.zoneCode || ''} autoCapitalize="characters" autoComplete="address-level1"/></label><label>PIN code<input name="zip" type="text" maxLength="20" defaultValue={address?.zip || ''} autoComplete="postal-code"/></label><label>Phone<input name="phoneNumber" type="tel" maxLength="30" defaultValue={address?.phoneNumber || ''} autoComplete="tel"/></label><input name="territoryCode" type="hidden" value={territory}/><p className={`${styles.formNote} ${styles.full}`}>Country: {address?.country || (territory==='IN'?'India':territory)}. AX currently ships across India.</p></div>;
+}
+
+function AddressBook({details,detailsError}) {
+  const addresses=details?.addresses?.nodes || [],defaultId=details?.defaultAddress?.id || '';
+  return <section className={styles.section} id="addresses" aria-labelledby="addresses-title"><header className={styles.sectionHeading}><div><p className="eyebrow">DELIVERY</p><h2 className="editorial" id="addresses-title">Saved addresses.</h2></div><span>{addresses.length ? `${addresses.length} SAVED` : ''}</span></header>{detailsError ? <div className={styles.empty}><p>Saved addresses are temporarily unavailable.</p></div> : <div className={styles.addressList}>{addresses.map(address=>{const isDefault=address.id===defaultId;return <article className={styles.address} key={address.id}><div className={styles.addressHead}><div><span className={styles.kicker}>{isDefault?'DEFAULT ADDRESS':'SAVED ADDRESS'}</span><strong>{address.name || 'Delivery address'}</strong></div>{isDefault && <span className={styles.badge}>DEFAULT</span>}</div><address>{(address.formatted || []).map((line,index)=><span key={`${line}-${index}`}>{line}</span>)}{address.phoneNumber && <span>{address.phoneNumber}</span>}</address><details className={styles.editor}><summary>EDIT ADDRESS <span aria-hidden="true">＋</span></summary><form className={styles.form} action="/account/actions/address" method="post"><input type="hidden" name="intent" value="update"/><input type="hidden" name="addressId" value={address.id}/><AddressFields address={address}/>{!isDefault && <label className={styles.check}><input type="checkbox" name="defaultAddress"/> Make this my default address</label>}<button className="solid-button" type="submit">SAVE ADDRESS <span aria-hidden="true">→</span></button></form></details><form className={styles.removeForm} action="/account/actions/address" method="post"><input type="hidden" name="intent" value="delete"/><input type="hidden" name="addressId" value={address.id}/><button className="underlined-link" type="submit">REMOVE ADDRESS</button></form></article>;})}</div>}<details className={`${styles.editor} ${styles.addAddress}`}><summary>ADD NEW ADDRESS <span aria-hidden="true">＋</span></summary><form className={styles.form} action="/account/actions/address" method="post"><input type="hidden" name="intent" value="create"/><AddressFields/><label className={styles.check}><input type="checkbox" name="defaultAddress"/> Make this my default address</label><button className="solid-button" type="submit">ADD ADDRESS <span aria-hidden="true">→</span></button></form></details></section>;
 }
 
 export default async function AccountPage({searchParams}) {
@@ -103,15 +80,15 @@ export default async function AccountPage({searchParams}) {
   if(!config.enabled) return <main id="main-content" className="account-page"><Link className="info-back" href="/">AX / ACCOUNT</Link><header className="info-heading"><p className="eyebrow">YOUR AX</p><h1 className="editorial">Make yourself at home.</h1><p>Sign-in is currently handled by Shopify while the custom AX account is being connected.</p></header><ShopifyAccountLink domain={config.domain}/></main>;
   const cookieStore=await cookies(),session=readAccountSessionToken(cookieStore.get(CUSTOMER_ACCOUNT_SESSION_COOKIE)?.value || '',config);
   if(session && sessionExpired(session)) redirect('/account/refresh?returnTo=%2Faccount');
-  let customer=null,accountError=false,orders=[],ordersError=false,delhivery={configured:false,shipments:{},error:''};
+  let customer=null,details=null,accountError=false,detailsError=false,orders=[],ordersError=false,delhivery={configured:false,shipments:{},error:''};
   if(session) {
-    try { customer=(await queryCustomerAccount(config,session,profileQuery)).data?.customer || null; } catch { accountError=true; }
+    try { customer=(await queryCustomerAccount(config,session,basicProfileQuery)).data?.customer || null; } catch { accountError=true; }
     if(customer) {
-      try { orders=(await queryCustomerAccount(config,session,ordersQuery)).data?.customer?.orders?.nodes || []; }
-      catch { ordersError=true; }
+      try { details=(await queryCustomerAccount(config,session,detailsQuery)).data?.customer || null; } catch { detailsError=true; }
+      try { orders=(await queryCustomerAccount(config,session,ordersQuery)).data?.customer?.orders?.nodes || []; } catch { ordersError=true; }
       if(orders.length) delhivery=await trackDelhiveryWaybills(collectDelhiveryWaybills(orders));
     }
   }
-  const intro=customer ? `Welcome back${customer.firstName ? `, ${customer.firstName}` : ''}. Your AX account is connected to this storefront.` : session ? 'You’re signed in with Shopify. AX is having trouble loading your account details right now.' : 'Sign in or create an account to keep your orders and account access close to the AX experience.';
-  return <main id="main-content" className="account-page"><Link className="info-back" href="/">AX / ACCOUNT</Link><header className="info-heading"><p className="eyebrow">YOUR AX</p><h1 className="editorial">Make yourself at home.</h1><p>{intro}</p></header>{status && <p className="account-notice" role="status">{statusCopy[status] || statusCopy.error}</p>}{accountError && <p className="account-notice" role="status">Shopify sign-in completed, but AX couldn’t load your account details. Refresh this page once. If it continues, sign out and try again.</p>}{customer ? <><section className="account-card" aria-label="Account actions"><p className="eyebrow">ACCOUNT</p><h2 className="editorial">Welcome{customer.firstName ? `, ${customer.firstName}` : ''}.</h2><p className="muted">Your customer account is managed securely by Shopify. Orders and shipment updates stay here in the AX storefront.</p><div className="account-actions"><Link className="solid-button" href="/products">EXPLORE AX <span aria-hidden="true">→</span></Link><form action="/account/logout" method="post"><button className="underlined-link" type="submit">SIGN OUT <span aria-hidden="true">→</span></button></form></div></section><OrderHistory orders={orders} ordersError={ordersError} delhivery={delhivery}/></> : session ? <section className="account-card" aria-label="Account status"><p className="eyebrow">SIGNED IN</p><h2 className="editorial">Your Shopify session is active.</h2><p className="muted">AX couldn’t read the account profile yet. Your sign-in itself completed.</p><div className="account-actions"><Link className="solid-button" href="/account">RETRY ACCOUNT <span aria-hidden="true">→</span></Link><form action="/account/logout" method="post"><button className="underlined-link" type="submit">SIGN OUT <span aria-hidden="true">→</span></button></form></div></section> : <a className="solid-button" href="/account/login?returnTo=%2Faccount">SIGN IN / CREATE ACCOUNT <span aria-hidden="true">→</span></a>}</main>;
+  const intro=customer ? `Welcome back${customer.firstName ? `, ${customer.firstName}` : ''}. Orders, tracking and account details now stay inside AX.` : session ? 'You’re signed in with Shopify. AX is having trouble loading your account details right now.' : 'Sign in or create an account to keep orders, tracking and account details close to the AX experience.';
+  return <main id="main-content" className={`account-page ${styles.page}`}><Link className="info-back" href="/">AX / ACCOUNT</Link><header className="info-heading"><p className="eyebrow">YOUR AX</p><h1 className="editorial">Make yourself at home.</h1><p>{intro}</p></header>{status && <p className="account-notice" role="status">{statusCopy[status] || statusCopy.error}</p>}{accountError && <p className="account-notice" role="status">Shopify sign-in completed, but AX couldn’t load your account details. Refresh this page once. If it continues, sign out and try again.</p>}{customer ? <><nav className={styles.accountNav} aria-label="Account sections"><a href="#orders">ORDERS</a><a href="#profile">PROFILE</a><a href="#addresses">ADDRESSES</a></nav><section className={styles.welcome} aria-label="Account overview"><div><p className="eyebrow">ACCOUNT</p><h2 className="editorial">Welcome{customer.firstName ? `, ${customer.firstName}` : ''}.</h2><p className="muted">Your customer account is managed securely by Shopify. AX keeps the shopping, delivery and profile experience together here.</p></div><div className={styles.welcomeMeta}><div><span>RECENT ORDERS</span><strong>{ordersError?'—':orders.length}</strong></div><div><span>SAVED ADDRESSES</span><strong>{detailsError?'—':details?.addresses?.nodes?.length || 0}</strong></div></div></section><OrderHistory orders={orders} ordersError={ordersError} delhivery={delhivery}/><ProfileSection basic={customer} details={details} detailsError={detailsError}/><AddressBook details={details} detailsError={detailsError}/><section className={styles.security}><div><p className="eyebrow">SECURITY</p><h2 className="editorial">Passwordless by Shopify.</h2><p className="muted">AX never stores your Shopify password. Sign-in uses Shopify’s verification flow and your secure AX session.</p></div><form action="/account/logout" method="post"><button className="underlined-link" type="submit">SIGN OUT <span aria-hidden="true">→</span></button></form></section></> : session ? <section className="account-card" aria-label="Account status"><p className="eyebrow">SIGNED IN</p><h2 className="editorial">Your Shopify session is active.</h2><p className="muted">AX couldn’t read the account profile yet. Your sign-in itself completed.</p><div className="account-actions"><Link className="solid-button" href="/account">RETRY ACCOUNT <span aria-hidden="true">→</span></Link><form action="/account/logout" method="post"><button className="underlined-link" type="submit">SIGN OUT <span aria-hidden="true">→</span></button></form></div></section> : <a className="solid-button" href="/account/login?returnTo=%2Faccount">SIGN IN / CREATE ACCOUNT <span aria-hidden="true">→</span></a>}</main>;
 }
