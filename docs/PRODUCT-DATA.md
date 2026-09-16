@@ -4,23 +4,23 @@ Enter actual supplier/AX-verified information. Never invent composition, measure
 
 ## A. Create/verify definitions once
 
-In Shopify **Settings → Metafields and metaobjects → Products**, add or inspect these definitions. Keep existing definitions and values; do not create duplicates. Enable Storefront API read access for each field used below. These are merchant-owned `ax` fields because your existing Shopify catalog and separate headless site share them; this is not a newly scaffolded Shopify app.
+In Shopify **Settings → Metafields and metaobjects → Products**, add or inspect these definitions. Keep existing definitions and values; do not create duplicates. Enable Storefront API read access for each field used below. Use namespace `ax_data` (Shopify may require at least three namespace characters); the key is the final part such as `product_number`. The storefront also reads legacy `ax.data` and `ax` fields.
 
 | Full namespace/key | Shopify type | Purpose / required data |
 | --- | --- | --- |
-| `ax.product_number` | Single line text | Unique stable style number, required |
-| `ax.fit` | Single line text | Intended cut: regular, relaxed, oversized, tapered etc., required |
-| `ax.fabric` | Single line text | Verified composition, e.g. 70% cotton / 30% linen, required |
-| `ax.color` | Single line text | Accurate merchandising colour; variants remain authoritative |
-| `ax.style` | Single line text | Old money, Korean fits, streetwear, formal wear etc. |
-| `ax.care` | Multi-line text | Actual care-label guidance |
-| `ax.measurement_unit` | Single line text | `cm` or `inches`, mandatory when measurements are present |
-| `ax.measurement_basis` | Single line text | `circumference` or `flat_width`; mandatory for interpreting a garment chart |
-| `ax.measurements` | JSON | Actual garment measurements for every exact Size option label |
-| `ax.size_recommendations` | JSON | Optional garment notes only, never “recommended for everyone” |
-| `ax.size_guide` | JSON | Approved body ranges for personal sizing; see section C |
+| `ax_data.product_number` | Single line text | Unique stable style number, required |
+| `ax_data.fit` | Single line text | Intended cut: regular, relaxed, oversized, tapered etc., required |
+| `ax_data.fabric` | Single line text | Verified composition, e.g. 70% cotton / 30% linen, required |
+| `ax_data.color` | Single line text | Accurate merchandising colour; variants remain authoritative |
+| `ax_data.style` | Single line text | Old money, Korean fits, streetwear, formal wear etc. |
+| `ax_data.care` | Multi-line text | Actual care-label guidance |
+| `ax_data.measurement_unit` | Single line text | `cm` or `inches`, mandatory when measurements are present |
+| `ax_data.measurement_basis` | Single line text | `circumference` or `flat_width`; mandatory for interpreting a garment chart |
+| `ax_data.measurements` | JSON | Actual garment measurements for every exact Size option label |
+| `ax_data.size_recommendations` | JSON | Optional garment notes only, never “recommended for everyone” |
+| `ax_data.size_guide` | JSON | Approved body ranges for personal sizing; see section C |
 
-The existing `ax.colour` alias is supported, but use `ax.color` consistently for new entries. Do not create a new field simply to duplicate native Shopify Size or Color options. Customer body measurements do not belong in public product metafields.
+The existing `ax_data.colour` alias is supported, but use `ax_data.color` consistently for new entries. Do not create a new field simply to duplicate native Shopify Size or Color options. Customer body measurements do not belong in public product metafields.
 
 ## B. Enter each product and its variants
 

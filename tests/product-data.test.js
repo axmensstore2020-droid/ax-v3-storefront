@@ -22,6 +22,23 @@ test('AX metafields become searchable product guidance',()=>{
  assert.equal(product.recommendedSize,'S');
 });
 
+test('Shopify minimum-length namespace ax_data is normalized',()=>{
+ const product=normalizeProductData({
+  id:'gid://shopify/Product/124',title:'Linen shirt',tags:[],
+  metafields:[
+   {namespace:'ax_data',key:'product_number',value:'AX-SHT-005'},
+   {namespace:'ax_data',key:'fit',value:'Relaxed'},
+   {namespace:'ax_data',key:'fabric',value:'70% cotton, 30% linen'},
+   {namespace:'ax_data',key:'measurement_unit',value:'cm'},
+   {namespace:'ax_data',key:'measurements',value:JSON.stringify({S:{chest:104},M:{chest:110}})}
+  ]
+ });
+ assert.equal(product.productNumber,'AX-SHT-005');
+ assert.equal(product.fit,'Relaxed');
+ assert.equal(product.fabric,'70% cotton, 30% linen');
+ assert.equal(product.sizeMeasurements.M.chest,110);
+});
+
 test('product number falls back to variant SKU and tagged fields',()=>{
  assert.equal(publicProductNumber({id:'gid://shopify/Product/123',variants:[{sku:'ax-tee-002-m'}]}),'AX-TEE-002-M');
  assert.equal(normalizeProductData({id:'gid://shopify/Product/9',tags:['AX:Product number=AX-TEE-009']}).productNumber,'AX-TEE-009');

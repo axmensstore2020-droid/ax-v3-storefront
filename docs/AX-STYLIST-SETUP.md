@@ -20,9 +20,9 @@ Not included: account-linked cross-device profiles, purchase-history access, aut
 
 ## 1. Prepare product information in Shopify
 
-Use [PRODUCT-DATA.md](PRODUCT-DATA.md). Keep native Shopify variants, prices, stock and checkout as the source of truth. Use the existing merchant-owned `ax` fields so Shopify Admin and your headless storefront can share the same data. Do not create another app-owned namespace for this existing store.
+Use [PRODUCT-DATA.md](PRODUCT-DATA.md). Keep native Shopify variants, prices, stock and checkout as the source of truth. Use the existing merchant-owned `ax_data` fields so Shopify Admin and your headless storefront can share the same data. Shopify may reject a short namespace, which is why the definitions use namespace `ax_data` and keys such as `product_number`; the storefront also reads legacy `ax.data` and `ax` values. Do not create another app-owned namespace for this existing store.
 
-Create/verify the definitions first, enter the values second, and verify the storefront can read them third. The two new fields are `ax.measurement_basis` and `ax.size_guide`. Do not use the example numbers on actual products without measuring and validating them.
+Create/verify the definitions first, enter the values second, and verify the storefront can read them third. The two newer fields are `ax_data.measurement_basis` and `ax_data.size_guide`. Do not use the example numbers on actual products without measuring and validating them.
 
 Start with 10–20 representative products, not the entire catalog at once. Include at least one shirt, T-shirt, trouser, jeans and jacket. An incomplete chart must return “ask AX”, not a fake recommendation.
 
