@@ -1,12 +1,13 @@
 const production = process.env.NODE_ENV === 'production';
+const metaPixelConfigured=/^\d{5,30}$/.test(String(process.env.META_PIXEL_ID || '').trim());
 
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${production ? '' : " 'unsafe-eval'"}`,
+  `script-src 'self' 'unsafe-inline'${production ? '' : " 'unsafe-eval'"}${metaPixelConfigured ? ' https://connect.facebook.net' : ''}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self'${production ? '' : ' ws: http: https:'}`,
+  `connect-src 'self'${metaPixelConfigured ? ' https://www.facebook.com https://connect.facebook.net' : ''}${production ? '' : ' ws: http: https:'}`,
   "media-src 'self' blob: https:",
   "object-src 'none'",
   "base-uri 'self'",
