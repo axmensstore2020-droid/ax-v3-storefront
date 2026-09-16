@@ -6,10 +6,12 @@ import CartDrawer from '../components/CartDrawer';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AXIsland from '../components/AXIsland';
+import MetaMarketing from '../components/MetaMarketing';
 import {shopifyConfigured} from '../lib/shopify';
 import {customerAccountConfigured} from '../lib/customer-account';
 import {getNavigation} from '../lib/content';
 import NavigationProvider from '../components/NavigationProvider';
+import {metaCapiConfigured,metaPixelId} from '../lib/meta';
 import {SITE_NAME,SITE_URL,jsonLd,organizationJsonLd} from '../lib/seo';
 const indexing=process.env.AX_ALLOW_INDEXING==='true';
 export const metadata = {
@@ -29,5 +31,6 @@ export default async function RootLayout({children}) {
  const navigation=await getNavigation();
  const demo=!shopifyConfigured(), domain=process.env.SHOPIFY_STORE_DOMAIN,customAccount=customerAccountConfigured();
  const accountUrl=customAccount?'/account':!demo && /^[a-z0-9-]+\.myshopify\.com$/.test(domain || '') ? 'https://'+domain+'/account' : '';
- return <html lang="en-IN"><body><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(organizationJsonLd())}}/><a className="skip-link" href="#main-content">Skip to content</a><NavigationProvider value={navigation}><CartProvider demo={demo}><StylistProvider>{demo && <div className="preview-banner">STORE PREVIEW · SAMPLE CATALOG · CHECKOUT UNAVAILABLE</div>}<Header/>{children}<Footer/><AXIsland accountUrl={accountUrl} accountEnabled={customAccount}/><CartDrawer/></StylistProvider></CartProvider></NavigationProvider></body></html>;
+ const pixelId=metaPixelId(),capiEnabled=metaCapiConfigured();
+ return <html lang="en-IN"><body><MetaMarketing pixelId={pixelId} capiEnabled={capiEnabled}/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(organizationJsonLd())}}/><a className="skip-link" href="#main-content">Skip to content</a><NavigationProvider value={navigation}><CartProvider demo={demo}><StylistProvider>{demo && <div className="preview-banner">STORE PREVIEW · SAMPLE CATALOG · CHECKOUT UNAVAILABLE</div>}<Header/>{children}<Footer/><AXIsland accountUrl={accountUrl} accountEnabled={customAccount}/><CartDrawer/></StylistProvider></CartProvider></NavigationProvider></body></html>;
 }
