@@ -1,5 +1,7 @@
 'use client';
 import {createContext,useContext,useEffect,useRef,useState} from 'react';
+import {productMarketingData} from '../lib/marketing';
+import {trackMarketingEvent} from './MetaMarketing';
 const Context=createContext(null), CART_ID='ax_shopify_cart_id', DEMO_LINES='ax_demo_bag_v2';
 function read(key){try{return localStorage.getItem(key);}catch{return null;}}
 function write(key,value){try{value===null?localStorage.removeItem(key):localStorage.setItem(key,value);}catch{}}
@@ -32,6 +34,7 @@ export function CartProvider({children,demo=false}) {
     const cartId=currentCartId.current;
     try{saveCart(await requestCart({action:cartId?'add':'create',cartId,merchandiseId,quantity:1}));}
     catch(error){if(error.code==='CART_NOT_FOUND')saveCart(await requestCart({action:'create',merchandiseId,quantity:1}));else throw error;}
+    trackMarketingEvent('AddToCart',productMarketingData(product,variant,1));
    }
    setOpen(true);
   }catch(error){setNotice(error.message);setOpen(true);}finally{locked.current=false;setBusy(false);}
