@@ -10,6 +10,7 @@ import {CONSENT_VERSION,normalizeProfile} from '../lib/stylist/validation';
 import './stylist.css';
 
 const blankProfile = {unit:'cm',chest:'',waist:'',hip:'',height:'',inseam:'',fit:'regular',styles:'',colors:'',avoid:'',usualSize:''};
+const needsCustomerFitData = fit => fit?.status === 'needs_data' && ((Array.isArray(fit.missing) && fit.missing.length > 0) || /(?:choose the unit|add your body)/i.test(fit.message || ''));
 async function prepareImage(file) {
   if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 8000000) throw new Error('Choose a JPEG, PNG or WebP photo under 8 MB.');
   const bitmap = await createImageBitmap(file);
@@ -33,7 +34,7 @@ export default function StylistPanel({request,onClose}) {
   const [messages,setMessages] = useState([]), [draft,setDraft] = useState(''), [conversation,setConversation] = useState('');
   const [photo,setPhoto] = useState(''), [busy,setBusy] = useState(false), [profileBusy,setProfileBusy] = useState(false), [photoBusy,setPhotoBusy] = useState(false);
   const [error,setError] = useState(''), [profileNotice,setProfileNotice] = useState('');
-  const abort = useRef(null), transcript = useRef(null), sending = useRef(false), mounted = useRef(true);
+  const abort = useRef(null), transcript = useRef(null), latestReply = useRef(null), lastMessageCount = useRef(0), sending = useRef(false), mounted = useRef(true);
   const quickActions = [
     {label:'White shirts',icon:'search',message:'Show me white shirts.'},
     {label:'Raw denim',icon:'explore',message:'Show me raw denim.'},
@@ -49,7 +50,18 @@ export default function StylistPanel({request,onClose}) {
     }).catch(() => {});
     return () => {mounted.current = false;controller.abort();abort.current?.abort();};
   },[]);
-  useEffect(() => {transcript.current?.scrollTo({top:transcript.current.scrollHeight,behavior:'instant'});},[messages,busy]);
+  useEffect(() => {
+    const grew = messages.length > lastMessageCount.current;
+    lastMessageCount.current = messages.length;
+    if (!grew || messages.at(-1)?.role !== 'assistant') return;
+    const frame = requestAnimationFrame(() => {
+      if (!transcript.current || !latestReply.current) return;
+      const viewport = transcript.current.getBoundingClientRect();
+      const reply = latestReply.current.getBoundingClientRect();
+      transcript.current.scrollTo({top:Math.max(0,transcript.current.scrollTop + reply.top - viewport.top),behavior:'instant'});
+    });
+    return () => cancelAnimationFrame(frame);
+  },[messages]);
   function changeProfile(key,value) {setProfile(current => ({...current,[key]:value}));setProfileNotice('Changes are not saved yet.');}
   function changeUnit(value) {
     const factor = value === 'inches' ? 1/2.54 : 2.54;
@@ -129,8 +141,8 @@ export default function StylistPanel({request,onClose}) {
           {!messages.length && status?.available && <div className="ax-quick-actions" aria-label="Quick asks">{quickActions.map(action=><button type="button" key={action.label} onClick={()=>useQuickAction(action)}><span className="ax-quick-icon"><Icon name={action.icon} size={17}/></span><span>{action.label}</span></button>)}</div>}
           {status === null && <p className="ax-status-line" role="status">Checking availability…</p>}
           {status && !status.available && <div className="ax-chat-notice"><p>AX Stylist is temporarily unavailable.</p><div className="style-links">{styles.slice(0,3).map(style=><Link key={style.key} href={style.href} onClick={onClose}>{style.label}<Icon name="arrow" size={15}/></Link>)}</div></div>}
-          {messages.map((item,i)=><article className={'ax-message ax-message-'+item.role} key={i}><span className="ax-message-role">{item.role === 'user' ? 'YOU' : 'AX'}</span><p>{item.message}</p>{item.photo && <p className="ax-small">Photo used for this reply; not saved in the chat.</p>}
-            {item.fits?.filter(fit=>fit.status === 'needs_data').map(fit=><button className="ax-fit-action" type="button" key={fit.handle} onClick={()=>setTab('fit')}><Icon name="profile" size={15}/><span>Add fit details</span><Icon name="arrow" size={14}/></button>)}
+          {messages.map((item,i)=><article ref={item.role === 'assistant' && i === messages.length-1 ? latestReply : null} className={'ax-message ax-message-'+item.role} key={i}><span className="ax-message-role">{item.role === 'user' ? 'YOU' : 'AX'}</span><p>{item.message}</p>{item.photo && <p className="ax-small">Photo used for this reply; not saved in the chat.</p>}
+            {item.fits?.filter(needsCustomerFitData).map(fit=><button className="ax-fit-action" type="button" key={fit.handle} onClick={()=>setTab('fit')}><Icon name="profile" size={15}/><span>Add fit details</span><Icon name="arrow" size={14}/></button>)}
             {item.products?.length > 0 && <div className="ax-chat-products">{item.products.map(product=><Link href={product.href} onClick={onClose} className="ax-chat-product" key={product.handle}><ProductImage src={product.image} alt={product.title} sizes="80px"/><div><span>{product.title}</span>{product.price && <strong>{!product.variantId && 'From '}{formatMoney(Number(product.price.amount),product.price.currencyCode)}</strong>}<small>{product.requiresSize ? 'Choose size' : 'View product'} →</small></div></Link>)}</div>}
             {item.links?.map(link=><Link className="ax-source-link" key={link.href} href={link.href} onClick={onClose}>{link.label} →</Link>)}
           </article>)}
