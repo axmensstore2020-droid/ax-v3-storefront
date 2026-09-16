@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {useEffect,useRef,useState} from 'react';
 import {usePathname} from 'next/navigation';
 import {MARKETING_CONSENT_COOKIE,MARKETING_DENIED,MARKETING_GRANTED} from '../lib/marketing.js';
+import './marketing.css';
 
 function readConsent(){
  if(typeof document==='undefined')return '';
