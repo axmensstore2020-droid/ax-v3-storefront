@@ -1,0 +1,105 @@
+name: Live Hostinger Smoke
+
+on:
+  push:
+    branches:
+      - 'test/live-smoke-20260917'
+
+permissions:
+  contents: read
+
+env:
+  BASE_URL: https://aqua-oyster-550932.hostingersite.com
+  PRODUCT_PATH: /products/premium-linen-button-down-shirt
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Homepage and security headers
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl --fail-with-body --silent --show-error --location --max-time 20 -D /tmp/home.headers -o /tmp/home.html -w '%{http_code}' "$BASE_URL/")
+          test "$code" = "200"
+          grep -qi '^content-security-policy:' /tmp/home.headers
+          grep -qi '^strict-transport-security:' /tmp/home.headers
+          grep -qi '^x-content-type-options: *nosniff' /tmp/home.headers
+          grep -qi '^referrer-policy:' /tmp/home.headers
+          grep -qi '^permissions-policy:' /tmp/home.headers
+          echo "homepage=200 security_headers=present"
+
+      - name: Product page
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl --fail-with-body --silent --show-error --location --max-time 20 -o /tmp/product.html -w '%{http_code}' "$BASE_URL$PRODUCT_PATH")
+          test "$code" = "200"
+          grep -qi 'Premium Linen Button-Down Shirt' /tmp/product.html
+          echo "product_page=200 product_content=present"
+
+      - name: AX Stylist availability endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl --fail-with-body --silent --show-error --max-time 20 -D /tmp/stylist.headers -o /tmp/stylist.json -w '%{http_code}' "$BASE_URL/api/stylist")
+          test "$code" = "200"
+          node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('/tmp/stylist.json','utf8')); if(typeof x.available!=='boolean'||typeof x.images!=='boolean') process.exit(1); console.log('stylist_available='+x.available+' images='+x.images)"
+          grep -qi '^cache-control:.*no-store' /tmp/stylist.headers
+
+      - name: Account route
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl --silent --show-error --location --max-time 20 -o /tmp/account.html -w '%{http_code}' "$BASE_URL/account")
+          test "$code" = "200"
+          grep -Eqi 'AX account|sign in|account' /tmp/account.html
+          echo "account_page=200"
+
+      - name: Cart rejects cross-site POST
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl --silent --show-error --max-time 20 -o /tmp/cart-cross.json -w '%{http_code}' \
+            -X POST "$BASE_URL/api/cart" \
+            -H 'Origin: https://evil.example' \
+            -H 'Sec-Fetch-Site: cross-site' \
+            -H 'Content-Type: application/json' \
+            --data '{}')
+          test "$code" = "403"
+          grep -qi 'Please use the AX store' /tmp/cart-cross.json
+          echo "cart_cross_site=blocked"
+
+      - name: Cart validates same-origin requests
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl --silent --show-error --max-time 20 -D /tmp/cart.headers -o /tmp/cart-invalid.json -w '%{http_code}' \
+            -X POST "$BASE_URL/api/cart" \
+            -H "Origin: $BASE_URL" \
+            -H 'Sec-Fetch-Site: same-origin' \
+            -H 'Content-Type: application/json' \
+            --data '{}')
+          test "$code" = "400"
+          grep -qi '^x-content-type-options: *nosniff' /tmp/cart.headers
+          grep -qi '^cache-control:.*no-store' /tmp/cart.headers
+          echo "cart_same_origin_validation=working"
+
+      - name: Cart rejects oversized body
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' >/tmp/large.json
+          import json
+          print(json.dumps({'x':'A'*9000}))
+          PY
+          code=$(curl --silent --show-error --max-time 20 -o /tmp/cart-large.json -w '%{http_code}' \
+            -X POST "$BASE_URL/api/cart" \
+            -H "Origin: $BASE_URL" \
+            -H 'Sec-Fetch-Site: same-origin' \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/large.json)
+          test "$code" = "400"
+          grep -qi 'too large' /tmp/cart-large.json
+          echo "cart_body_limit=working"
