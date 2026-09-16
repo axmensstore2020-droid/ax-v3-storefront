@@ -72,7 +72,7 @@ export default function MetaMarketing({pixelId='',capiEnabled=false}){
  if(!pixelId||!open)return null;
  const choose=value=>{writeConsent(value);setConsent(value);setOpen(false);if(value===MARKETING_GRANTED)ensurePixel(pixelId);};
  return <aside className="marketing-consent" role="dialog" aria-label="Marketing cookie choices" aria-live="polite">
-  <div><strong>Your privacy choices.</strong><p>Optional marketing cookies help AX understand which promotions lead to visits, products viewed and purchases. You can accept them or keep only essential cookies.</p><Link href="/policies#service-providers">Privacy details</Link></div>
+  <div><strong>Your privacy choices.</strong><p>Optional marketing cookies help AX understand which promotions lead to visits, products viewed and purchases. You can accept them or keep only essential cookies.</p><Link href="/policies">Privacy details</Link></div>
   <div className="marketing-consent-actions"><button type="button" className="underlined-link" onClick={()=>choose(MARKETING_DENIED)}>ONLY ESSENTIAL</button><button type="button" className="solid-button" onClick={()=>choose(MARKETING_GRANTED)}>ACCEPT MARKETING</button>{consent&&<button type="button" className="marketing-close" onClick={()=>setOpen(false)} aria-label="Close marketing preferences">Close</button>}</div>
  </aside>;
 }
