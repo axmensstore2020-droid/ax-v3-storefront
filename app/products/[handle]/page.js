@@ -4,7 +4,7 @@ import ProductPurchase from '../../../components/ProductPurchase';
 import {getProduct,getProducts} from '../../../lib/shopify';
 import ProductCard from '../../../components/ProductCard';
 import Icon from '../../../components/Icon';
-import {breadcrumbJsonLd,jsonLd,pageMetadata,productJsonLd} from '../../../lib/seo';
+import {breadcrumbJsonLd,jsonLd,pageMetadata,productGroupJsonLd} from '../../../lib/seo';
 
 export async function generateMetadata({params}) {
  const {handle}=await params,product=await getProduct(handle);
@@ -24,7 +24,7 @@ export default async function ProductPage({params,searchParams}) {
  const related=(await getProducts()).filter(p => p.handle!==handle).slice(0,4);
  const query=await searchParams, initialVariantId=typeof query?.variant==='string'?query.variant:'', chooseSize=query?.chooseSize==='1';
  const structured=[
-  productJsonLd(product),
+  productGroupJsonLd(product),
   breadcrumbJsonLd([{name:'Products',path:'/products'},{name:product.title,path:`/products/${product.handle}`}])
  ];
  return <main id="main-content">

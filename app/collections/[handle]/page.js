@@ -6,7 +6,7 @@ import {breadcrumbJsonLd,collectionJsonLd,jsonLd,pageMetadata} from '../../../li
 export async function generateMetadata({params}) {
  const {handle}=await params,collection=await getCollection(handle);
  if(!collection) return {title:'Collection'};
- const hasProducts=(collection.products || []).length>0;
+ const hasProducts=(collection.products || []).length>0,indexing=process.env.AX_ALLOW_INDEXING==='true';
  return {
   ...pageMetadata({
    title:collection.seo?.title || `${collection.title} for Men`,
@@ -14,7 +14,7 @@ export async function generateMetadata({params}) {
    path:`/collections/${collection.handle}`,
    image:collection.products?.find(product=>product.image)?.image
   }),
-  robots:{index:hasProducts,follow:true}
+  robots:{index:indexing && hasProducts,follow:indexing}
  };
 }
 
