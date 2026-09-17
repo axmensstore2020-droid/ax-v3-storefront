@@ -2,6 +2,7 @@
 import {useEffect,useRef,useState} from 'react';
 import AddToCart from './AddToCart';
 import ProductImage from './ProductImage';
+import ProductDataPanel from './ProductDataPanel';
 import {StylistButton} from './StylistProvider';
 import Icon from './Icon';
 import {findVariant} from '../lib/commerce';
@@ -29,6 +30,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
       <p className="eyebrow">{product.type || 'AX MENSWEAR'}</p><h1 className="editorial">{product.title}</h1>
       <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} onSelect={(name,value) => setSelected(current => ({...current,[name]:value}))}/>
       {children}
+      <ProductDataPanel product={product} selectedOptions={selected}/>
       <StylistButton className="underlined-link pdp-stylist" product={{title:product.title,handle:product.handle,selectedOptions:selected}}>STYLE WITH AX <Icon name="arrow"/></StylistButton>
     </div>
   </section>;
