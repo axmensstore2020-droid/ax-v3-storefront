@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {cleanDescription,collectionJsonLd,pageMetadata,productJsonLd} from '../lib/seo.js';
+import {cleanDescription,collectionJsonLd,pageMetadata,productGroupJsonLd,productJsonLd,websiteJsonLd} from '../lib/seo.js';
 
 test('SEO descriptions are plain text and bounded',()=>{
  const value=cleanDescription('<p>Premium <strong>linen</strong> shirt</p> '.repeat(20));
@@ -27,6 +27,29 @@ test('product structured data uses live variants and availability',()=>{
  assert.equal(new URL(data.url).pathname,'/products/premium-linen-shirt');
 });
 
+test('apparel variants emit ProductGroup with size, colour and measurements',()=>{
+ const data=productGroupJsonLd({
+  id:'gid://shopify/Product/10',handle:'relaxed-sweatpants',title:'Relaxed Sweatpants',description:'Relaxed everyday sweatpants.',
+  productNumberDisplay:'AX-210',type:'Sweatpants',fabric:'Cotton blend',fit:'Relaxed fit',measurementUnit:'cm',
+  sizeMeasurements:{S:{waist:68,length:100,thigh:30},M:{waist:72,length:102,thigh:31}},
+  options:[{name:'Size',values:['S','M']},{name:'Colour',values:['Black','Green']}],
+  images:[{url:'https://cdn.example.com/pants.jpg'}],
+  variants:[
+   {id:'gid://shopify/ProductVariant/11',sku:'AX-210-S-BLK',availableForSale:true,price:{amount:'1000.00',currencyCode:'INR'},selectedOptions:[{name:'Size',value:'S'},{name:'Colour',value:'Black'}]},
+   {id:'gid://shopify/ProductVariant/12',sku:'AX-210-M-GRN',availableForSale:false,price:{amount:'1000.00',currencyCode:'INR'},selectedOptions:[{name:'Size',value:'M'},{name:'Colour',value:'Green'}]}
+  ]
+ });
+ assert.equal(data['@type'],'ProductGroup');
+ assert.equal(data.productGroupID,'AX-210');
+ assert.deepEqual(data.variesBy,['https://schema.org/size','https://schema.org/color']);
+ assert.equal(data.hasVariant.length,2);
+ assert.equal(data.hasVariant[0].size,'S');
+ assert.equal(data.hasVariant[0].color,'Black');
+ assert.equal(data.hasVariant[0].offers.availability,'https://schema.org/InStock');
+ assert.equal(new URL(data.hasVariant[0].url).searchParams.get('variant'),'11');
+ assert.ok(data.hasVariant[0].additionalProperty.some(property=>property.name==='Waist' && property.value==='68 cm'));
+});
+
 test('collection structured data links products in order',()=>{
  const data=collectionJsonLd({handle:'linen',title:'Linen',products:[{handle:'shirt-one',title:'Shirt One'},{handle:'shirt-two',title:'Shirt Two'}]});
  assert.equal(data['@type'],'ItemList');
@@ -39,4 +62,11 @@ test('page metadata exposes one canonical URL',()=>{
  const metadata=pageMetadata({title:'Linen Shirts',description:'Shop linen shirts.',path:'/collections/linen'});
  assert.equal(metadata.alternates.canonical,'/collections/linen');
  assert.equal(metadata.openGraph.url,'/collections/linen');
+});
+
+test('website entity links back to the AX organization',()=>{
+ const data=websiteJsonLd();
+ assert.equal(data['@type'],'WebSite');
+ assert.match(data.publisher['@id'],/#organization$/);
+ assert.equal(data.inLanguage,'en-IN');
 });
