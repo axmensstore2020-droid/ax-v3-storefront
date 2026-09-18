@@ -3,7 +3,7 @@ import {useState} from 'react';
 import {formatMoney} from '../lib/catalog';
 import {trackStoreEvent} from '../lib/store-analytics';
 
-export default function ShippingEstimator({weightGrams,productHandle='',className=''}) {
+export default function ShippingEstimator({weightGrams,productHandle='',className='',subtotal=0}) {
   const [pincode,setPincode]=useState(''),[result,setResult]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
   const usable=Number.isFinite(Number(weightGrams)) && Number(weightGrams)>0;
   async function check(event) {
@@ -11,7 +11,7 @@ export default function ShippingEstimator({weightGrams,productHandle='',classNam
     if(!usable){setError('Delivery weight is unavailable for this item.');return;}
     setBusy(true);setError('');setResult(null);
     try{
-      const response=await fetch('/api/shipping/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pincode,weightGrams:Number(weightGrams)})});
+      const response=await fetch('/api/shipping/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pincode,weightGrams:Number(weightGrams),subtotal:Number(subtotal)||0})});
       const data=await response.json();
       if(!response.ok || !data.ok) throw new Error(data.error || 'Delivery check is temporarily unavailable.');
       setResult(data);
