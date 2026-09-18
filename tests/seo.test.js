@@ -70,3 +70,10 @@ test('website entity links back to the AX organization',()=>{
  assert.match(data.publisher['@id'],/#organization$/);
  assert.equal(data.inLanguage,'en-IN');
 });
+
+test('aggregate review schema appears only with genuine rating and count data',()=>{
+ const rated=productJsonLd({handle:'rated-shirt',title:'Rated Shirt',reviewRating:4.7,reviewCount:18,price:999,currency:'INR',availableForSale:true});
+ assert.deepEqual(rated.aggregateRating,{'@type':'AggregateRating',ratingValue:'4.7',reviewCount:'18',bestRating:'5',worstRating:'1'});
+ const unrated=productJsonLd({handle:'new-shirt',title:'New Shirt',price:999,currency:'INR',availableForSale:true});
+ assert.equal('aggregateRating' in unrated,false);
+});
