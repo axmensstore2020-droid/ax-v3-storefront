@@ -15,6 +15,9 @@ export default function ProductDataPanel({product,selectedOptions={}}) {
         {product.fabric && <div><dt>Fabric</dt><dd>{product.fabric}</dd></div>}
         {product.color && <div><dt>Colour</dt><dd>{product.color}</dd></div>}
         {product.style && <div><dt>Style</dt><dd>{product.style}</dd></div>}
+        {product.fabricFeel && <div><dt>Fabric feel</dt><dd>{product.fabricFeel}</dd></div>}
+        {product.modelHeight && <div><dt>Model height</dt><dd>{product.modelHeight}</dd></div>}
+        {product.modelSize && <div><dt>Model wears</dt><dd>{product.modelSize}</dd></div>}
       </dl>
       {(hasNotes || hasMeasurements || product.fit) && <MeasurementFit product={product} selectedOptions={selectedOptions}/>} 
       {product.care && <details className="care-details"><summary>Care</summary><p>{product.care}</p></details>}
