@@ -39,12 +39,34 @@ export function CartProvider({children,demo=false}) {
    setOpen(true);
   }catch(error){setNotice(error.message);setOpen(true);}finally{locked.current=false;setBusy(false);}
  }
+ async function addItems(items=[]){
+  if(locked.current || !Array.isArray(items) || !items.length)return;
+  const safe=items.filter(item=>item?.merchandiseId && item?.variant && item?.product).slice(0,10);
+  if(!safe.length)return;
+  locked.current=true;setBusy(true);setNotice('');
+  try{
+   if(demo){
+    let lines=[...demoRef.current];
+    for(const item of safe){
+      const key=item.merchandiseId||item.product.handle,found=lines.find(line=>line.key===key);
+      lines=found?lines.map(line=>line.key===key?{...line,quantity:Math.min(99,line.quantity+1)}:line):[...lines,{key,product:item.product,variant:item.variant,quantity:1}];
+    }
+    saveDemo(lines);
+   }else{
+    const cartId=currentCartId.current,lines=safe.map(item=>({merchandiseId:item.merchandiseId,quantity:1}));
+    try{saveCart(await requestCart({action:cartId?'addMany':'createMany',cartId,lines}));}
+    catch(error){if(error.code==='CART_NOT_FOUND')saveCart(await requestCart({action:'createMany',lines}));else throw error;}
+    for(const item of safe) trackMarketingEvent('AddToCart',productMarketingData(item.product,item.variant,1));
+   }
+   setOpen(true);
+  }catch(error){setNotice(error.message);setOpen(true);}finally{locked.current=false;setBusy(false);}
+ }
  async function updateItem(id,quantity){
   if(locked.current)return;locked.current=true;setBusy(true);setNotice('');
   try{if(demo)saveDemo(demoRef.current.map(line => line.key===id?{...line,quantity}:line).filter(line => line.quantity>0));else saveCart(await requestCart({action:quantity===0?'remove':'update',cartId:currentCartId.current,lineId:id,quantity}));}
   catch(error){setNotice(error.message);}finally{locked.current=false;setBusy(false);}
  }
  const count=demo?demoLines.reduce((sum,line)=>sum+line.quantity,0):(cart?.totalQuantity||0);
- return <Context.Provider value={{cart,demoLines,demo,count,open,setOpen,busy,notice,addItem,updateItem}}>{children}</Context.Provider>;
+ return <Context.Provider value={{cart,demoLines,demo,count,open,setOpen,busy,notice,addItem,addItems,updateItem}}>{children}</Context.Provider>;
 }
 export const useCart=()=>useContext(Context);
