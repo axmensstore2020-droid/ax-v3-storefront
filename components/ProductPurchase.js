@@ -12,6 +12,7 @@ import {trackMarketingEvent} from './MetaMarketing';
 import {trackStoreEvent} from '../lib/store-analytics';
 import {variantWeightGrams} from '../lib/weight';
 import ShippingEstimator from './ShippingEstimator';
+import ProductProof from './ProductProof';
 
 const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
 
@@ -37,6 +38,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
       <ShippingEstimator weightGrams={variantWeightGrams(variant)} productHandle={product.handle}/>
       {children}
       <ProductDataPanel product={product} selectedOptions={selected}/>
+      <ProductProof product={product}/>
       <StylistButton className="underlined-link pdp-stylist" product={{title:product.title,handle:product.handle,selectedOptions:selected}}>STYLE WITH AX <Icon name="arrow"/></StylistButton>
     </div>
   </section>;
