@@ -44,4 +44,10 @@ jobs:
             transferSize:a['total-byte-weight']?.displayValue
           };
           console.log('AX_LIGHTHOUSE_RESULT '+JSON.stringify(out));
+          const findings=Object.entries(a)
+            .filter(([,v])=>v && v.score!==null && v.score<1 && (v.details?.overallSavingsMs>0 || v.details?.overallSavingsBytes>0 || ['largest-contentful-paint-element','render-blocking-resources','unused-javascript','unused-css-rules','modern-image-formats','uses-responsive-images','offscreen-images','uses-long-cache-ttl','network-requests','mainthread-work-breakdown'].includes(v.id)))
+            .map(([id,v])=>({id,title:v.title,score:v.score,displayValue:v.displayValue,savingsMs:v.details?.overallSavingsMs||0,savingsBytes:v.details?.overallSavingsBytes||0}))
+            .sort((x,y)=>(y.savingsMs-x.savingsMs)||(y.savingsBytes-x.savingsBytes))
+            .slice(0,15);
+          console.log('AX_LIGHTHOUSE_FINDINGS '+JSON.stringify(findings));
           NODE
