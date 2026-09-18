@@ -9,6 +9,9 @@ import {findVariant} from '../lib/commerce';
 import {productMarketingData} from '../lib/marketing';
 import {initialSelection,productOptions,selectionImage} from '../lib/product-variants';
 import {trackMarketingEvent} from './MetaMarketing';
+import {trackStoreEvent} from '../lib/store-analytics';
+import {variantWeightGrams} from '../lib/weight';
+import ShippingEstimator from './ShippingEstimator';
 
 const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
 
@@ -30,7 +33,8 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
     </div>
     <div className="pdp-info">
       <p className="eyebrow">{product.type || 'AX MENSWEAR'}</p><h1 className="editorial">{product.title}</h1>
-      <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} onSelect={(name,value) => setSelected(current => ({...current,[name]:value}))}/>
+      <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} onSelect={(name,value) => {setSelected(current => ({...current,[name]:value}));trackStoreEvent('select_variant',{productHandle:product.handle,metadata:{option:name,value}});}}/>
+      <ShippingEstimator weightGrams={variantWeightGrams(variant)} productHandle={product.handle}/>
       {children}
       <ProductDataPanel product={product} selectedOptions={selected}/>
       <StylistButton className="underlined-link pdp-stylist" product={{title:product.title,handle:product.handle,selectedOptions:selected}}>STYLE WITH AX <Icon name="arrow"/></StylistButton>
