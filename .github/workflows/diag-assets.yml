@@ -1,0 +1,46 @@
+name: Diagnose live assets
+
+on:
+  push:
+    branches: [diag/live-products]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check live products page and Next assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://aqua-oyster-550932.hostingersite.com/products"
+          curl -sS -L -D headers.txt -o page.html "$URL"
+          echo "PAGE_STATUS $(awk 'toupper($1) ~ /^HTTP/ {code=$2} END {print code}' headers.txt)"
+          echo "PAGE_SIZE $(wc -c < page.html)"
+          echo "HAS_LOAD_ERROR $(grep -Eio "couldn.?t load the collection|a moment, please" page.html | head -1 || true)"
+          echo "STYLESHEETS"
+          grep -Eo 'href="[^"]+\.css[^"]*"' page.html | sed 's/^href="//;s/"$//' | head -20 > css.txt || true
+          cat css.txt
+          while IFS= read -r asset; do
+            [ -z "$asset" ] && continue
+            case "$asset" in
+              http*) full="$asset" ;;
+              *) full="https://aqua-oyster-550932.hostingersite.com$asset" ;;
+            esac
+            code=$(curl -sS -L -o /dev/null -w '%{http_code}' "$full" || true)
+            echo "CSS_STATUS $code $asset"
+          done < css.txt
+          echo "NEXT_SCRIPTS"
+          grep -Eo 'src="[^"]+/_next/static/[^"]+\.js[^"]*"' page.html | sed 's/^src="//;s/"$//' | head -12 > js.txt || true
+          while IFS= read -r asset; do
+            [ -z "$asset" ] && continue
+            case "$asset" in
+              http*) full="$asset" ;;
+              *) full="https://aqua-oyster-550932.hostingersite.com$asset" ;;
+            esac
+            code=$(curl -sS -L -o /dev/null -w '%{http_code}' "$full" || true)
+            echo "JS_STATUS $code $asset"
+          done < js.txt
