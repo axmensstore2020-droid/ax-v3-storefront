@@ -1,5 +1,5 @@
 import {NextResponse} from 'next/server';
-import {checkDelhiveryPincode,quoteDelhiveryRate} from '../../../../lib/delhivery.js';
+import {checkDelhiveryPincode,configuredFreeShippingThreshold,quoteDelhiveryRate} from '../../../../lib/delhivery.js';
 import {normalizePincode} from '../../../../lib/delhivery.js';
 import {readLimitedJson,reserveShippingBurst,sameOriginRequest,SHIPPING_GUARD_COOKIE} from '../../../../lib/request-security.js';
 
@@ -42,8 +42,9 @@ export async function POST(request) {
   ]);
   const fee=Number(process.env.AX_SHIPPING_ORDER_FEE ?? 3);
   const safeFee=Number.isFinite(fee)&&fee>=0&&fee<=100?Math.round(fee*100)/100:3;
+  const threshold=configuredFreeShippingThreshold(),subtotal=Number(body?.subtotal || 0),freeStandard=threshold>0&&Number.isFinite(subtotal)&&subtotal>=threshold;
   const rates=[];
-  if(surface.amount!=null) rates.push({code:'standard',label:'Standard',amount:Math.round((surface.amount+safeFee)*100)/100,currency:'INR'});
+  if(surface.amount!=null) rates.push({code:'standard',label:freeStandard?'Free Standard':'Standard',amount:freeStandard?0:Math.round((surface.amount+safeFee)*100)/100,currency:'INR'});
   if(express.amount!=null) rates.push({code:'express',label:'Express',amount:Math.round((express.amount+safeFee)*100)/100,currency:'INR'});
   if(!rates.length) return json({ok:false,error:surface.error || express.error || 'Delivery rates are temporarily unavailable.'},502,guard);
   return json({ok:true,serviceable:true,pincode,rates},200,guard);
