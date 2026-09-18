@@ -5,7 +5,7 @@ create table if not exists public.ax_store_events (
   visitor_hash text not null check (visitor_hash ~ '^[a-f0-9]{64}$'),
   event_name text not null check (event_name in (
     'search','filter','select_variant','size_guide','shipping_quote',
-    'recommendation_click','add_look','begin_checkout'
+    'recommendation_click','add_look','begin_checkout','web_vital'
   )),
   path text not null default '' check (octet_length(path) <= 512),
   product_handle text not null default '' check (octet_length(product_handle) <= 160),
