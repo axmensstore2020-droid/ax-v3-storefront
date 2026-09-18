@@ -1,0 +1,47 @@
+name: Live Performance Audit
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/live-performance.yml'
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'next.config.js'
+      - 'package*.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Audit live AX storefront
+        shell: bash
+        run: |
+          npx --yes lighthouse@12.8.2 "https://aqua-oyster-550932.hostingersite.com/" \
+            --quiet \
+            --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+            --only-categories=performance \
+            --output=json \
+            --output-path=lighthouse.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('lighthouse.json','utf8'));
+          const a=r.audits;
+          const out={
+            performance:Math.round((r.categories.performance.score||0)*100),
+            fcp:a['first-contentful-paint']?.displayValue,
+            lcp:a['largest-contentful-paint']?.displayValue,
+            tbt:a['total-blocking-time']?.displayValue,
+            cls:a['cumulative-layout-shift']?.displayValue,
+            speedIndex:a['speed-index']?.displayValue,
+            tti:a['interactive']?.displayValue,
+            serverResponse:a['server-response-time']?.displayValue,
+            transferSize:a['total-byte-weight']?.displayValue
+          };
+          console.log('AX_LIGHTHOUSE_RESULT '+JSON.stringify(out));
+          NODE
