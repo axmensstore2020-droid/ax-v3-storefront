@@ -10,6 +10,8 @@ import {productMarketingData} from '../lib/marketing';
 import {initialSelection,productOptions,selectionImage} from '../lib/product-variants';
 import {trackMarketingEvent} from './MetaMarketing';
 
+const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
+
 export default function ProductPurchase({product,initialVariantId,chooseSize=false,children}) {
   const [selected,setSelected] = useState(() => initialSelection(product,initialVariantId,chooseSize));
   const galleryRef = useRef(null), trackedView = useRef('');
@@ -24,7 +26,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
   },[product,variant]);
   return <section className="pdp">
     <div ref={galleryRef} className={`pdp-gallery${gallery.length===1?' single-image':''}`} aria-label="Product photos">
-      {gallery.map((image,index) => <div className="pdp-image" key={image.url}><ProductImage src={image.url} alt={image.altText || product.title+', view '+(index+1)} sizes="(max-width:700px) 100vw,56vw" eager={index===0}/></div>)}
+      {gallery.map((image,index) => <div className="pdp-image" key={image.url}><ProductImage src={image.url} alt={image.altText || product.title+', view '+(index+1)} sizes="(max-width:700px) 94vw,50vw" widths={PDP_WIDTHS} fallbackWidth={index===0?800:720} eager={index===0}/></div>)}
     </div>
     <div className="pdp-info">
       <p className="eyebrow">{product.type || 'AX MENSWEAR'}</p><h1 className="editorial">{product.title}</h1>

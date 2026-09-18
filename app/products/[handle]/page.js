@@ -1,10 +1,14 @@
 import Link from 'next/link';
+import {preload} from 'react-dom';
 import {notFound} from 'next/navigation';
 import ProductPurchase from '../../../components/ProductPurchase';
 import {getProduct,getProducts} from '../../../lib/shopify';
 import ProductCard from '../../../components/ProductCard';
 import Icon from '../../../components/Icon';
 import {breadcrumbJsonLd,jsonLd,pageMetadata,productGroupJsonLd} from '../../../lib/seo';
+import {findVariant} from '../../../lib/commerce';
+import {initialSelection,selectionImage} from '../../../lib/product-variants';
+import {imageSrcSet,imageUrl} from '../../../components/ProductImage';
 
 export async function generateMetadata({params}) {
  const {handle}=await params,product=await getProduct(handle);
@@ -21,8 +25,10 @@ export async function generateMetadata({params}) {
 export default async function ProductPage({params,searchParams}) {
  const {handle}=await params, product=await getProduct(handle);
  if(!product) notFound();
- const related=(await getProducts()).filter(p => p.handle!==handle).slice(0,4);
  const query=await searchParams, initialVariantId=typeof query?.variant==='string'?query.variant:'', chooseSize=query?.chooseSize==='1';
+ const selected=initialSelection(product,initialVariantId,chooseSize),variant=findVariant(product.variants || [],selected),primary=selectionImage(product,selected,variant);
+ if(primary?.url) preload(imageUrl(primary.url,800),{as:'image',fetchPriority:'high',imageSrcSet:imageSrcSet(primary.url,[320,480,600,720,800,960,1100,1200]),imageSizes:'(max-width:700px) 94vw,50vw'});
+ const related=(await getProducts()).filter(p => p.handle!==handle).slice(0,4);
  const structured=[
   productGroupJsonLd(product),
   breadcrumbJsonLd([{name:'Products',path:'/products'},{name:product.title,path:`/products/${product.handle}`}])
