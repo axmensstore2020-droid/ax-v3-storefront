@@ -1,6 +1,8 @@
 name: Live Performance Audit
 
 on:
+  push:
+    branches: [main]
   pull_request:
     paths:
       - '.github/workflows/live-performance.yml'
@@ -28,6 +30,10 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://aqua-oyster-550932.hostingersite.com"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "Waiting for the Hostinger deployment to update..."
+            sleep 90
+          fi
           audit_page() {
             label="$1"
             path="$2"
