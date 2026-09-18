@@ -5,7 +5,7 @@ AX exposes two customer-facing domestic methods at Shopify checkout:
 - **Standard Delivery** → Delhivery Surface (`md=S`)
 - **Express Delivery** → Delhivery Express (`md=E`)
 
-The callback is server-side. The Delhivery token is never sent to the browser. Checkout rates come from Delhivery's production invoice-charge API for the actual destination pincode and Shopify cart weight, then AX adds the configured per-order operational fee. The current default is **₹2** for the Out-for-Delivery OTP WhatsApp communication cost.
+The callback is server-side. The Delhivery token is never sent to the browser. Checkout rates come from Delhivery's production invoice-charge API for the actual destination pincode and Shopify cart weight, then AX adds the configured per-order operational fee. The current default is **₹3** for Delhivery WhatsApp communication: ₹1 Shipment Picked Up + ₹2 Out for Delivery with OTP.
 
 ## Inputs
 
@@ -25,7 +25,7 @@ Set these privately in Hostinger. Never commit the real values.
 ```text
 DELHIVERY_API_TOKEN=<existing production token>
 DELHIVERY_ORIGIN_PIN=641011
-AX_SHIPPING_ORDER_FEE=2
+AX_SHIPPING_ORDER_FEE=3
 AX_SHIPPING_CALLBACK_SECRET=<random 32+ character secret>
 ```
 
@@ -39,7 +39,7 @@ The shared key is required because Shopify carrier callbacks do not use the stor
 
 ## Verification baseline
 
-These are the Delhivery One calculator totals confirmed on 18 September 2026. They are **carrier totals before AX's ₹2 operational fee** and are useful for validating the API integration.
+These are the Delhivery One calculator totals confirmed on 18 September 2026. They are **carrier totals before AX's ₹3 operational fee** and are useful for validating the API integration.
 
 | Destination | Pincode | Weight | Surface | Express |
 | --- | ---: | ---: | ---: | ---: |
@@ -55,7 +55,7 @@ These are the Delhivery One calculator totals confirmed on 18 September 2026. Th
 | Chennai | 600001 | 1 kg | ₹81.98 | ₹84.34 |
 | Mumbai | 400001 | 1 kg | ₹132.20 | ₹178.68 |
 
-For example, if the API returns the confirmed Mumbai 500 g totals, checkout should show **₹70.52 Standard** and **₹96.14 Express** after the ₹2 AX fee.
+For example, if the API returns the confirmed Mumbai 500 g totals, checkout should show **₹71.52 Standard** and **₹97.14 Express** after the ₹3 AX fee.
 
 Do not hard-code these prices into checkout. Delhivery's API remains the source of truth because diesel, peak and other carrier charges can change.
 

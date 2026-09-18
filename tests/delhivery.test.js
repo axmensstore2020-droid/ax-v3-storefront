@@ -104,7 +104,7 @@ test('checkout returns Standard and Express from live Delhivery totals plus the 
     env:{
       DELHIVERY_API_TOKEN:'private-token',
       DELHIVERY_ORIGIN_PIN:'641011',
-      AX_SHIPPING_ORDER_FEE:'2'
+      AX_SHIPPING_ORDER_FEE:'3'
     },
     fetchImpl:async url=>{
       const parsed=new URL(url);
@@ -121,14 +121,14 @@ test('checkout returns Standard and Express from live Delhivery totals plus the 
     {
       service_name:'Standard Delivery',
       service_code:'AX_DELHIVERY_STANDARD',
-      total_price:'7052',
+      total_price:'7152',
       description:'Delhivery Surface',
       currency:'INR'
     },
     {
       service_name:'Express Delivery',
       service_code:'AX_DELHIVERY_EXPRESS',
-      total_price:'9614',
+      total_price:'9714',
       description:'Delhivery Express',
       currency:'INR'
     }
