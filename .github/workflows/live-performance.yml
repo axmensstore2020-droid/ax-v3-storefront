@@ -92,3 +92,5 @@ jobs:
           audit_page home "/"
           audit_page products "/products"
           audit_page product-detail "/products/khorasan-graphic-sleeveless-cropped-tee"
+
+# Diagnostic trigger: verify current live storefront assets
