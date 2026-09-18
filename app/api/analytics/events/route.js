@@ -2,7 +2,7 @@ import {createHmac,randomUUID} from 'node:crypto';
 import {NextResponse} from 'next/server';
 import {MARKETING_CONSENT_COOKIE,MARKETING_GRANTED} from '../../../../lib/marketing.js';
 import {createDatabase,databaseConfigured} from '../../../../lib/stylist/database.js';
-import {META_GUARD_COOKIE,readLimitedJson,reserveMetaBurst,sameOriginRequest} from '../../../../lib/request-security.js';
+import {ANALYTICS_GUARD_COOKIE,readLimitedJson,reserveAnalyticsBurst,sameOriginRequest} from '../../../../lib/request-security.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -39,8 +39,8 @@ export async function POST(request){
   if(cookieValue(request,MARKETING_CONSENT_COOKIE)!==MARKETING_GRANTED) return json({ok:false,error:'Analytics consent is required.'},403);
   const secret=String(process.env.AX_ANALYTICS_SECRET || process.env.AX_STYLIST_SECRET || '');
   if(!databaseConfigured() || secret.length<32) return json({ok:false,error:'Analytics is not configured.'},503);
-  const burst=reserveMetaBurst(request,{limit:100});
-  const headers=burst.setCookie?{'Set-Cookie':`${META_GUARD_COOKIE}=${burst.token}; Path=/api; Max-Age=3600; HttpOnly; SameSite=Strict${process.env.NODE_ENV==='production'?'; Secure':''}`}:{};
+  const burst=reserveAnalyticsBurst(request,{limit:100});
+  const headers=burst.setCookie?{'Set-Cookie':`${ANALYTICS_GUARD_COOKIE}=${burst.token}; Path=/api/analytics; Max-Age=3600; HttpOnly; SameSite=Strict${process.env.NODE_ENV==='production'?'; Secure':''}`}:{};
   if(!burst.allowed) return json({ok:false,error:'Too many requests.'},429,{...headers,'Retry-After':String(burst.retryAfter)});
   try{
     const body=await readLimitedJson(request,4096);
