@@ -38,12 +38,25 @@ jobs:
             label="$1"
             path="$2"
             output="lighthouse-${label}.json"
-            npx --yes lighthouse@12.8.2 "${BASE}${path}" \
-              --quiet \
-              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
-              --only-categories=performance \
-              --output=json \
-              --output-path="${output}"
+            attempt=1
+            while true; do
+              rm -f "${output}"
+              if npx --yes lighthouse@12.8.2 "${BASE}${path}" \
+                --quiet \
+                --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+                --only-categories=performance \
+                --output=json \
+                --output-path="${output}"; then
+                break
+              fi
+              if [ "${attempt}" -ge 2 ]; then
+                echo "Lighthouse failed twice for ${label}."
+                return 1
+              fi
+              attempt=$((attempt+1))
+              echo "Retrying Lighthouse for ${label}..."
+              sleep 5
+            done
             node - "${label}" "${output}" <<'NODE'
           const fs=require('fs');
           const label=process.argv[2],file=process.argv[3];
