@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-const {normalizeDelhiveryResponse,normalizeWaybill,trackDelhiveryWaybills}=await import('../lib/delhivery.js');
+const {cartWeightGrams,getDelhiveryCheckoutRates,normalizeDelhiveryResponse,normalizePincode,normalizeShippingAmount,normalizeWaybill,quoteDelhiveryRate,trackDelhiveryWaybills}=await import('../lib/delhivery.js');
 
 const payload={ShipmentData:[{Shipment:{
   AWB:'1234567890123',
@@ -52,4 +52,118 @@ test('missing Delhivery token disables enrichment without making a network reque
   assert.equal(called,false);
   assert.equal(result.configured,false);
   assert.deepEqual(result.shipments,{});
+});
+
+
+test('shipping inputs use six digit pincodes and packed variant weights',()=>{
+  assert.equal(normalizePincode(' 400001 '),'400001');
+  assert.equal(normalizePincode('40001'),'');
+  assert.equal(cartWeightGrams([
+    {grams:350,quantity:1,requires_shipping:true},
+    {grams:650,quantity:2,requires_shipping:true},
+    {grams:0,quantity:1,requires_shipping:false}
+  ]),1650);
+  assert.equal(cartWeightGrams([{grams:0,quantity:1,requires_shipping:true}]),null);
+  assert.equal(normalizeShippingAmount([{total_amount:'68.52'}]),68.52);
+});
+
+test('Delhivery quote uses production cost endpoint and prepaid shipment inputs',async()=>{
+  let call=null;
+  const result=await quoteDelhiveryRate({
+    originPincode:'641011',
+    destinationPincode:'400001',
+    weightGrams:1000,
+    mode:'E'
+  },{
+    env:{DELHIVERY_API_TOKEN:'private-token'},
+    fetchImpl:async(url,init)=>{
+      call={url:new URL(url),init};
+      return Response.json([{total_amount:178.68}]);
+    }
+  });
+  assert.equal(result.amount,178.68);
+  assert.equal(call.url.origin,'https://track.delhivery.com');
+  assert.equal(call.url.pathname,'/api/kinko/v1/invoice/charges/.json');
+  assert.equal(call.url.searchParams.get('md'),'E');
+  assert.equal(call.url.searchParams.get('cgm'),'1000');
+  assert.equal(call.url.searchParams.get('o_pin'),'641011');
+  assert.equal(call.url.searchParams.get('d_pin'),'400001');
+  assert.equal(call.url.searchParams.get('ss'),'Delivered');
+  assert.equal(call.url.searchParams.get('pt'),'Pre-paid');
+  assert.equal(call.init.headers.Authorization,'Token private-token');
+});
+
+test('checkout returns Standard and Express from live Delhivery totals plus the configured order fee',async()=>{
+  const calls=[];
+  const result=await getDelhiveryCheckoutRates({
+    rate:{
+      destination:{country:'IN',postal_code:'400001'},
+      items:[{grams:500,quantity:1,requires_shipping:true}]
+    }
+  },{
+    env:{
+      DELHIVERY_API_TOKEN:'private-token',
+      DELHIVERY_ORIGIN_PIN:'641011',
+      AX_SHIPPING_ORDER_FEE:'2'
+    },
+    fetchImpl:async url=>{
+      const parsed=new URL(url);
+      calls.push(parsed);
+      if(parsed.pathname==='/c/api/pin-codes/json/') {
+        return Response.json({delivery_codes:[{postal_code:{pin:400001,pre_paid:'Y'}}]});
+      }
+      const mode=parsed.searchParams.get('md');
+      return Response.json([{total_amount:mode==='S'?68.52:94.14}]);
+    }
+  });
+  assert.equal(result.error,'');
+  assert.deepEqual(result.rates,[
+    {
+      service_name:'Standard Delivery',
+      service_code:'AX_DELHIVERY_STANDARD',
+      total_price:'7052',
+      description:'Delhivery Surface',
+      currency:'INR'
+    },
+    {
+      service_name:'Express Delivery',
+      service_code:'AX_DELHIVERY_EXPRESS',
+      total_price:'9614',
+      description:'Delhivery Express',
+      currency:'INR'
+    }
+  ]);
+  assert.equal(calls.length,3);
+});
+
+test('non-serviceable prepaid pincode returns no checkout rates',async()=>{
+  let calls=0;
+  const result=await getDelhiveryCheckoutRates({
+    rate:{
+      destination:{country:'IN',postal_code:'744101'},
+      items:[{grams:500,quantity:1,requires_shipping:true}]
+    }
+  },{
+    env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011'},
+    fetchImpl:async()=>{calls+=1;return Response.json({delivery_codes:[{postal_code:{pin:744101,pre_paid:'N'}}]});}
+  });
+  assert.equal(result.error,'');
+  assert.deepEqual(result.rates,[]);
+  assert.equal(calls,1);
+});
+
+test('missing packed product weight fails closed before calling Delhivery',async()=>{
+  let called=false;
+  const result=await getDelhiveryCheckoutRates({
+    rate:{
+      destination:{country:'IN',postal_code:'600001'},
+      items:[{grams:0,quantity:1,requires_shipping:true}]
+    }
+  },{
+    env:{DELHIVERY_API_TOKEN:'private-token'},
+    fetchImpl:async()=>{called=true;throw new Error('should not run');}
+  });
+  assert.equal(called,false);
+  assert.match(result.error,/weight/i);
+  assert.deepEqual(result.rates,[]);
 });
