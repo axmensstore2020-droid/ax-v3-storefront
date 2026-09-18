@@ -12,8 +12,8 @@ function LookItem({product,selection,onChange}){
   const options=visibleOptions(productOptions(product)),variant=findVariant(product.variants||[],selection);
   const image=variant?.image?.url || product.image;
   return <article className="look-item">
-    <Link href={variantHref(product.handle,variant?.id)} className="look-image"><ProductImage src={image} alt={product.title} sizes="(max-width:700px) 42vw,16vw"/></Link>
-    <div className="look-copy"><Link href={`/products/${product.handle}`}>{product.title}</Link><p>{formatMoney(Number(variant?.price?.amount||product.price),variant?.price?.currencyCode||product.currency)}</p>
+    <Link href={variantHref(product.handle,variant?.id)} className="look-image" onClick={()=>trackStoreEvent('recommendation_click',{productHandle:product.handle,metadata:{surface:'complete-look'}})}><ProductImage src={image} alt={product.title} sizes="(max-width:700px) 42vw,16vw"/></Link>
+    <div className="look-copy"><Link href={`/products/${product.handle}`} onClick={()=>trackStoreEvent('recommendation_click',{productHandle:product.handle,metadata:{surface:'complete-look'}})}>{product.title}</Link><p>{formatMoney(Number(variant?.price?.amount||product.price),variant?.price?.currencyCode||product.currency)}</p>
       {options.map(option=><label key={option.name}><span>{option.name}</span><select value={selection[option.name]||''} onChange={e=>onChange(option.name,e.target.value)}><option value="">Choose</option>{option.values.map(value=><option value={value} key={value}>{value}</option>)}</select></label>)}
     </div>
   </article>;
