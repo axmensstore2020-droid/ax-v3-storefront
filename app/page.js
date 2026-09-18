@@ -3,7 +3,7 @@ import Link from 'next/link';
 import ProductImage from '../components/ProductImage';
 import Icon from '../components/Icon';
 import {StylistButton} from '../components/StylistProvider';
-import {getProducts} from '../lib/shopify';
+import {getHomepageProducts} from '../lib/shopify';
 import {getNavigation,getHomepageCampaigns} from '../lib/content';
 
 export const revalidate=60;
@@ -56,7 +56,7 @@ function ArrowLink({href,children,className=''}) {
 }
 
 export default async function Home() {
- const [products,{styles},campaigns]=await Promise.all([getProducts(),getNavigation(),getHomepageCampaigns()]);
+ const [products,{styles},campaigns]=await Promise.all([getHomepageProducts(),getNavigation(),getHomepageCampaigns()]);
  const imagePool=products.filter(product => product.image);
  const hero=findTaggedImage(imagePool,/^(home[-_ ]?hero|editorial[-_ ]?hero)$/i,imagePool[0]);
  const second=findTaggedImage(imagePool,/^(home[-_ ]?(secondary|feature)|editorial[-_ ]?secondary)$/i,imagePool.find(product => product.id!==hero?.id) || hero);
