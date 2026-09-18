@@ -1,0 +1,64 @@
+name: Live Performance Audit
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/live-performance.yml'
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'next.config.js'
+      - 'package*.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-performance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Audit live AX storefront
+        shell: bash
+        run: |
+          npx --yes lighthouse@12.8.2 "https://aqua-oyster-550932.hostingersite.com/" \
+            --quiet \
+            --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+            --only-categories=performance \
+            --output=json \
+            --output-path=lighthouse.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('lighthouse.json','utf8'));
+          const a=r.audits;
+          const out={
+            performance:Math.round((r.categories.performance.score||0)*100),
+            fcp:a['first-contentful-paint']?.displayValue,
+            lcp:a['largest-contentful-paint']?.displayValue,
+            tbt:a['total-blocking-time']?.displayValue,
+            cls:a['cumulative-layout-shift']?.displayValue,
+            speedIndex:a['speed-index']?.displayValue,
+            tti:a['interactive']?.displayValue,
+            serverResponse:a['server-response-time']?.displayValue,
+            transferSize:a['total-byte-weight']?.displayValue
+          };
+          console.log('AX_LIGHTHOUSE_RESULT '+JSON.stringify(out));
+          const findings=Object.entries(a)
+            .filter(([,v])=>v && v.score!==null && v.score<1 && (v.details?.overallSavingsMs>0 || v.details?.overallSavingsBytes>0 || ['largest-contentful-paint-element','render-blocking-resources','unused-javascript','unused-css-rules','modern-image-formats','uses-responsive-images','offscreen-images','uses-long-cache-ttl','network-requests','mainthread-work-breakdown'].includes(v.id)))
+            .map(([id,v])=>({id,title:v.title,score:v.score,displayValue:v.displayValue,savingsMs:v.details?.overallSavingsMs||0,savingsBytes:v.details?.overallSavingsBytes||0}))
+            .sort((x,y)=>(y.savingsMs-x.savingsMs)||(y.savingsBytes-x.savingsBytes))
+            .slice(0,15);
+          console.log('AX_LIGHTHOUSE_FINDINGS '+JSON.stringify(findings));
+          for(const id of ['uses-responsive-images','unused-javascript']){
+            const items=a[id]?.details?.items || [];
+            console.log('AX_LIGHTHOUSE_'+id.toUpperCase().replaceAll('-','_')+' '+JSON.stringify(items.slice(0,10).map(item=>({
+              url:item.url,wastedBytes:item.wastedBytes,totalBytes:item.totalBytes,
+              node:item.node?.snippet
+            }))));
+          }
+          NODE
