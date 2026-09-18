@@ -54,4 +54,11 @@ jobs:
             .sort((x,y)=>(y.savingsMs-x.savingsMs)||(y.savingsBytes-x.savingsBytes))
             .slice(0,15);
           console.log('AX_LIGHTHOUSE_FINDINGS '+JSON.stringify(findings));
+          for(const id of ['uses-responsive-images','unused-javascript']){
+            const items=a[id]?.details?.items || [];
+            console.log('AX_LIGHTHOUSE_'+id.toUpperCase().replaceAll('-','_')+' '+JSON.stringify(items.slice(0,10).map(item=>({
+              url:item.url,wastedBytes:item.wastedBytes,totalBytes:item.totalBytes,
+              node:item.node?.snippet
+            }))));
+          }
           NODE
