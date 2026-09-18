@@ -1,6 +1,6 @@
 import {Fragment} from 'react';
 import Link from 'next/link';
-import ProductImage from '../components/ProductImage';
+import ProductImage,{imageUrl} from '../components/ProductImage';
 import Icon from '../components/Icon';
 import {StylistButton} from '../components/StylistProvider';
 import {getHomepageProducts} from '../lib/shopify';
@@ -45,8 +45,14 @@ function CampaignTitle({value,id,className='editorial',level='h2'}) {
  return <Tag id={id} className={className}>{String(value || '').split('\n').map((line,index)=><Fragment key={`${line}-${index}`}>{index>0 && <br/>}{line}</Fragment>)}</Tag>;
 }
 
+function responsiveSourceSet(src,widths=[320,480,640,720,800]) {
+ if(!src) return '';
+ if(!src.startsWith('https://cdn.shopify.com/')) return src;
+ return widths.map(width=>imageUrl(src,width)+' '+width+'w').join(', ');
+}
+
 function EditorialImage({src,mobileSrc,alt,sizes,eager=false}) {
- return <picture>{mobileSrc && <source media="(max-width:700px)" srcSet={mobileSrc}/>}<ProductImage src={src} alt={alt} sizes={sizes} eager={eager}/></picture>;
+ return <picture>{mobileSrc && <source media="(max-width:700px)" srcSet={responsiveSourceSet(mobileSrc)} sizes="100vw"/>}<ProductImage src={src} alt={alt} sizes={sizes} eager={eager}/></picture>;
 }
 
 function ArrowLink({href,children,className=''}) {
