@@ -40,7 +40,7 @@ Set values from `.env.example` privately in your hosting environment before buil
 
 ## Deployment and remaining work
 
-See [Hostinger staging](docs/HOSTINGER-STAGING.md), [customer account setup](docs/CUSTOMER-ACCOUNT-SETUP.md) and [verification](docs/VERIFICATION.md).
+See [Hostinger staging](docs/HOSTINGER-STAGING.md), [live shipping rates](docs/SHIPPING-RATES.md), [customer account setup](docs/CUSTOMER-ACCOUNT-SETUP.md) and [verification](docs/VERIFICATION.md).
 
 The current catalog/collection queries read up to 100 products; each PDP reads up to 100 variants and 8 images. Add pagination before the catalog exceeds these limits. Style edits depend on actual product titles, descriptions and tags; sparse categories remain empty until the catalog is enriched. Instagram is optional through the verified `AX_INSTAGRAM_URL` setting.
 
