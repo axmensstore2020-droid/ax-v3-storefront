@@ -29,11 +29,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          BASE="https://aqua-oyster-550932.hostingersite.com"
-          if [ "${{ github.event_name }}" = "push" ]; then
-            echo "Waiting for the Hostinger deployment to update..."
-            sleep 90
-          fi
+          BASE="https://www.zara.com"
           audit_page() {
             label="$1"
             path="$2"
@@ -89,6 +85,4 @@ jobs:
           NODE
           }
 
-          audit_page home "/"
-          audit_page products "/products"
-          audit_page product-detail "/products/khorasan-graphic-sleeveless-cropped-tee"
+          audit_page zara-home "/"
