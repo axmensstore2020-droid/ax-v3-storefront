@@ -274,21 +274,39 @@ test('pincode serviceability exposes COD separately from prepaid',async()=>{
 });
 
 
-test('Partial COD quotes only COD-serviceable pincodes and asks Delhivery for COD pricing',async()=>{
+test('Partial COD separates live freight from the disclosed COD handling fee',async()=>{
  const calls=[];
  const result=await estimateDelhiveryCodDelivery({destinationPincode:'400064',weightGrams:500,subtotal:1299},{
   env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3'},
   fetchImpl:async url=>{
    const parsed=new URL(url);calls.push(parsed);
    if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',cod:'Y',city:'Mumbai',state_code:'MH'}}]});
-   assert.equal(parsed.searchParams.get('pt'),'COD');
-   return Response.json([{total_amount:parsed.searchParams.get('md')==='S'?70:100,tat:parsed.searchParams.get('md')==='S'?'4-5':'2-3'}]);
+   assert.equal(parsed.searchParams.get('pt'),'Pre-paid');
+   return Response.json([{total_amount:parsed.searchParams.get('md')==='S'?30:60,tat:parsed.searchParams.get('md')==='S'?'4-5':'2-3'}]);
   }
  });
  assert.equal(result.codServiceable,true);
- assert.equal(result.rates[0].amount,73);
- assert.equal(result.rates[1].amount,103);
+ assert.deepEqual(result.rates[0],{code:'standard',label:'Standard',shippingAmount:33,codHandlingFee:40,amount:73,currency:'INR',minDays:4,maxDays:5});
+ assert.deepEqual(result.rates[1],{code:'express',label:'Express',shippingAmount:63,codHandlingFee:40,amount:103,currency:'INR',minDays:2,maxDays:3});
  assert.equal(calls.length,3);
+});
+
+test('Partial COD keeps free standard shipping but still charges high-value COD handling',async()=>{
+ const result=await estimateDelhiveryCodDelivery({destinationPincode:'400064',weightGrams:500,subtotal:2499},{
+  env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3'},
+  fetchImpl:async url=>{
+   const parsed=new URL(url);
+   if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',cod:'Y'}}]});
+   return Response.json([{total_amount:parsed.searchParams.get('md')==='S'?30:60}]);
+  }
+ });
+ assert.equal(result.rates[0].label,'Free Standard shipping');
+ assert.equal(result.rates[0].shippingAmount,0);
+ assert.equal(result.rates[0].codHandlingFee,49.98);
+ assert.equal(result.rates[0].amount,49.98);
+ assert.equal(result.rates[1].shippingAmount,63);
+ assert.equal(result.rates[1].codHandlingFee,49.98);
+ assert.equal(result.rates[1].amount,112.98);
 });
 
 test('Partial COD fails closed when Delhivery does not support COD',async()=>{
