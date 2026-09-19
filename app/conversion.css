@@ -90,7 +90,7 @@
 .product-grid.wide{align-items:start}
 .product-grid.wide .product-card{display:block;min-width:0;opacity:1;visibility:visible}
 .product-grid.wide .product-image-wrap{display:block;width:100%;min-height:1px;aspect-ratio:3/4}
-.product-grid.wide .product-image{display:block;width:100%;height:100%;object-fit:cover}
+.product-grid.wide .product-image{display:block;width:100%;height:100%;object-fit:contain}
 .product-description{color:var(--muted);white-space:pre-line;line-height:1.6;margin:0 0 18px}
 .exchange-note{display:flex;flex-direction:column;gap:3px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 0;margin:0 0 20px}
 .exchange-note strong{font-size:13px;font-weight:400}
