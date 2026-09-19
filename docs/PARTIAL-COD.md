@@ -1,6 +1,6 @@
 # AX Partial COD
 
-Partial COD is intentionally **disabled by default**. Do not enable it until Razorpay payment verification, Shopify Admin order creation and Delhivery COD shipment creation have all passed staging with non-production/test orders.
+Partial COD is intentionally **disabled by default**. The storefront flow now exists, but do not enable it until Razorpay payment verification, Shopify Admin order creation and Delhivery COD shipment creation have all passed staging with non-production/test orders.
 
 ## Customer calculation
 
@@ -22,10 +22,24 @@ Examples:
 
 The shared calculation lives in `lib/partial-cod.js` and is covered by automated tests.
 
+## Customer flow
+
+1. The bag keeps normal **Pay Online** checkout unchanged.
+2. **Partial COD** opens the AX-owned checkout page before Shopify checkout.
+3. AX verifies COD serviceability and live Standard/Express pricing with Delhivery.
+4. The customer sees the final order value, booking advance and remaining COD balance before payment.
+5. Razorpay collects only the booking advance.
+6. AX verifies the Razorpay signature and captured payment server-side.
+7. Shopify receives a real order with the original variant IDs, a successful Razorpay advance transaction and financial status `PARTIALLY_PAID`.
+8. Delhivery receives a COD shipment whose COD amount is the Shopify outstanding balance, not the full invoice value.
+9. A successful order clears the browser bag. If finalization fails after payment, the UI keeps the successful Razorpay response and offers an idempotent **Retry order confirmation** action without asking the customer to pay again.
+
+The feature is hidden unless every required server-side setting is present and `AX_PARTIAL_COD_ENABLED=true`.
+
 ## Required production integrations
 
 1. **Razorpay** — create the booking-advance payment server-side and verify the returned payment signature before accepting the order. Never expose the Razorpay secret in browser code.
-2. **Shopify Admin GraphQL** — after verified payment, create the real order with the original Shopify variant IDs, shipping address, shipping line, a successful Razorpay transaction for the advance and financial status `PARTIALLY_PAID`. This requires an offline Admin API token with `write_orders`.
+2. **Shopify Admin GraphQL** — after verified payment, create the real order with the original Shopify variant IDs, shipping address, shipping line, a successful Razorpay transaction for the advance and financial status `PARTIALLY_PAID`. This requires an offline Admin API token with `read_orders` and `write_orders`.
 3. **Delhivery** — re-check that the destination supports COD, then create the shipment with payment mode COD and COD amount equal to the remaining balance, never the full invoice value. Use the exact account client name and pickup-location/warehouse name configured in Delhivery.
 4. **Idempotency** — the Razorpay payment ID must map to at most one Shopify order and one Delhivery shipment. A retry must return the existing result rather than create duplicates.
 
@@ -53,3 +67,18 @@ See `.env.example`:
 - `AX_PARTIAL_COD_SECRET`
 
 Keep the feature flag false until the end-to-end production-account test passes.
+
+
+## Staging acceptance before enabling
+
+- Use Razorpay test credentials first and confirm automatic capture is enabled.
+- Confirm a successful advance creates exactly one Shopify order with status `PARTIALLY_PAID`.
+- Confirm the Shopify order total, advance transaction and outstanding amount match the amounts shown to the customer.
+- Confirm the Delhivery account accepts the selected `Surface` / `Express` shipment mode for the AX account.
+- Confirm the Delhivery shipment is COD and its COD amount equals Shopify's outstanding balance.
+- Retry the confirmation endpoint with the same Razorpay payment and confirm it does not create a second Shopify order or Delhivery shipment.
+- Test a pincode where prepaid works but COD does not; Partial COD must remain unavailable.
+- Test an out-of-stock variant between quote and payment; Shopify inventory policy must fail closed.
+- Test a browser/network interruption after Razorpay success and verify the retry path completes the existing paid attempt without a second charge.
+
+The current browser-return flow is intentionally feature-gated. Before broad production rollout, add and validate a Razorpay webhook recovery path so a captured advance can still be finalized if the buyer closes the browser before the success callback reaches AX.
