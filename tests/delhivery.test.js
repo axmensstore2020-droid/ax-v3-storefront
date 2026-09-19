@@ -217,6 +217,7 @@ test('delivery estimate returns serviceability details even when weight is not s
  assert.equal(result.location.city,'Mumbai');
  assert.equal(result.location.stateCode,'MH');
  assert.deepEqual(result.rates,[]);
+ assert.deepEqual(result.estimatedDelivery,{minDays:3,maxDays:7,source:'ax-fallback'});
 });
 
 test('delivery estimate shares serviceability and rate logic used by checkout',async()=>{
@@ -233,4 +234,15 @@ test('delivery estimate shares serviceability and rate logic used by checkout',a
   {code:'standard',label:'Standard',amount:71.52,currency:'INR',minDays:4,maxDays:6},
   {code:'express',label:'Express',amount:97.14,currency:'INR',minDays:2,maxDays:3}
  ]);
+ assert.deepEqual(result.estimatedDelivery,{minDays:4,maxDays:6,source:'delhivery'});
+});
+
+
+test('extended delivery areas get a conservative fallback ETA when Delhivery omits TAT',async()=>{
+ const result=await estimateDelhiveryDelivery({destinationPincode:'744101',weightGrams:null},{
+  env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011'},
+  fetchImpl:async()=>Response.json({delivery_codes:[{postal_code:{pin:744101,pre_paid:'Y',city:'Port Blair',state_code:'AN',is_oda:'Y'}}]})
+ });
+ assert.equal(result.serviceable,true);
+ assert.deepEqual(result.estimatedDelivery,{minDays:5,maxDays:10,source:'ax-fallback'});
 });

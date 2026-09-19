@@ -33,7 +33,6 @@
 
   .solid-button,
   .add-bag,
-  .mobile-sticky-add-bag,
   .checkout-button,
   .add-look-button,
   .option-values button,
@@ -52,7 +51,6 @@
   }
   .solid-button:not(:disabled):active,
   .add-bag:not(:disabled):active,
-  .mobile-sticky-add-bag:not(:disabled):active,
   .checkout-button:not([aria-disabled="true"]):active,
   .add-look-button:not(:disabled):active,
   .option-values button:not(:disabled):active,
@@ -110,7 +108,6 @@
   .look-image img,
   .solid-button,
   .add-bag,
-  .mobile-sticky-add-bag,
   .checkout-button,
   .add-look-button,
   .option-values button,

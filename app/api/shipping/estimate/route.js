@@ -42,5 +42,6 @@ export async function POST(request) {
   });
   if(!estimate.configured) return json({ok:false,error:'Delivery estimates are not configured yet.'},503,guard);
   if(estimate.error && !estimate.serviceable) return json({ok:false,error:estimate.error},502,guard);
-  return json({ok:true,...estimate},200,guard);
+  const {rates:_rates,...customerEstimate}=estimate;
+  return json({ok:true,...customerEstimate},200,guard);
 }
