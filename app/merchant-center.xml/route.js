@@ -2,7 +2,9 @@ import {getMerchantProducts} from '../../lib/shopify.js';
 import {absoluteUrl,SITE_NAME} from '../../lib/seo.js';
 import {variantHref} from '../../lib/product-variants.js';
 
-export const revalidate=1800;
+export const runtime='nodejs';
+export const dynamic='force-dynamic';
+export const revalidate=0;
 
 const xml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]));
 const option=(variant,pattern)=>(variant.selectedOptions||[]).find(item=>pattern.test(item.name||''))?.value||'';
@@ -37,7 +39,9 @@ ${sku?`<g:mpn>${xml(sku)}</g:mpn>`:'<g:identifier_exists>no</g:identifier_exists
 }
 
 export async function GET(){
- const products=await getMerchantProducts(100);
+ let products;
+ try { products=await getMerchantProducts(100); }
+ catch { return new Response('Merchant feed is temporarily unavailable.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store','Retry-After':'300','X-Robots-Tag':'noindex'}}); }
  const items=products.flatMap(product=>(product.variants||[]).filter(variant=>variant?.id&&variant?.price?.amount&&(variant.image?.url||product.image)).map(variant=>item(product,variant))).join('\n');
  const body=`<?xml version="1.0" encoding="UTF-8"?>
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0"><channel>
