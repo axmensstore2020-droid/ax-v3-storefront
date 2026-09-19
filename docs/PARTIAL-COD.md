@@ -30,10 +30,12 @@ The shared calculation lives in `lib/partial-cod.js` and is covered by automated
 
 ## Customer flow
 
-1. The bag keeps normal **Pay Online** checkout unchanged.
-2. **Partial COD** opens the AX-owned checkout page before Shopify checkout.
-3. AX verifies COD serviceability and live Standard/Express freight with Delhivery.
-4. The customer sees products, shipping, the exact COD handling fee, final order value, booking advance and remaining COD balance before payment.
+1. The bag keeps normal **Pay Online** checkout unchanged; prepaid customers do not need to enter an address in the AX cart.
+2. **Partial COD** first asks only for a 6-digit pincode. AX checks the delivery partner's COD serviceability flag before allowing the customer to continue.
+3. A previously checked delivery pincode is reused automatically. If COD is unavailable, the bag keeps Pay Online available and does not ask for the customer's full address.
+4. After COD eligibility is confirmed, **Partial COD** opens the AX-owned checkout page and reuses the pincode.
+5. AX re-checks COD serviceability and live Standard/Express freight before payment.
+6. The customer sees products, shipping, the exact COD handling fee, final order value, booking advance and remaining COD balance before payment.
 5. Razorpay collects only the booking advance.
 6. AX verifies the Razorpay signature and captured payment server-side.
 7. Shopify receives a real order with the original variant IDs, a successful Razorpay advance transaction and financial status `PARTIALLY_PAID`.

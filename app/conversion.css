@@ -145,3 +145,21 @@
 .partial-cod-fee-notice{display:flex;align-items:baseline;justify-content:space-between;gap:18px}
 .partial-cod-fee-notice>span{font-size:11px;color:var(--muted);text-align:right}
 @media(max-width:700px){.partial-cod-option-head{align-items:flex-start}.partial-cod-button .partial-cod-option-head>span{text-align:right}.partial-cod-fee-notice{display:grid;gap:4px}.partial-cod-fee-notice>span{text-align:left}}
+
+
+/* Cart COD pincode eligibility gate. */
+.partial-cod-gate{display:grid;gap:10px;border:1px solid var(--ink);padding:14px 15px;background:var(--paper)}
+.partial-cod-gate>.partial-cod-option-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px}
+.partial-cod-gate>.partial-cod-option-head strong{font-size:12px;font-weight:500;letter-spacing:.08em}
+.partial-cod-gate>.partial-cod-option-head span{font-size:11px;font-weight:500;white-space:nowrap}
+.partial-cod-gate>.partial-cod-option-copy{margin:0;font-size:11px;line-height:1.45;color:var(--muted)}
+.partial-cod-pincode-form{display:grid;grid-template-columns:minmax(0,1fr) auto;border:1px solid var(--line);min-height:44px}
+.partial-cod-pincode-form input{min-width:0;border:0;background:transparent;padding:10px 11px;font-size:13px;outline:0}
+.partial-cod-pincode-form button{border-left:1px solid var(--line);padding:9px 12px;background:var(--ink);color:#fff;font-size:10px;letter-spacing:.07em;white-space:nowrap}
+.partial-cod-pincode-form button:disabled{opacity:.45}
+.partial-cod-status{margin:0;font-size:11px;line-height:1.45}
+.partial-cod-status.available{font-weight:500}
+.partial-cod-status.unavailable,.partial-cod-status.error{color:var(--muted)}
+.partial-cod-continue{display:flex;align-items:center;justify-content:center;min-height:44px;background:var(--ink);color:#fff;font-size:10px;letter-spacing:.08em;padding:10px 12px;text-align:center}
+.partial-cod-gate>small{font-size:9px;line-height:1.4;color:var(--muted)}
+@media(max-width:700px){.partial-cod-gate>.partial-cod-option-head{align-items:flex-start}.partial-cod-pincode-form{grid-template-columns:1fr}.partial-cod-pincode-form button{border-left:0;border-top:1px solid var(--line)}}
