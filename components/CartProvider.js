@@ -2,6 +2,7 @@
 import {createContext,useContext,useEffect,useRef,useState} from 'react';
 import {productMarketingData} from '../lib/marketing';
 import {trackMarketingEvent} from './MetaMarketing';
+import {trackStoreEvent} from '../lib/store-analytics';
 const Context=createContext(null), CART_ID='ax_shopify_cart_id', DEMO_LINES='ax_demo_bag_v2';
 function read(key){try{return localStorage.getItem(key);}catch{return null;}}
 function write(key,value){try{value===null?localStorage.removeItem(key):localStorage.setItem(key,value);}catch{}}
@@ -34,7 +35,9 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0}) {
     const cartId=currentCartId.current;
     try{saveCart(await requestCart({action:cartId?'add':'create',cartId,merchandiseId,quantity:1}));}
     catch(error){if(error.code==='CART_NOT_FOUND')saveCart(await requestCart({action:'create',merchandiseId,quantity:1}));else throw error;}
-    trackMarketingEvent('AddToCart',productMarketingData(product,variant,1));
+    const marketing=productMarketingData(product,variant,1);
+    trackMarketingEvent('AddToCart',marketing);
+    trackStoreEvent('add_to_cart',{productHandle:product.handle,value:marketing.value,currency:marketing.currency,metadata:{variantId:variant?.id || ''}});
    }
    setOpen(true);
   }catch(error){setNotice(error.message);setOpen(true);}finally{locked.current=false;setBusy(false);}
@@ -56,7 +59,11 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0}) {
     const cartId=currentCartId.current,lines=safe.map(item=>({merchandiseId:item.merchandiseId,quantity:1}));
     try{saveCart(await requestCart({action:cartId?'addMany':'createMany',cartId,lines}));}
     catch(error){if(error.code==='CART_NOT_FOUND')saveCart(await requestCart({action:'createMany',lines}));else throw error;}
-    for(const item of safe) trackMarketingEvent('AddToCart',productMarketingData(item.product,item.variant,1));
+    for(const item of safe) {
+      const marketing=productMarketingData(item.product,item.variant,1);
+      trackMarketingEvent('AddToCart',marketing);
+      trackStoreEvent('add_to_cart',{productHandle:item.product.handle,value:marketing.value,currency:marketing.currency,metadata:{variantId:item.variant?.id || '',surface:'complete-look'}});
+    }
    }
    setOpen(true);
   }catch(error){setNotice(error.message);setOpen(true);}finally{locked.current=false;setBusy(false);}
