@@ -63,10 +63,12 @@ export default function ShippingEstimator({weightGrams,productHandle='',classNam
     {result && !result.serviceable && <div className="delivery-result delivery-result-no"><strong>Not deliverable</strong><span>Delivery is currently unavailable to {result.pincode}.</span></div>}
     {result?.serviceable && <div className="delivery-result delivery-result-ok">
       <strong>{'Deliverable'+(place?' to '+place:'')}</strong>
-      <div className="delivery-estimate"><span>Estimated delivery</span><strong>{eta || 'Timing unavailable'}</strong></div>
-      {result.location?.isOda&&<p className="shipping-estimator-note">Extended delivery area — timing can vary slightly.</p>}
-      <small>Estimated timing is indicative and can change with carrier operations or local conditions.</small>
+      {eta
+        ? <div className="delivery-estimate"><span>Estimated delivery</span><strong>{eta}</strong></div>
+        : <p className="shipping-estimator-note">Delivery is available. Delhivery hasn’t provided an estimated delivery time yet.</p>}
+      {result.location?.isOda&&<p className="shipping-estimator-note">Extended delivery area — carrier timing may vary.</p>}
+      {eta&&<small>Estimated timing is provided by Delhivery and can change with carrier operations or local conditions.</small>}
     </div>}
-    {!result && !error && <p className="shipping-estimator-note">Enter your pincode to check delivery availability and estimated delivery time.</p>}
+    {!result && !error && <p className="shipping-estimator-note">Enter your pincode to check live Delhivery delivery availability. Estimated delivery time is shown when provided by the carrier.</p>}
   </section>;
 }
