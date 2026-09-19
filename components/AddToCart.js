@@ -4,8 +4,9 @@ import {StylistButton} from './StylistProvider';
 import {formatMoney} from '../lib/catalog';
 import {isSizeOption,matchesSelection,optionAvailable,visibleOptions} from '../lib/product-variants';
 import Icon from './Icon';
+import BackInStockAlert from './BackInStockAlert';
 
-export default function AddToCart({product,options,selected,variant,onSelect,beforeAddButton=null}) {
+export default function AddToCart({product,options,selected,variant,onSelect,beforeAddButton=null,restockAlertsEnabled=false}) {
   const {addItem,busy}=useCart(),variants=product.variants||[],shown=visibleOptions(options);
   const missing=shown.find(option=>!selected[option.name]);
   const available=!missing && (product.demo || Boolean(variant?.availableForSale));
@@ -23,7 +24,9 @@ export default function AddToCart({product,options,selected,variant,onSelect,bef
   const discount=onSale?Math.round(((compareAt-price)/compareAt)*100):0;
   const sizeOption=options.find(option=>isSizeOption(option.name)),selectedSize=sizeOption && selected[sizeOption.name],sizeFit=selectedSize ? product.sizeFits?.[selectedSize] : null;
   const quantity=Number(variant?.quantityAvailable),lowStock=available && Number.isInteger(quantity) && quantity>0 && quantity<=3;
-  const buttonText=busy?'UPDATING BAG…':missing?'CHOOSE '+missing.name.toUpperCase():product.demo?'ADD TO PREVIEW BAG':available?'ADD TO BAG':'UNAVAILABLE';
+  const soldOutVariant=!product.demo && !missing && Boolean(variant) && variant.availableForSale===false;
+  const variantLabel=(variant?.selectedOptions||[]).filter(option=>!(option.name==='Title'&&option.value==='Default Title')).map(option=>option.name+': '+option.value).join(' · ');
+  const buttonText=busy?'UPDATING BAG…':missing?'CHOOSE '+missing.name.toUpperCase():product.demo?'ADD TO PREVIEW BAG':available?'ADD TO BAG':soldOutVariant?'SOLD OUT':'UNAVAILABLE';
   const add=()=>addItem({merchandiseId:variant?.id,variant,product});
   return <div className="buy-box">
     <div className="pdp-price-row">
@@ -31,7 +34,7 @@ export default function AddToCart({product,options,selected,variant,onSelect,bef
         <strong>{!variant && new Set(prices).size>1?'From ':''}{formatMoney(price,currency)}</strong>
         {onSale && <><s className="compare-price">MRP {formatMoney(compareAt,currency)}</s><em className="discount-badge">{discount}% OFF</em></>}
       </div>
-      <span className={`availability-label${lowStock?' low-stock':''}`}>{product.demo?'Sample piece':missing?'Choose '+missing.name.toLowerCase():lowStock?`Only ${quantity} left`:available?'Available':'Unavailable'}</span>
+      <span className={`availability-label${lowStock?' low-stock':''}`}>{product.demo?'Sample piece':missing?'Choose '+missing.name.toLowerCase():lowStock?`Only ${quantity} left`:available?'Available':soldOutVariant?'Sold out':'Unavailable'}</span>
     </div>
     {shown.map(option=><fieldset className="option-block" key={option.name}>
       <legend>{option.name}: {selected[option.name]||'Choose an option'}</legend>
@@ -41,6 +44,7 @@ export default function AddToCart({product,options,selected,variant,onSelect,bef
     <StylistButton className="find-size" mode="size" product={{title:product.title,handle:product.handle,selectedOptions:selected}}>FIND MY SIZE WITH AX <Icon name="arrow" size={17}/></StylistButton>
     {beforeAddButton}
     <button type="button" className="add-bag" disabled={!available||busy} onClick={add}>{buttonText}</button>
+    {soldOutVariant&&restockAlertsEnabled&&<BackInStockAlert productHandle={product.handle} variantId={variant.id} variantLabel={variantLabel}/>}
     {product.demo && <p className="cart-note">Sample catalog. Sizes and availability will appear when the store opens.</p>}
   </div>;
 }

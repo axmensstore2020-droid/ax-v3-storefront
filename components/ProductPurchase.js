@@ -18,7 +18,7 @@ import WishlistButton from './WishlistButton';
 
 const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
 
-export default function ProductPurchase({product,initialVariantId,chooseSize=false,hasCompleteLook=false,children}) {
+export default function ProductPurchase({product,initialVariantId,chooseSize=false,hasCompleteLook=false,restockAlertsEnabled=false,children}) {
   const [selected,setSelected] = useState(() => initialSelection(product,initialVariantId,chooseSize));
   const galleryRef = useRef(null), trackedView = useRef('');
   const variant = findVariant(product.variants || [],selected);
@@ -43,7 +43,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
     </div>
     <div className="pdp-info">
       <p className="eyebrow">{product.type || 'AX MENSWEAR'}</p><div className="pdp-title-row"><h1 className="editorial">{product.title}</h1><WishlistButton handle={product.handle} className="pdp-wishlist" showLabel/></div>
-      <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} onSelect={(name,value) => {setSelected(current => ({...current,[name]:value}));trackStoreEvent('select_variant',{productHandle:product.handle,metadata:{option:name,value}});}} beforeAddButton={<ShippingEstimator weightGrams={deliveryWeight} productHandle={product.handle} subtotal={deliverySubtotal}/>}/>
+      <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} onSelect={(name,value) => {setSelected(current => ({...current,[name]:value}));trackStoreEvent('select_variant',{productHandle:product.handle,metadata:{option:name,value}});}} beforeAddButton={<ShippingEstimator weightGrams={deliveryWeight} productHandle={product.handle} subtotal={deliverySubtotal}/>} restockAlertsEnabled={restockAlertsEnabled}/>
       {hasCompleteLook && <a className="pdp-complete-look-link" href="#complete-look"><span>STYLE IT</span><strong>Complete the look</strong><Icon name="arrow" size={17}/></a>}
       {children}
       <ProductDataPanel product={product} selectedOptions={selected}/>

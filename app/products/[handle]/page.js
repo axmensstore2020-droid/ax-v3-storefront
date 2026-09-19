@@ -12,6 +12,7 @@ import {findVariant} from '../../../lib/commerce';
 import {initialSelection,selectionImage} from '../../../lib/product-variants';
 import {imageSrcSet,imageUrl} from '../../../components/ProductImage';
 import RecentlyViewed from '../../../components/RecentlyViewed';
+import {restockAlertSignupConfigured} from '../../../lib/restock-config.js';
 
 export async function generateMetadata({params}) {
  const {handle}=await params,product=await getProduct(handle);
@@ -45,7 +46,7 @@ export default async function ProductPage({params,searchParams}) {
  return <main id="main-content">
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/>
   <div className="breadcrumb"><Link href="/products">Collection</Link><span>/</span><span>{product.title}</span></div>
-  <ProductPurchase key={product.id+':'+initialVariantId+':'+chooseSize} product={product} initialVariantId={initialVariantId} chooseSize={chooseSize} hasCompleteLook={completeLook.length>0}>
+  <ProductPurchase key={product.id+':'+initialVariantId+':'+chooseSize} product={product} initialVariantId={initialVariantId} chooseSize={chooseSize} hasCompleteLook={completeLook.length>0} restockAlertsEnabled={restockAlertSignupConfigured()}>
    <div className="product-details"><details open><summary>About this piece</summary><p>{product.description || 'For more details about this piece, contact the AX team.'}</p></details><details><summary>Delivery & exchanges</summary><p>Shipping across India. Use the pincode checker above for live Delhivery serviceability. When Delhivery provides a delivery estimate, we show it; final delivery options are confirmed at checkout.</p><Link className="text-link" href="/help#exchanges">Read our exchange policy</Link></details></div>
   </ProductPurchase>
   <CompleteLook product={product} items={completeLook}/>

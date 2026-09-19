@@ -41,3 +41,11 @@
  .pdp-title-row{align-items:flex-start}.pdp-title-row h1{font-size:38px}.pdp-wishlist{min-height:40px;padding:8px}.pdp-wishlist>span{display:none}
  .wishlist-page{padding:36px var(--gutter) 70px}.wishlist-hero{align-items:flex-start;flex-direction:column;gap:6px;margin-bottom:24px}.wishlist-hero h1{font-size:52px}.wishlist-hero>span{padding-bottom:0}.wishlist-empty{min-height:50vh}.wishlist-empty h2{font-size:38px}
 }
+
+
+/* Back-in-stock request capture. */
+.restock-alert{margin-top:14px;border:1px solid var(--line);padding:16px;background:color-mix(in srgb,var(--paper) 88%,var(--soft))}
+.restock-alert-heading{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}.restock-alert-heading .eyebrow{margin:0;font-size:10px}.restock-alert-heading strong{font-size:14px;font-weight:500}.restock-alert-heading small{font-size:11px;color:var(--muted)}
+.restock-alert form{display:flex;border:1px solid var(--ink);background:var(--paper);min-height:46px}.restock-alert label{flex:1;min-width:0}.restock-alert input{width:100%;height:100%;border:0;background:transparent;padding:10px 12px;outline:0;font-size:14px}.restock-alert button{border-left:1px solid var(--ink);background:var(--ink);color:#fff;padding:8px 14px;min-width:110px;font-size:10px;letter-spacing:.08em}.restock-alert button:disabled{opacity:.5}
+.restock-alert-note,.restock-alert-message{font-size:11px;line-height:1.5;margin:9px 0 0;color:var(--muted)}.restock-alert-message.success,.restock-alert-message.available{color:var(--ink)}.restock-alert-message.error{color:var(--ink)}
+@media(max-width:700px){.restock-alert{padding:14px}.restock-alert form{min-height:44px}.restock-alert button{min-width:98px;padding:8px 10px}}
