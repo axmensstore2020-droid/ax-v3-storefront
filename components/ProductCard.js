@@ -5,16 +5,23 @@ import WishlistButton from './WishlistButton';
 
 const GRID_WIDTHS=[180,240,280,320,360,400,480,560,640];
 const COMPACT_WIDTHS=[120,160,200,240,280,320,400];
-const MODEL_WORDS=/\b(model|man|men|male|person|wearing|worn|styled|outfit|lookbook)\b/i;
-const PRODUCT_WORDS=/\b(product|flat\s?lay|flatlay|garment|front|back|detail|hanger|tee|t-?shirt|shirt|jacket|hoodie|jeans?|pants?|trousers?|cargo|shorts?)\b/i;
+const PEOPLE_WORDS=/\b(model|mannequin|dummy|torso|human|person|man|men|male|wearing|worn|styled|outfit|lookbook|on[-_ ]?model)\b/i;
+const PRODUCT_ONLY_WORDS=/\b(wide[-_ ]?view|product[-_ ]?only|flat[-_ ]?lay|flatlay|garment[-_ ]?only|packshot|isolated|no[-_ ]?model|hanger|hanging)\b/i;
 
+function imageText(image){
+ return `${image?.altText||''} ${image?.url||''}`;
+}
+function safeWideImage(image){
+ return Boolean(image?.url)&&!PEOPLE_WORDS.test(imageText(image));
+}
 function wideViewImage(product){
  const images=(product.images||[]).filter(image=>image?.url);
- const labelled=images.filter(image=>String(image.altText||'').trim());
- const explicit=labelled.find(image=>PRODUCT_WORDS.test(image.altText||'')&&!MODEL_WORDS.test(image.altText||''));
- const variant=product.variantImage?.url ? product.variantImage : null;
- const labelledNonModel=labelled.find(image=>!MODEL_WORDS.test(image.altText||''));
- return explicit || variant || labelledNonModel || images.at(-1) || (product.image?{url:product.image,altText:product.imageAlt}:null);
+ const explicit=images.find(image=>safeWideImage(image)&&PRODUCT_ONLY_WORDS.test(imageText(image)));
+ const variant=safeWideImage(product.variantImage)?product.variantImage:null;
+ const featured=product.image || '';
+ const alternate=images.find(image=>image.url!==featured&&safeWideImage(image));
+ const anySafe=images.find(safeWideImage);
+ return explicit || variant || alternate || anySafe || null;
 }
 
 export default function ProductCard({product,compact=false}) {
