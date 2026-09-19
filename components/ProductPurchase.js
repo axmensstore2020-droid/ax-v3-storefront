@@ -18,7 +18,7 @@ import WishlistButton from './WishlistButton';
 
 const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
 
-export default function ProductPurchase({product,initialVariantId,chooseSize=false,hasCompleteLook=false,restockAlertsEnabled=false,children}) {
+export default function ProductPurchase({product,initialVariantId,chooseSize=false,hasCompleteLook=false,restockAlertsEnabled=false,children,afterProductInfo=null}) {
   const [selected,setSelected] = useState(() => initialSelection(product,initialVariantId,chooseSize));
   const galleryRef = useRef(null), trackedView = useRef('');
   const variant = findVariant(product.variants || [],selected);
@@ -47,6 +47,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
       {hasCompleteLook && <a className="pdp-complete-look-link" href="#complete-look"><span>STYLE IT</span><strong>Complete the look</strong><Icon name="arrow" size={17}/></a>}
       {children}
       <ProductDataPanel product={product} selectedOptions={selected}/>
+      {afterProductInfo && <div className="pdp-after-product-info">{afterProductInfo}</div>}
       <ProductProof product={product}/>
       <StylistButton className="underlined-link pdp-stylist" product={{title:product.title,handle:product.handle,selectedOptions:selected}}>STYLE WITH AX <Icon name="arrow"/></StylistButton>
     </div>
