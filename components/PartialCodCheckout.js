@@ -108,9 +108,9 @@ export default function PartialCodCheckout(){
       <div><span>Order</span><strong>{success.orderName || 'Confirmed'}</strong></div>
       <div><span>Advance paid</span><strong>{formatMoney(success.advance,'INR')}</strong></div>
       <div><span>Balance on delivery</span><strong>{formatMoney(success.codBalance,'INR')}</strong></div>
-      <div><span>Delhivery</span><strong>{success.deliveryBooking==='test-skipped'?'Not booked in test mode':success.waybill}</strong></div>
+      <div><span>Delivery partner</span><strong>{success.deliveryBooking==='test-skipped'?'Not booked in test mode':success.waybill}</strong></div>
     </div>
-    <p className="muted">{success.deliveryBooking==='test-skipped'?'Test mode: no live Delhivery shipment was created.':'Keep your order details and Razorpay payment reference until delivery. Delhivery will collect only the balance shown above.'}</p>
+    <p className="muted">{success.deliveryBooking==='test-skipped'?'Test mode: no live delivery shipment was created.':'Keep your order details and Razorpay payment reference until delivery. Our delivery partner will collect only the balance shown above.'}</p>
     <Link className="solid-button partial-cod-home" href="/">CONTINUE SHOPPING</Link>
   </section>;
 
@@ -124,7 +124,7 @@ export default function PartialCodCheckout(){
   return <section className="partial-cod-checkout">
     <div className="partial-cod-intro">
       <div><p className="eyebrow">PARTIAL CASH ON DELIVERY</p><h1 className="editorial">Pay a small advance. Pay the rest on delivery.</h1></div>
-      <div className="partial-cod-intro-copy"><p>AX collects the booking advance securely through Razorpay. After verification, the remaining order balance is sent to Delhivery as COD.</p><p className="partial-cod-fee-notice"><strong>Pay online to avoid COD handling charges.</strong> Partial COD includes a ₹40 minimum courier handling fee; above ₹2,000, the fee is 2% of product value.</p></div>
+      <div className="partial-cod-intro-copy"><p>Pay a small booking advance securely through Razorpay. The remaining balance is collected by our delivery partner at delivery.</p><p className="partial-cod-fee-notice"><strong>COD handling fee</strong><span>₹40 minimum · 2% of product value above ₹2,000</span></p></div>
     </div>
 
     <form className="partial-cod-form" onSubmit={checkCod}>
@@ -143,7 +143,7 @@ export default function PartialCodCheckout(){
     </form>
 
     {quote&&<div className="partial-cod-options">
-      <div className="partial-cod-section-head"><span>02</span><div><strong>Delivery & payment split</strong><small>Choose one Delhivery service</small></div></div>
+      <div className="partial-cod-section-head"><span>02</span><div><strong>Delivery & payment split</strong><small>Choose a delivery speed</small></div></div>
       <div className="partial-cod-rates">{quote.rates.map(rate=><button type="button" key={rate.code} className={shippingCode===rate.code?'selected':''} onClick={()=>setShippingCode(rate.code)}>
         <span className="partial-cod-radio" aria-hidden="true"/><span className="partial-cod-rate-copy"><strong>{rate.code==='standard'?'Standard Delivery':'Express Delivery'}</strong><small>{rate.minDays?(String(rate.minDays)+(rate.maxDays&&rate.maxDays!==rate.minDays?'–'+rate.maxDays:'')+' days estimated'):rate.label}</small></span>
         <span className="partial-cod-rate-price">{rate.amount===0?'FREE':formatMoney(rate.amount,'INR')}</span>
@@ -155,8 +155,8 @@ export default function PartialCodCheckout(){
         <div className="cod-handling"><span>COD handling fee</span><strong>{formatMoney(selected.codHandlingFee,'INR')}</strong></div>
         <div className="order-total"><span>Final order value</span><strong>{formatMoney(selected.orderTotal,'INR')}</strong></div>
         <div className="advance"><span>Pay now via Razorpay</span><strong>{formatMoney(selected.advance,'INR')}</strong></div>
-        <div><span>Pay Delhivery on delivery</span><strong>{formatMoney(selected.codBalance,'INR')}</strong></div>
-        <small>COD handling = ₹40 minimum or 2% of product value, whichever is higher. Advance = greater of ₹100 or 10% of the final order value, with 10% rounded to the nearest ₹10.</small>
+        <div><span>Balance on delivery</span><strong>{formatMoney(selected.codBalance,'INR')}</strong></div>
+        <small>COD handling: ₹40 minimum, or 2% of product value above ₹2,000. Advance: ₹100 minimum, or 10% of the final order value rounded to the nearest ₹10.</small>
       </div>}
 
       <label className="partial-cod-consent">

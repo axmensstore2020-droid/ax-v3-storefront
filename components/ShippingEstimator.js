@@ -65,10 +65,10 @@ export default function ShippingEstimator({weightGrams,productHandle='',classNam
       <strong>{'Deliverable'+(place?' to '+place:'')}</strong>
       {eta
         ? <div className="delivery-estimate"><span>Estimated delivery</span><strong>{eta}</strong></div>
-        : <p className="shipping-estimator-note">Delivery is available. Delhivery hasn’t provided an estimated delivery time yet.</p>}
+        : <p className="shipping-estimator-note">Delivery is available. Our delivery partner hasn’t provided an estimated delivery time yet.</p>}
       {result.location?.isOda&&<p className="shipping-estimator-note">Extended delivery area — carrier timing may vary.</p>}
-      {eta&&<small>Estimated timing is provided by Delhivery and can change with carrier operations or local conditions.</small>}
+      {eta&&<small>Estimated timing is provided by our delivery partner and can change with carrier operations or local conditions.</small>}
     </div>}
-    {!result && !error && <p className="shipping-estimator-note">Enter your pincode to check live Delhivery delivery availability. Estimated delivery time is shown when provided by the carrier.</p>}
+    {!result && !error && <p className="shipping-estimator-note">Enter your pincode to check live delivery availability. Estimated delivery time is shown when provided by our delivery partner.</p>}
   </section>;
 }

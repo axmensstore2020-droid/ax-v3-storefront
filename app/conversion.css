@@ -133,3 +133,15 @@
 .partial-cod-intro-copy{align-self:end;display:grid;gap:14px}.partial-cod-intro-copy>p{color:var(--muted);line-height:1.65;margin:0}.partial-cod-fee-notice{border-top:1px solid var(--line);padding-top:12px;font-size:12px}.partial-cod-fee-notice strong{color:var(--ink);font-weight:500}
 .partial-cod-breakdown .cod-handling strong{font-weight:600}.partial-cod-breakdown .order-total{border-top:1px solid var(--line);padding-top:10px;margin-top:3px}.partial-cod-breakdown .order-total strong{font-weight:600}
 @media(max-width:700px){.online-checkout-option>small{text-align:left}.partial-cod-button>small{max-width:none;text-align:left}.partial-cod-intro-copy{align-self:auto}.partial-cod-fee-notice{font-size:11px}}
+
+
+/* Clean Partial COD choice layout. */
+.partial-cod-button{display:grid;gap:7px;align-items:stretch;justify-content:stretch;padding:14px 15px}
+.partial-cod-option-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px}
+.partial-cod-button .partial-cod-option-head>strong{font-size:12px;font-weight:500;letter-spacing:.08em;color:var(--ink)}
+.partial-cod-button .partial-cod-option-head>span{font-size:11px;font-weight:500;color:var(--ink);text-align:right;white-space:nowrap}
+.partial-cod-button .partial-cod-option-copy{font-size:11px;color:var(--muted);text-align:left;line-height:1.4}
+.partial-cod-button>small{max-width:none;font-size:9px;color:var(--muted);text-align:left;line-height:1.4;letter-spacing:.02em}
+.partial-cod-fee-notice{display:flex;align-items:baseline;justify-content:space-between;gap:18px}
+.partial-cod-fee-notice>span{font-size:11px;color:var(--muted);text-align:right}
+@media(max-width:700px){.partial-cod-option-head{align-items:flex-start}.partial-cod-button .partial-cod-option-head>span{text-align:right}.partial-cod-fee-notice{display:grid;gap:4px}.partial-cod-fee-notice>span{text-align:left}}
