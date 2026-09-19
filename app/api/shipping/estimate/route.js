@@ -19,8 +19,9 @@ function json(body,status=200,guard=null,extra={}) {
 }
 
 export async function POST(request) {
-  const origin=process.env.AX_SITE_ORIGIN || new URL(request.url).origin;
-  if(!sameOriginRequest(request,origin)) return json({ok:false,error:'Please use the AX store.'},403);
+  const requestOrigin=new URL(request.url).origin,configuredOrigin=process.env.AX_SITE_ORIGIN;
+  const originAllowed=(configuredOrigin&&sameOriginRequest(request,configuredOrigin)) || sameOriginRequest(request,requestOrigin);
+  if(!originAllowed) return json({ok:false,error:'Please use the AX store.'},403);
   const guard=reserveShippingBurst(request,{limit:18});
   if(!guard.allowed) return json({ok:false,error:'Too many delivery checks. Please try again shortly.'},429,guard,{'Retry-After':String(guard.retryAfter)});
   let body;
