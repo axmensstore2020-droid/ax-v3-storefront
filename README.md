@@ -1,6 +1,6 @@
 # AX V3 storefront
 
-A separate Next.js menswear storefront for AX Men’s Store. Shopify remains the commerce engine. This repository does not modify Shopify Admin, inventory, orders, Razorpay, Delhivery, or the existing live website.
+A separate Next.js menswear storefront for AX Men’s Store. Shopify remains the commerce engine. Normal checkout stays Shopify-hosted; optional server-side integrations are feature-gated and disabled until configured.
 
 ## Design
 
@@ -14,7 +14,7 @@ A separate Next.js menswear storefront for AX Men’s Store. Shopify remains the
 
 ## Commerce boundary
 
-`lib/shopify.js` is server-only. Product and collection reads cache for 60 seconds. Cart requests are uncached and use Shopify's returned checkout URL. No payment or shipping integrations are rebuilt.
+`lib/shopify.js` is server-only. Product and collection reads cache for 60 seconds. Cart requests are uncached and normal prepaid checkout uses Shopify's returned checkout URL. The optional Partial COD flow is a separate feature-gated AX checkout path that verifies a Razorpay advance, creates a partially-paid Shopify order and books the remaining balance as Delhivery COD.
 
 Without credentials, the preview displays the supplied sample catalog, labels it clearly, and disables checkout. With credentials, failed requests surface errors; they never substitute sample products or a demo cart. The `Partial Payment` helper product is excluded from listings, collections and detail pages.
 
@@ -40,7 +40,7 @@ Set values from `.env.example` privately in your hosting environment before buil
 
 ## Deployment and remaining work
 
-See [Hostinger staging](docs/HOSTINGER-STAGING.md), [live shipping rates](docs/SHIPPING-RATES.md), [customer account setup](docs/CUSTOMER-ACCOUNT-SETUP.md) and [verification](docs/VERIFICATION.md).
+See [Hostinger staging](docs/HOSTINGER-STAGING.md), [live shipping rates](docs/SHIPPING-RATES.md), [Partial COD](docs/PARTIAL-COD.md), [customer account setup](docs/CUSTOMER-ACCOUNT-SETUP.md) and [verification](docs/VERIFICATION.md).
 
 The current catalog/collection queries read up to 100 products; each PDP reads up to 100 variants and 8 images. Add pagination before the catalog exceeds these limits. Style edits depend on actual product titles, descriptions and tags; sparse categories remain empty until the catalog is enriched. Instagram is optional through the verified `AX_INSTAGRAM_URL` setting.
 
