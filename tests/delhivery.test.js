@@ -168,25 +168,23 @@ test('missing packed product weight fails closed before calling Delhivery',async
   assert.deepEqual(result.rates,[]);
 });
 
-test('free standard shipping activates only from an explicit INR subtotal threshold',()=>{
- const env={AX_FREE_SHIPPING_THRESHOLD:'1499'};
- assert.equal(configuredFreeShippingThreshold(env),1499);
- assert.equal(freeShippingEligible({currency:'INR',order_totals:{subtotal_price:149900}},env),true);
- assert.equal(freeShippingEligible({currency:'INR',order_totals:{subtotal_price:149899}},env),false);
- assert.equal(freeShippingEligible({currency:'USD',order_totals:{subtotal_price:149900}},env),false);
- assert.equal(configuredFreeShippingThreshold({}),0);
+test('free standard shipping activates at the AX INR 2000 threshold',()=>{
+ assert.equal(configuredFreeShippingThreshold(),2000);
+ assert.equal(freeShippingEligible({currency:'INR',order_totals:{subtotal_price:200000}}),true);
+ assert.equal(freeShippingEligible({currency:'INR',order_totals:{subtotal_price:199999}}),false);
+ assert.equal(freeShippingEligible({currency:'USD',order_totals:{subtotal_price:200000}}),false);
 });
 
 test('checkout makes standard delivery free at the configured threshold but keeps express paid',async()=>{
  const result=await getDelhiveryCheckoutRates({
   rate:{
    currency:'INR',
-   order_totals:{subtotal_price:150000},
+   order_totals:{subtotal_price:200000},
    destination:{country:'IN',postal_code:'400001'},
    items:[{grams:500,quantity:1,requires_shipping:true}]
   }
  },{
-  env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3',AX_FREE_SHIPPING_THRESHOLD:'1499'},
+  env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3'},
   fetchImpl:async url=>{
    const parsed=new URL(url);
    if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400001,pre_paid:'Y'}}]});
