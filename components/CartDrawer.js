@@ -8,6 +8,7 @@ import ProductImage from './ProductImage';
 import {cartLineDetails,variantHref} from '../lib/product-variants';
 import {trackMarketingEvent} from './MetaMarketing';
 import {trackStoreEvent} from '../lib/store-analytics';
+import {partialCodHandlingFee} from '../lib/partial-cod';
 import CartRecommendations from './CartRecommendations';
 
 export default function CartDrawer(){
@@ -15,6 +16,7 @@ export default function CartDrawer(){
  const lines=demo?demoLines.map(line=>({id:line.key,merchandiseId:line.variant?.id,quantity:line.quantity,title:line.product.title,handle:line.product.handle,href:variantHref(line.product.handle,line.variant?.id),image:line.variant?.image?.url||line.product.image,variant:line.variant?.selectedOptions?.map(option=>option.name+': '+option.value).join(' · '),unitPrice:Number(line.variant?.price?.amount||line.product.price),amount:Number(line.variant?.price?.amount||line.product.price)*line.quantity,currency:line.variant?.price?.currencyCode||'INR',weightGrams:null,requiresShipping:true})):(cart?.lines?.nodes||[]).map(cartLineDetails);
  const subtotal=demo?lines.reduce((sum,line)=>sum+line.amount,0):Number(cart?.cost?.subtotalAmount?.amount||0),currency=cart?.cost?.subtotalAmount?.currencyCode||lines[0]?.currency||'INR';
  const checkoutData=checkoutMarketingData(lines,subtotal,currency);
+ const codHandlingFee=partialCodEnabled?partialCodHandlingFee(subtotal):0;
  const threshold=Number(freeShippingThreshold||0),remaining=threshold>0?Math.max(0,threshold-subtotal):0,progress=threshold>0?Math.max(0,Math.min(100,(subtotal/threshold)*100)):0;
  function beginCheckout(){trackMarketingEvent('InitiateCheckout',checkoutData);trackStoreEvent('begin_checkout',{value:subtotal,currency,metadata:{items:lines.reduce((sum,line)=>sum+line.quantity,0)}});}
  return <Dialog title="Your bag" className="cart-dialog" onClose={()=>setOpen(false)}>
@@ -26,7 +28,7 @@ export default function CartDrawer(){
    {threshold>0&&<div className="shipping-progress"><div><span style={{width:progress+'%'}}/></div><p>{remaining>0?<><strong>{formatMoney(remaining,currency)}</strong> away from free standard delivery.</>:<strong>Free standard delivery unlocked.</strong>}</p></div>}
    {!demo&&<CartRecommendations handles={lines.map(line=>line.handle)} onNavigate={()=>setOpen(false)}/>}
    <div className="cart-total"><span>Subtotal</span><strong>{formatMoney(subtotal,currency)}</strong></div>
-   {demo?<button className="checkout-button" disabled>PREVIEW · CHECKOUT UNAVAILABLE</button>:busy?<button className="checkout-button" disabled>UPDATING BAG…</button>:<div className="checkout-methods"><a className="checkout-button" href={cart.checkoutUrl} onClick={beginCheckout}>PAY ONLINE</a>{partialCodEnabled&&<Link className="partial-cod-button" href="/partial-cod" onClick={()=>{beginCheckout();setOpen(false);}}><strong>PARTIAL COD</strong><span>Pay ₹100 or 10% now · balance on delivery</span></Link>}</div>}
+   {demo?<button className="checkout-button" disabled>PREVIEW · CHECKOUT UNAVAILABLE</button>:busy?<button className="checkout-button" disabled>UPDATING BAG…</button>:<div className="checkout-methods"><div className="online-checkout-option"><a className="checkout-button" href={cart.checkoutUrl} onClick={beginCheckout}>PAY ONLINE</a>{partialCodEnabled&&<small>NO COD HANDLING FEE</small>}</div>{partialCodEnabled&&<Link className="partial-cod-button" href="/partial-cod" onClick={()=>{beginCheckout();setOpen(false);}}><span className="partial-cod-choice-copy"><strong>PARTIAL COD</strong><span>Pay ₹100 or 10% now · balance on delivery</span></span><small>Courier COD handling {formatMoney(codHandlingFee,currency)} · ₹40 minimum / 2% above ₹2,000</small></Link>}</div>}
   </>}
  </Dialog>;
 }
