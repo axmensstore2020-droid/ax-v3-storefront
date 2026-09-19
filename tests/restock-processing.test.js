@@ -59,7 +59,26 @@ test('processor sends only when exact variant is back in stock',async()=>{
     env,
     now:new Date('2026-09-19T00:00:00Z')
   });
-  assert.deepEqual(result,{checked:2,waiting:1,notified:1,cancelled:0,failed:0});
+  assert.deepEqual(result,{checked:2,waiting:1,notified:1,cancelled:0,expired:0,failed:0});
   assert.deepEqual(notified,[[rows[0].id,'email_one']]);
   assert.deepEqual(attempts,[]);
+});
+
+test('processor expires stale requests without sending',async()=>{
+  const row={id:'3'.repeat(64),email:'old@example.com',product_handle:'tee',variant_id:'gid://shopify/ProductVariant/3',variant_label:'Size: S',attempt_count:0,expires_at:'2026-09-01T00:00:00Z'};
+  const closed=[];
+  const result=await processRestockSubscriptions({
+    database:{
+      listPendingRestockSubscriptions:async()=>[row],
+      closeRestockSubscription:async(...args)=>closed.push(args),
+      markRestockNotified:async()=>{throw new Error('should not notify');},
+      markRestockAttempt:async()=>{}
+    },
+    getProduct:async()=>{throw new Error('should not query Shopify');},
+    sendEmail:async()=>{throw new Error('should not send');},
+    env,
+    now:new Date('2026-09-19T00:00:00Z')
+  });
+  assert.deepEqual(result,{checked:1,waiting:0,notified:0,cancelled:0,expired:1,failed:0});
+  assert.deepEqual(closed,[[row.id,'expired']]);
 });
