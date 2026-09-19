@@ -5,6 +5,7 @@ import Icon from '../components/Icon';
 import {StylistButton} from '../components/StylistProvider';
 import {getHomepageProducts} from '../lib/shopify';
 import {getNavigation,getHomepageCampaigns} from '../lib/content';
+import RecentlyViewed from '../components/RecentlyViewed';
 
 export const revalidate=60;
 
@@ -102,6 +103,8 @@ export default async function Home() {
   <section className={`editorial-split-campaign ${jeansCampaign.theme}`} aria-labelledby="jeans-title"><div className="editorial-split-copy"><p className="eyebrow">{jeansCampaign.eyebrow}</p><CampaignTitle value={jeansCampaign.title} id="jeans-title"/>{jeansCampaign.description && <p>{jeansCampaign.description}</p>}<ArrowLink href={jeansCampaign.ctaLink}>{jeansCampaign.ctaLabel}</ArrowLink></div><div className="editorial-split-image"><EditorialImage src={jeansCampaign.imageSrc} mobileSrc={jeansCampaign.mobileImageSrc} alt={jeansCampaign.imageAlt} sizes="(max-width:700px) 100vw, 55vw"/></div></section>
   <section className={`editorial-feature ${winter.theme}`} aria-labelledby="winter-title"><div className="editorial-feature-image"><EditorialImage src={winter.imageSrc} mobileSrc={winter.mobileImageSrc} alt={winter.imageAlt} sizes="(max-width:700px) 100vw, 55vw"/></div><div className="editorial-feature-copy"><p className="eyebrow">{winter.eyebrow}</p><CampaignTitle value={winter.title} id="winter-title"/>{winter.description && <p>{winter.description}</p>}<ArrowLink href={winter.ctaLink}>{winter.ctaLabel}</ArrowLink></div></section>
   <section className={`editorial-special ${special.theme}`} aria-labelledby="special-title"><div className="editorial-special-copy"><p className="eyebrow">{special.eyebrow}</p><CampaignTitle value={special.title} id="special-title"/>{special.description && <p>{special.description}</p>}<ArrowLink href={special.ctaLink}>{special.ctaLabel}</ArrowLink></div><div className="editorial-special-image"><EditorialImage src={special.imageSrc} mobileSrc={special.mobileImageSrc} alt={special.imageAlt} sizes="(max-width:700px) 100vw, 44vw"/></div></section>
+
+  <RecentlyViewed/>
 
   <section className="editorial-style-index" aria-labelledby="style-title"><div><p className="eyebrow">FIND YOUR WAY IN</p><CampaignTitle value="Explore by mood." id="style-title"/><p>Old money, Korean fits, streetwear and everything in between.</p></div><nav className="editorial-style-links" aria-label="Style collections">{styles.map((style,index) => <Link key={style.key} href={style.href}><span><small>{String(index+1).padStart(2,'0')}</small>{style.label}</span><Icon name="arrow" size={18}/></Link>)}</nav></section>
 

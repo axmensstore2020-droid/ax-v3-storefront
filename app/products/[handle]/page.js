@@ -11,6 +11,7 @@ import {breadcrumbJsonLd,jsonLd,pageMetadata,productGroupJsonLd} from '../../../
 import {findVariant} from '../../../lib/commerce';
 import {initialSelection,selectionImage} from '../../../lib/product-variants';
 import {imageSrcSet,imageUrl} from '../../../components/ProductImage';
+import RecentlyViewed from '../../../components/RecentlyViewed';
 
 export async function generateMetadata({params}) {
  const {handle}=await params,product=await getProduct(handle);
@@ -49,5 +50,6 @@ export default async function ProductPage({params,searchParams}) {
   </ProductPurchase>
   <CompleteLook product={product} items={completeLook}/>
   {related.length>0 && <section className="section-wrap related-section"><div className="section-head"><h2 className="editorial">More to make your own.</h2><Link href="/products" className="underlined-link">EXPLORE ALL <Icon name="arrow"/></Link></div><div className="product-grid">{related.map(p => <ProductCard key={p.id} product={p}/>)}</div></section>}
+  <RecentlyViewed excludeHandles={[product.handle]}/>
  </main>;
 }
