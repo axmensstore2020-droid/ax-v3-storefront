@@ -1,5 +1,4 @@
 'use client';
-import {useEffect,useRef,useState} from 'react';
 import {useCart} from './CartProvider';
 import {StylistButton} from './StylistProvider';
 import {formatMoney} from '../lib/catalog';
@@ -8,7 +7,6 @@ import Icon from './Icon';
 
 export default function AddToCart({product,options,selected,variant,onSelect,beforeAddButton=null}) {
   const {addItem,busy}=useCart(),variants=product.variants||[],shown=visibleOptions(options);
-  const [showSticky,setShowSticky]=useState(false),primaryButton=useRef(null);
   const missing=shown.find(option=>!selected[option.name]);
   const available=!missing && (product.demo || Boolean(variant?.availableForSale));
   const candidates=variants.filter(item=>matchesSelection(item,selected));
@@ -27,12 +25,6 @@ export default function AddToCart({product,options,selected,variant,onSelect,bef
   const quantity=Number(variant?.quantityAvailable),lowStock=available && Number.isInteger(quantity) && quantity>0 && quantity<=3;
   const buttonText=busy?'UPDATING BAG…':missing?'CHOOSE '+missing.name.toUpperCase():product.demo?'ADD TO PREVIEW BAG':available?'ADD TO BAG':'UNAVAILABLE';
   const add=()=>addItem({merchandiseId:variant?.id,variant,product});
-  useEffect(()=>{
-    const node=primaryButton.current;
-    if(!node || typeof IntersectionObserver==='undefined') return;
-    const observer=new IntersectionObserver(([entry])=>setShowSticky(!entry.isIntersecting),{threshold:.2});
-    observer.observe(node);return()=>observer.disconnect();
-  },[]);
   return <div className="buy-box">
     <div className="pdp-price-row">
       <div className="pdp-price-group">
@@ -48,8 +40,7 @@ export default function AddToCart({product,options,selected,variant,onSelect,bef
     {sizeOption && sizeFit?.text && <div className="size-recommendation" aria-live="polite"><p><strong>{selectedSize}</strong> · {sizeFit.text}</p><span>AX’s garment note—not a personal size recommendation.</span></div>}
     <StylistButton className="find-size" mode="size" product={{title:product.title,handle:product.handle,selectedOptions:selected}}>FIND MY SIZE WITH AX <Icon name="arrow" size={17}/></StylistButton>
     {beforeAddButton}
-    <button ref={primaryButton} type="button" className="add-bag" disabled={!available||busy} onClick={add}>{buttonText}</button>
-    {showSticky && <button type="button" className="mobile-sticky-add-bag" disabled={!available||busy} onClick={add}>{buttonText}</button>}
+    <button type="button" className="add-bag" disabled={!available||busy} onClick={add}>{buttonText}</button>
     {product.demo && <p className="cart-note">Sample catalog. Sizes and availability will appear when the store opens.</p>}
   </div>;
 }
