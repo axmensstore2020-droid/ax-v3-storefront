@@ -24,7 +24,7 @@ export async function GET(request){
   const handles=normalizeWishlist((url.searchParams.get('handles')||'').split(','));
   if(!handles.length) return NextResponse.json({items:[]},{headers:{'Cache-Control':'no-store, private'}});
   try{
-    const catalog=await getProducts(100);
+    const catalog=await getProducts(250);
     const byHandle=new Map(catalog.map(product=>[product.handle,product]));
     const items=handles.map(handle=>byHandle.get(handle)).filter(Boolean).map(safeProduct);
     return NextResponse.json({items},{headers:{'Cache-Control':'no-store, private'}});
