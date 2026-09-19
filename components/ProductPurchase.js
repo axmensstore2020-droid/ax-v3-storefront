@@ -26,7 +26,9 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
   useEffect(()=>{
     if(product.demo || trackedView.current===product.handle)return;
     trackedView.current=product.handle;
-    trackMarketingEvent('ViewContent',productMarketingData(product,variant,1));
+    const marketing=productMarketingData(product,variant,1);
+    trackMarketingEvent('ViewContent',marketing);
+    trackStoreEvent('product_view',{productHandle:product.handle,value:marketing.value,currency:marketing.currency,metadata:{variantId:variant?.id || ''}});
   },[product,variant]);
   return <section className="pdp">
     <div ref={galleryRef} className={`pdp-gallery${gallery.length===1?' single-image':''}`} aria-label="Product photos">
