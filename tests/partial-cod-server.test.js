@@ -1,0 +1,40 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createHmac} from 'node:crypto';
+import {sealPartialCodSession,unsealPartialCodSession,validatePartialCodCustomer,verifyRazorpaySignature} from '../lib/partial-cod-server.js';
+
+test('Partial COD customer data is normalized for Indian delivery',()=>{
+ const customer=validatePartialCodCustomer({
+  firstName:' Muhammed ',lastName:'Nihal',email:'TEST@EXAMPLE.COM',phone:'+91 98765 43210',
+  address1:'12 NSR Road',address2:'Near store',city:'Coimbatore'
+ },'641011',{stateCode:'TN'});
+ assert.equal(customer.email,'test@example.com');
+ assert.equal(customer.phone,'+919876543210');
+ assert.equal(customer.phoneDigits,'9876543210');
+ assert.equal(customer.shippingAddress.countryCode,'IN');
+ assert.equal(customer.shippingAddress.provinceCode,'TN');
+ assert.equal(customer.shippingAddress.zip,'641011');
+});
+
+test('Partial COD rejects invalid phone numbers',()=>{
+ assert.throws(()=>validatePartialCodCustomer({
+  firstName:'AX',lastName:'Customer',email:'test@example.com',phone:'1234',
+  address1:'12 NSR Road',city:'Coimbatore'
+ },'641011',{stateCode:'TN'}),/mobile/i);
+});
+
+test('Partial COD encrypted session round trips and rejects tampering',()=>{
+ const secret='x'.repeat(40),value={kind:'partial-cod',exp:Date.now()+60_000,advance:130};
+ const token=sealPartialCodSession(value,secret);
+ assert.deepEqual(unsealPartialCodSession(token,secret),value);
+ const changed=token.slice(0,-1)+(token.endsWith('a')?'b':'a');
+ assert.equal(unsealPartialCodSession(changed,secret),null);
+ assert.equal(unsealPartialCodSession(token,'y'.repeat(40)),null);
+});
+
+test('Razorpay checkout signature is verified with timing-safe HMAC',()=>{
+ const secret='razorpay-secret',orderId='order_ABC123',paymentId='pay_XYZ789';
+ const signature=createHmac('sha256',secret).update(orderId+'|'+paymentId).digest('hex');
+ assert.equal(verifyRazorpaySignature({orderId,paymentId,signature},secret),true);
+ assert.equal(verifyRazorpaySignature({orderId,paymentId,signature:'0'.repeat(64)},secret),false);
+});
