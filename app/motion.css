@@ -1,6 +1,6 @@
 /* AX motion system — Stage 1
    Quiet by default, slightly unexpected on interaction.
-   Native CSS + IntersectionObserver only; no animation runtime dependency. */
+   Motion.dev owns coordinated/dynamic animation; CSS owns tiny hover and press feedback. */
 
 :root{
   --ax-motion-fast:150ms;
@@ -11,30 +11,6 @@
 }
 
 @media (prefers-reduced-motion:no-preference){
-  /* Scroll reveals: lower travel than the previous system, with tiny directional variation. */
-  html.ax-motion-enabled [data-ax-reveal]{
-    --ax-reveal-x:0px;
-    --ax-reveal-y:9px;
-    --ax-reveal-scale:1;
-    opacity:0;
-    transform:translate3d(var(--ax-reveal-x),var(--ax-reveal-y),0) scale(var(--ax-reveal-scale));
-    transition:
-      opacity var(--ax-motion-slow) ease var(--ax-motion-delay,0ms),
-      transform 520ms var(--ax-motion-soft) var(--ax-motion-delay,0ms);
-    will-change:opacity,transform;
-  }
-  html.ax-motion-enabled [data-ax-reveal].ax-motion-visible{
-    opacity:1;
-    transform:none;
-    will-change:auto;
-  }
-
-  /* Product grids never enter in a perfectly uniform way. The offsets are intentionally tiny. */
-  .product-grid>.product-card:nth-child(4n+1){--ax-reveal-x:-3px;--ax-reveal-y:8px}
-  .product-grid>.product-card:nth-child(4n+2){--ax-reveal-x:0px;--ax-reveal-y:6px}
-  .product-grid>.product-card:nth-child(4n+3){--ax-reveal-x:3px;--ax-reveal-y:9px}
-  .product-grid>.product-card:nth-child(4n){--ax-reveal-x:-1px;--ax-reveal-y:7px}
-
   @media (hover:hover) and (pointer:fine){
     /* Product cards: not a normal zoom. Image and copy move on slightly different timing. */
     .product-card .product-image-wrap{
@@ -139,16 +115,8 @@
     animation:ax-option-confirm 210ms var(--ax-motion-ease);
   }
 
-  /* Search stays conventional; panels use a tiny scale mismatch that settles quickly. */
-  .search-suggestions{animation:ax-pop-in 170ms ease-out both}
+  /* Motion.dev owns panel/dialog transforms; CSS only owns the native dialog backdrop. */
   .catalog-panel{transform-origin:50% 0}
-  .filter-panel{animation:ax-panel-in 230ms var(--ax-motion-ease) both}
-  .sort-panel{animation:ax-panel-in-reverse 210ms var(--ax-motion-ease) both}
-
-  /* Dialogs/drawers: subtle oversize + off-axis arrival. */
-  .dialog[open]{animation:ax-dialog-in 210ms var(--ax-motion-ease) both}
-  .side-dialog[open],.cart-dialog[open]{animation:ax-drawer-in 260ms var(--ax-motion-ease) both}
-  .category-dialog[open]{animation:ax-menu-in 220ms var(--ax-motion-ease) both}
   .dialog[open]::backdrop{animation:ax-backdrop-in 180ms ease-out both}
 
   /* AX Island should feel anchored, not float constantly. */
@@ -165,30 +133,6 @@
     0%{transform:scale(.985)}
     58%{transform:scale(1.012)}
     100%{transform:scale(1)}
-  }
-  @keyframes ax-pop-in{
-    from{opacity:0;transform:translate3d(0,-4px,0)}
-    to{opacity:1;transform:none}
-  }
-  @keyframes ax-panel-in{
-    from{opacity:0;transform:translate3d(0,-4px,0) scale(1.006)}
-    to{opacity:1;transform:none}
-  }
-  @keyframes ax-panel-in-reverse{
-    from{opacity:0;transform:translate3d(2px,-3px,0) scale(.997)}
-    to{opacity:1;transform:none}
-  }
-  @keyframes ax-dialog-in{
-    from{opacity:0;transform:translate3d(2px,6px,0) scale(1.006)}
-    to{opacity:1;transform:none}
-  }
-  @keyframes ax-drawer-in{
-    from{opacity:.82;transform:translate3d(14px,-2px,0) scale(.997)}
-    to{opacity:1;transform:none}
-  }
-  @keyframes ax-menu-in{
-    from{opacity:0;transform:translate3d(-3px,-5px,0) scale(1.004)}
-    to{opacity:1;transform:none}
   }
   @keyframes ax-backdrop-in{
     from{opacity:0}
