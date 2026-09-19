@@ -3,7 +3,6 @@ name: Live Performance Audit
 on:
   push:
     branches: [main]
-  pull_request:
     paths:
       - '.github/workflows/live-performance.yml'
       - 'app/**'
@@ -17,46 +16,67 @@ permissions:
   contents: read
 
 concurrency:
-  group: live-performance-${{ github.event.pull_request.number || github.ref }}
+  group: live-performance-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   lighthouse:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Audit live AX storefront
         shell: bash
         run: |
           set -euo pipefail
           BASE="https://aqua-oyster-550932.hostingersite.com"
-          if [ "${{ github.event_name }}" = "push" ]; then
-            echo "Waiting for the Hostinger deployment to update..."
-            sleep 90
-          fi
+
+          echo "Waiting for the Hostinger deployment to update..."
+          sleep 120
+
+          wait_for_page() {
+            label="$1"
+            path="$2"
+            url="${BASE}${path}"
+            echo "Checking ${label}: ${url}"
+            curl --fail --silent --show-error --location \
+              --retry 5 --retry-delay 10 --retry-all-errors \
+              --connect-timeout 15 --max-time 45 \
+              --user-agent "AX-V3-Lighthouse/1.0" \
+              --output /dev/null "${url}"
+          }
+
           audit_page() {
             label="$1"
             path="$2"
             output="lighthouse-${label}.json"
+
+            wait_for_page "${label}" "${path}"
+
             attempt=1
             while true; do
               rm -f "${output}"
               if npx --yes lighthouse@12.8.2 "${BASE}${path}" \
                 --quiet \
-                --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+                --chrome-flags="--headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu" \
                 --only-categories=performance \
+                --max-wait-for-load=45000 \
                 --output=json \
                 --output-path="${output}"; then
                 break
               fi
-              if [ "${attempt}" -ge 2 ]; then
-                echo "Lighthouse failed twice for ${label}."
+
+              if [ "${attempt}" -ge 3 ]; then
+                echo "Lighthouse failed three times for ${label}."
                 return 1
               fi
+
               attempt=$((attempt+1))
-              echo "Retrying Lighthouse for ${label}..."
-              sleep 5
+              delay=$((attempt*15))
+              echo "Retrying Lighthouse for ${label} in ${delay}s..."
+              sleep "${delay}"
+              wait_for_page "${label}" "${path}"
             done
+
             node - "${label}" "${output}" <<'NODE'
           const fs=require('fs');
           const label=process.argv[2],file=process.argv[3];
@@ -90,5 +110,7 @@ jobs:
           }
 
           audit_page home "/"
+          sleep 15
           audit_page products "/products"
+          sleep 15
           audit_page product-detail "/products/khorasan-graphic-sleeveless-cropped-tee"
