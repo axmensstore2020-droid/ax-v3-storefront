@@ -124,7 +124,7 @@ export default function PartialCodCheckout(){
   return <section className="partial-cod-checkout">
     <div className="partial-cod-intro">
       <div><p className="eyebrow">PARTIAL CASH ON DELIVERY</p><h1 className="editorial">Pay a small advance. Pay the rest on delivery.</h1></div>
-      <p>AX collects the booking advance securely through Razorpay. After verification, the remaining order balance is sent to Delhivery as COD.</p>
+      <div className="partial-cod-intro-copy"><p>AX collects the booking advance securely through Razorpay. After verification, the remaining order balance is sent to Delhivery as COD.</p><p className="partial-cod-fee-notice"><strong>Pay online to avoid COD handling charges.</strong> Partial COD includes a ₹40 minimum courier handling fee; above ₹2,000, the fee is 2% of product value.</p></div>
     </div>
 
     <form className="partial-cod-form" onSubmit={checkCod}>
@@ -150,10 +150,13 @@ export default function PartialCodCheckout(){
       </button>)}</div>
 
       {selected&&<div className="partial-cod-breakdown">
-        <div><span>Final order value</span><strong>{formatMoney(selected.orderTotal,'INR')}</strong></div>
+        <div><span>Products</span><strong>{formatMoney(quote.cart?.baseTotal||0,'INR')}</strong></div>
+        <div><span>Shipping</span><strong>{selected.shippingAmount===0?'FREE':formatMoney(selected.shippingAmount,'INR')}</strong></div>
+        <div className="cod-handling"><span>COD handling fee</span><strong>{formatMoney(selected.codHandlingFee,'INR')}</strong></div>
+        <div className="order-total"><span>Final order value</span><strong>{formatMoney(selected.orderTotal,'INR')}</strong></div>
         <div className="advance"><span>Pay now via Razorpay</span><strong>{formatMoney(selected.advance,'INR')}</strong></div>
         <div><span>Pay Delhivery on delivery</span><strong>{formatMoney(selected.codBalance,'INR')}</strong></div>
-        <small>Advance = greater of ₹100 or 10% of the final order value, with 10% rounded to the nearest ₹10.</small>
+        <small>COD handling = ₹40 minimum or 2% of product value, whichever is higher. Advance = greater of ₹100 or 10% of the final order value, with 10% rounded to the nearest ₹10.</small>
       </div>}
 
       <label className="partial-cod-consent">
