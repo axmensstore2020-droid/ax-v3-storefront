@@ -13,6 +13,7 @@ import {trackStoreEvent} from '../lib/store-analytics';
 import {deliveryWeightForProduct} from '../lib/weight';
 import ShippingEstimator from './ShippingEstimator';
 import ProductProof from './ProductProof';
+import {rememberRecentlyViewed} from '../lib/recently-viewed';
 
 const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
 
@@ -25,6 +26,9 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
   const deliverySubtotal=Number(variant?.price?.amount ?? product.price ?? 0);
   const gallery = [...new Map([primary,...(product.images || [])].filter(image => image?.url).map(image => [image.url,image])).values()];
   useEffect(() => {galleryRef.current?.scrollTo({left:0,behavior:'instant'});},[primary?.url]);
+  useEffect(()=>{
+    if(!product.demo) rememberRecentlyViewed(product.handle);
+  },[product.demo,product.handle]);
   useEffect(()=>{
     if(product.demo || trackedView.current===product.handle)return;
     trackedView.current=product.handle;
