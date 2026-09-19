@@ -19,7 +19,8 @@ function json(body,status=200,guard=null,extra={}) {
 }
 
 export async function POST(request) {
-  if(!sameOriginRequest(request,process.env.AX_SITE_ORIGIN)) return json({ok:false,error:'Please use the AX store.'},403);
+  const origin=process.env.AX_SITE_ORIGIN || new URL(request.url).origin;
+  if(!sameOriginRequest(request,origin)) return json({ok:false,error:'Please use the AX store.'},403);
   const guard=reserveShippingBurst(request,{limit:18});
   if(!guard.allowed) return json({ok:false,error:'Too many delivery checks. Please try again shortly.'},429,guard,{'Retry-After':String(guard.retryAfter)});
   let body;
