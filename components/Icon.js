@@ -3,6 +3,7 @@ const paths = {
  explore: <><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></>,
  search: <><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></>,
  profile: <><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></>,
+ heart: <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/>,
  menu: <path d="M3 7h18M3 17h18"/>, close: <path d="m5 5 14 14M19 5 5 19"/>,
  arrow: <path d="M3 12h18m-6-6 6 6-6 6"/>,
  chevron: <path d="m6 9 6 6 6-6"/>,
