@@ -8,7 +8,7 @@ export const runtime='nodejs';
 export const dynamic='force-dynamic';
 
 const VISITOR_COOKIE='ax_store_visitor';
-const EVENTS=new Set(['search','filter','select_variant','size_guide','shipping_quote','recommendation_click','add_look','begin_checkout','web_vital']);
+const EVENTS=new Set(['product_view','search','filter','select_variant','size_guide','shipping_quote','recommendation_click','add_to_cart','add_look','begin_checkout','web_vital']);
 
 function cookieValue(request,name){
   const raw=request.headers.get('cookie') || '';
