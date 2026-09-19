@@ -2,7 +2,7 @@ import {getMerchantProducts} from '../../lib/shopify.js';
 
 export const revalidate=900;
 
-const xml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&apos;'}[char]));
+const xml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]));
 const id=value=>String(value||'').split('/').at(-1)||String(value||'');
 
 function configured(){
