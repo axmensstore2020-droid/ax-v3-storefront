@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-const {cartWeightGrams,configuredFreeShippingThreshold,estimateDelhiveryDelivery,freeShippingEligible,getDelhiveryCheckoutRates,normalizeDelhiveryResponse,normalizePincode,normalizeShippingAmount,normalizeShippingTat,normalizeWaybill,quoteDelhiveryRate,trackDelhiveryWaybills}=await import('../lib/delhivery.js');
+const {cartWeightGrams,configuredFreeShippingThreshold,createDelhiveryCodShipment,estimateDelhiveryCodDelivery,estimateDelhiveryDelivery,findDelhiveryShipmentByOrderId,freeShippingEligible,getDelhiveryCheckoutRates,normalizeDelhiveryResponse,normalizePincode,normalizeShippingAmount,normalizeShippingTat,normalizeWaybill,quoteDelhiveryRate,trackDelhiveryWaybills}=await import('../lib/delhivery.js');
 
 const payload={ShipmentData:[{Shipment:{
   AWB:'1234567890123',
@@ -271,4 +271,66 @@ test('pincode serviceability exposes COD separately from prepaid',async()=>{
  assert.equal(result.serviceable,true);
  assert.equal(result.prepaidServiceable,true);
  assert.equal(result.codServiceable,false);
+});
+
+
+test('Partial COD quotes only COD-serviceable pincodes and asks Delhivery for COD pricing',async()=>{
+ const calls=[];
+ const result=await estimateDelhiveryCodDelivery({destinationPincode:'400064',weightGrams:500,subtotal:1299},{
+  env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3'},
+  fetchImpl:async url=>{
+   const parsed=new URL(url);calls.push(parsed);
+   if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',cod:'Y',city:'Mumbai',state_code:'MH'}}]});
+   assert.equal(parsed.searchParams.get('pt'),'COD');
+   return Response.json([{total_amount:parsed.searchParams.get('md')==='S'?70:100,tat:parsed.searchParams.get('md')==='S'?'4-5':'2-3'}]);
+  }
+ });
+ assert.equal(result.codServiceable,true);
+ assert.equal(result.rates[0].amount,73);
+ assert.equal(result.rates[1].amount,103);
+ assert.equal(calls.length,3);
+});
+
+test('Partial COD fails closed when Delhivery does not support COD',async()=>{
+ let calls=0;
+ const result=await estimateDelhiveryCodDelivery({destinationPincode:'400064',weightGrams:500,subtotal:1299},{
+  env:{DELHIVERY_API_TOKEN:'private-token'},
+  fetchImpl:async()=>{calls+=1;return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',cod:'N'}}]});}
+ });
+ assert.equal(result.codServiceable,false);
+ assert.deepEqual(result.rates,[]);
+ assert.equal(calls,1);
+});
+
+test('Delhivery Partial COD shipment sends only the outstanding COD balance',async()=>{
+ let request=null;
+ const result=await createDelhiveryCodShipment({
+  orderReference:'AXPCOD-payABC123',name:'AX Customer',phone:'9876543210',
+  address:'12 NSR Road',pincode:'641011',city:'Coimbatore',state:'TN',
+  orderTotal:1299,codAmount:1169,weightGrams:404,quantity:1,
+  productsDescription:'Racing Jacket',shippingCode:'standard'
+ },{
+  env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_CLIENT_NAME:'AX Store',DELHIVERY_PICKUP_LOCATION:'AX Warehouse'},
+  fetchImpl:async(url,init)=>{request={url,init};return Response.json({packages:[{waybill:'1234567890123',status:'Success'}]});}
+ });
+ assert.equal(result.waybill,'1234567890123');
+ assert.equal(request.url,'https://track.delhivery.com/api/cmu/create.json');
+ assert.equal(request.init.headers.Authorization,'Token private-token');
+ const params=new URLSearchParams(request.init.body),payload=JSON.parse(params.get('data'));
+ assert.equal(params.get('format'),'json');
+ assert.equal(payload.pickup_location.name,'AX Warehouse');
+ assert.equal(payload.shipments[0].payment_mode,'COD');
+ assert.equal(payload.shipments[0].cod_amount,1169);
+ assert.equal(payload.shipments[0].total_amount,1299);
+ assert.equal(payload.shipments[0].order,'AXPCOD-payABC123');
+});
+
+test('Delhivery Partial COD retry can recover an existing shipment by order reference',async()=>{
+ let calledUrl=null;
+ const result=await findDelhiveryShipmentByOrderId('AXPCOD-payABC123',{
+  env:{DELHIVERY_API_TOKEN:'private-token'},
+  fetchImpl:async url=>{calledUrl=new URL(url);return Response.json(payload);}
+ });
+ assert.equal(calledUrl.searchParams.get('ref_ids'),'AXPCOD-payABC123');
+ assert.equal(result.shipment.waybill,'1234567890123');
 });
