@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHmac} from 'node:crypto';
-import {sealPartialCodSession,unsealPartialCodSession,validatePartialCodCustomer,verifyRazorpaySignature} from '../lib/partial-cod-server.js';
+import {getShopifyAdminAccessToken,sealPartialCodSession,unsealPartialCodSession,validatePartialCodCustomer,verifyRazorpaySignature} from '../lib/partial-cod-server.js';
 
 test('Partial COD customer data is normalized for Indian delivery',()=>{
  const customer=validatePartialCodCustomer({
@@ -38,4 +38,30 @@ test('Razorpay checkout signature is verified with timing-safe HMAC',()=>{
  const signature=createHmac('sha256',secret).update(orderId+'|'+paymentId).digest('hex');
  assert.equal(verifyRazorpaySignature({orderId,paymentId,signature},secret),true);
  assert.equal(verifyRazorpaySignature({orderId,paymentId,signature:'0'.repeat(64)},secret),false);
+});
+
+
+test('Shopify Admin client credentials are exchanged for a short-lived token and cached',async()=>{
+ const calls=[];
+ const fetchImpl=async(url,options)=>{
+  calls.push({url,options});
+  return {ok:true,status:200,json:async()=>({access_token:'shpat_test_12345678901234567890',expires_in:86399})};
+ };
+ const config={
+  domain:'axunisexstore.myshopify.com',
+  adminToken:'',
+  adminClientId:'client-id',
+  adminClientSecret:'client-secret'
+ };
+ const first=await getShopifyAdminAccessToken(config,{fetchImpl,now:1_000});
+ const second=await getShopifyAdminAccessToken(config,{fetchImpl,now:2_000});
+ assert.equal(first,'shpat_test_12345678901234567890');
+ assert.equal(second,first);
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].url,'https://axunisexstore.myshopify.com/admin/oauth/access_token');
+ assert.equal(calls[0].options.headers['Content-Type'],'application/x-www-form-urlencoded');
+ const body=new URLSearchParams(calls[0].options.body);
+ assert.equal(body.get('grant_type'),'client_credentials');
+ assert.equal(body.get('client_id'),'client-id');
+ assert.equal(body.get('client_secret'),'client-secret');
 });

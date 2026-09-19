@@ -39,7 +39,7 @@ The feature is hidden unless every required server-side setting is present and `
 ## Required production integrations
 
 1. **Razorpay** — create the booking-advance payment server-side and verify the returned payment signature before accepting the order. Never expose the Razorpay secret in browser code.
-2. **Shopify Admin GraphQL** — after verified payment, create the real order with the original Shopify variant IDs, shipping address, shipping line, a successful Razorpay transaction for the advance and financial status `PARTIALLY_PAID`. This requires an offline Admin API token with `read_orders` and `write_orders`.
+2. **Shopify Admin GraphQL** — after verified payment, create the real order with the original Shopify variant IDs, shipping address, shipping line, a successful Razorpay transaction for the advance and financial status `PARTIALLY_PAID`. AX uses a Dev Dashboard API-only app with `read_orders` and `write_orders`; the server exchanges `SHOPIFY_CLIENT_ID` + `SHOPIFY_CLIENT_SECRET` for a short-lived Admin API token and refreshes it automatically.
 3. **Delhivery** — re-check that the destination supports COD, then create the shipment with payment mode COD and COD amount equal to the remaining balance, never the full invoice value. Use the exact account client name and pickup-location/warehouse name configured in Delhivery.
 4. **Idempotency** — the Razorpay payment ID must map to at most one Shopify order and one Delhivery shipment. A retry must return the existing result rather than create duplicates.
 
@@ -61,7 +61,9 @@ See `.env.example`:
 - `AX_PARTIAL_COD_ENABLED`
 - `RAZORPAY_KEY_ID`
 - `RAZORPAY_KEY_SECRET`
-- `SHOPIFY_ADMIN_ACCESS_TOKEN`
+- `SHOPIFY_CLIENT_ID`
+- `SHOPIFY_CLIENT_SECRET`
+- `SHOPIFY_ADMIN_ACCESS_TOKEN` (legacy fallback only)
 - `DELHIVERY_CLIENT_NAME`
 - `DELHIVERY_PICKUP_LOCATION`
 - `AX_PARTIAL_COD_SECRET`
