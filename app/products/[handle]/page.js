@@ -30,9 +30,11 @@ export default async function ProductPage({params,searchParams}) {
  const query=await searchParams, initialVariantId=typeof query?.variant==='string'?query.variant:'', chooseSize=query?.chooseSize==='1';
  const selected=initialSelection(product,initialVariantId,chooseSize),variant=findVariant(product.variants || [],selected),primary=selectionImage(product,selected,variant);
  if(primary?.url) preload(imageUrl(primary.url,800),{as:'image',fetchPriority:'high',imageSrcSet:imageSrcSet(primary.url,[320,480,600,720,800,960,1100,1200]),imageSizes:'(max-width:700px) 94vw,50vw'});
- const catalog=await getProducts();
+ let catalog=[];
+ try { catalog=await getProducts(); } catch {}
  const lookCandidates=complementaryProducts(product,catalog,3);
- const completeLook=(await Promise.all(lookCandidates.map(item=>getProduct(item.handle)))).filter(Boolean);
+ const lookResults=await Promise.allSettled(lookCandidates.map(item=>getProduct(item.handle)));
+ const completeLook=lookResults.filter(result=>result.status==='fulfilled' && result.value).map(result=>result.value);
  const lookHandles=new Set(completeLook.map(item=>item.handle));
  const related=catalog.filter(p => p.handle!==handle && !lookHandles.has(p.handle)).slice(0,4);
  const structured=[
