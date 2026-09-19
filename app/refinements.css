@@ -65,6 +65,59 @@ h1,h2,h3{font-weight:300}
 .ax-orb .brand-mark{width:34px}
 .island-item{font-size:11px;gap:5px}
 .island-stylist>span:last-child{font-size:11px}
+
+/* Desktop: move the AX island out of the content/footer path and float it on the left edge. */
+@media(min-width:1100px){
+ .ax-island{
+  left:clamp(8px,1vw,16px);
+  top:50%;
+  bottom:auto;
+  transform:translateY(-50%);
+  width:62px;
+  height:auto;
+  min-height:338px;
+  grid-template-columns:1fr;
+  grid-template-rows:repeat(5,minmax(56px,auto));
+  gap:2px;
+  padding:10px 6px;
+  background:color-mix(in srgb,var(--paper) 94%,transparent);
+  border:1px solid #d2d3cc;
+  border-radius:34px;
+  box-shadow:0 8px 28px #00000012;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  isolation:isolate;
+ }
+ .ax-island .island-surface{display:none}
+ .ax-island .island-item{
+  min-height:56px;
+  width:100%;
+  padding:5px 2px;
+  gap:3px;
+  font-size:9px;
+  line-height:1.15;
+ }
+ .ax-island .island-item svg{width:18px;height:18px}
+ .ax-island .island-stylist{
+  align-self:auto;
+  justify-content:center;
+  min-height:78px;
+  padding:5px 0 4px;
+  gap:3px;
+  font-size:9px;
+  overflow:visible;
+ }
+ .ax-island .ax-orb{
+  width:50px;
+  height:50px;
+  margin:0;
+  box-shadow:0 5px 16px #00000018;
+ }
+ .ax-island .ax-orb .brand-mark{width:30px}
+ .ax-island .island-stylist>span:last-child{font-size:9px}
+ .ax-island .island-item[aria-current]>span{text-underline-offset:3px}
+ .stylist-dialog{margin:auto}
+}
 .stylist-info-link{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--line);padding-top:18px;margin-top:24px;font-size:12px;text-decoration:underline;text-underline-offset:4px}
 .dialog-heading h2{font-size:18px;text-transform:uppercase}
 .sheet-title{font-size:32px}
