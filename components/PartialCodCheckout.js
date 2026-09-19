@@ -1,10 +1,11 @@
 'use client';
 import Link from 'next/link';
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import {useCart} from './CartProvider';
 import {formatMoney} from '../lib/catalog';
 
 const emptyForm={firstName:'',lastName:'',email:'',phone:'',address1:'',address2:'',city:'',pincode:''};
+const PIN_KEY='ax_delivery_pincode';
 
 async function api(path,body) {
   const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -33,10 +34,17 @@ export default function PartialCodCheckout(){
   const selected=useMemo(()=>quote?.rates?.find(rate=>rate.code===shippingCode)||null,[quote,shippingCode]);
   const cartId=cart?.id || '';
 
+  useEffect(()=>{
+    try{
+      const saved=localStorage.getItem(PIN_KEY);
+      if(/^\d{6}$/.test(saved||'')) setForm(current=>current.pincode?current:{...current,pincode:saved});
+    }catch{}
+  },[]);
+
   function update(event){
     const {name,value}=event.target;
     setForm(current=>({...current,[name]:value}));
-    if(name==='pincode'){setQuote(null);setShippingCode('');}
+    if(name==='pincode'){setQuote(null);setShippingCode('');try{if(/^\d{6}$/.test(value)) localStorage.setItem(PIN_KEY,value);}catch{}}
   }
 
   async function checkCod(event){
@@ -44,6 +52,7 @@ export default function PartialCodCheckout(){
     try{
       if(!cartId) throw new Error('Your bag is empty or still loading.');
       const data=await api('/api/partial-cod/quote',{cartId,pincode:form.pincode});
+      try{localStorage.setItem(PIN_KEY,form.pincode);}catch{}
       setQuote(data);
       const first=data.rates?.[0]?.code || '';
       setShippingCode(first);
@@ -128,7 +137,7 @@ export default function PartialCodCheckout(){
     </div>
 
     <form className="partial-cod-form" onSubmit={checkCod}>
-      <div className="partial-cod-section-head"><span>01</span><div><strong>Delivery details</strong><small>India delivery only</small></div></div>
+      <div className="partial-cod-section-head"><span>01</span><div><strong>Delivery details</strong><small>COD availability was checked by pincode in your bag</small></div></div>
       <div className="partial-cod-fields">
         <label><span>First name</span><input name="firstName" value={form.firstName} onChange={update} autoComplete="given-name" required/></label>
         <label><span>Last name</span><input name="lastName" value={form.lastName} onChange={update} autoComplete="family-name" required/></label>
