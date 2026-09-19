@@ -55,3 +55,23 @@ test('Shopify optionValues maps to variant selector values',async t=>{
  globalThis.fetch=async()=>Response.json({data:{product:{...sample,images:{nodes:[]},options:[{name:'Size',optionValues:[{name:'M'},{name:'L'}]}],variants:{nodes:[]}}}});
  assert.deepEqual((await live.getProduct('real-shirt')).options,[{name:'Size',values:['M','L']}]);
 });
+
+test('PDP still loads when optional inventory quantity scope is unavailable',async t=>{
+ t.after(()=>{globalThis.fetch=realFetch;});
+ const product={...sample,handle:'inventory-safe-shirt',
+  selectedOrFirstAvailableVariant:{id:'gid://shopify/ProductVariant/11',sku:'AX-11',price:{amount:'1000',currencyCode:'INR'},compareAtPrice:null,weight:404,weightUnit:'GRAMS',requiresShipping:true},
+  images:{nodes:[]},options:[{name:'Size',optionValues:[{name:'M'}]}],
+  variants:{nodes:[{id:'gid://shopify/ProductVariant/11',title:'M',sku:'AX-11',availableForSale:true,price:{amount:'1000',currencyCode:'INR'},compareAtPrice:null,weight:404,weightUnit:'GRAMS',requiresShipping:true,selectedOptions:[{name:'Size',value:'M'}],image:null}]}
+ };
+ globalThis.fetch=async(url,init)=>{
+  const q=JSON.parse(init.body).query;
+  if(q.includes('query ProductInventory')) return Response.json({errors:[{message:'Access denied for quantityAvailable'}]});
+  if(q.includes('query ProductMetafields') || q.includes('query LegacyProductMetafields')) return Response.json({data:{product:{id:product.id,metafields:[]}}});
+  return Response.json({data:{product}});
+ };
+ const result=await live.getProduct('inventory-safe-shirt');
+ assert.equal(result.handle,'inventory-safe-shirt');
+ assert.equal(result.variants[0].availableForSale,true);
+ assert.equal(result.variants[0].quantityAvailable,undefined);
+ assert.equal(result.variants[0].weight,404);
+});
