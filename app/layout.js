@@ -17,7 +17,8 @@ import {getNavigation} from '../lib/content';
 import NavigationProvider from '../components/NavigationProvider';
 import {metaCapiConfigured,metaPixelId} from '../lib/meta';
 import {SITE_NAME,SITE_URL,jsonLd,organizationJsonLd,websiteJsonLd} from '../lib/seo';
-import {FREE_SHIPPING_THRESHOLD_INR} from '../lib/shipping-policy';\nimport {partialCodConfigured} from '../lib/partial-cod-server';
+import {FREE_SHIPPING_THRESHOLD_INR} from '../lib/shipping-policy';
+import {partialCodConfigured} from '../lib/partial-cod-server';
 const indexing=process.env.AX_ALLOW_INDEXING==='true';
 export const metadata = {
  metadataBase:new URL(SITE_URL),
