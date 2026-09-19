@@ -1,11 +1,26 @@
-/* AX motion system: restrained interaction feedback, no heavy animation runtime. */
+/* AX motion system — Stage 1
+   Quiet by default, slightly unexpected on interaction.
+   Native CSS + IntersectionObserver only; no animation runtime dependency. */
+
+:root{
+  --ax-motion-fast:150ms;
+  --ax-motion-base:240ms;
+  --ax-motion-slow:420ms;
+  --ax-motion-ease:cubic-bezier(.2,.72,.2,1);
+  --ax-motion-soft:cubic-bezier(.22,.7,.22,1);
+}
+
 @media (prefers-reduced-motion:no-preference){
+  /* Scroll reveals: lower travel than the previous system, with tiny directional variation. */
   html.ax-motion-enabled [data-ax-reveal]{
+    --ax-reveal-x:0px;
+    --ax-reveal-y:9px;
+    --ax-reveal-scale:1;
     opacity:0;
-    transform:translate3d(0,16px,0);
+    transform:translate3d(var(--ax-reveal-x),var(--ax-reveal-y),0) scale(var(--ax-reveal-scale));
     transition:
-      opacity .5s ease var(--ax-motion-delay,0ms),
-      transform .62s cubic-bezier(.2,.72,.2,1) var(--ax-motion-delay,0ms);
+      opacity var(--ax-motion-slow) ease var(--ax-motion-delay,0ms),
+      transform 520ms var(--ax-motion-soft) var(--ax-motion-delay,0ms);
     will-change:opacity,transform;
   }
   html.ax-motion-enabled [data-ax-reveal].ax-motion-visible{
@@ -14,23 +29,68 @@
     will-change:auto;
   }
 
+  /* Product grids never enter in a perfectly uniform way. The offsets are intentionally tiny. */
+  .product-grid>.product-card:nth-child(4n+1){--ax-reveal-x:-3px;--ax-reveal-y:8px}
+  .product-grid>.product-card:nth-child(4n+2){--ax-reveal-x:0px;--ax-reveal-y:6px}
+  .product-grid>.product-card:nth-child(4n+3){--ax-reveal-x:3px;--ax-reveal-y:9px}
+  .product-grid>.product-card:nth-child(4n){--ax-reveal-x:-1px;--ax-reveal-y:7px}
+
   @media (hover:hover) and (pointer:fine){
+    /* Product cards: not a normal zoom. Image and copy move on slightly different timing. */
+    .product-card .product-image-wrap{
+      transition:transform var(--ax-motion-base) var(--ax-motion-ease);
+    }
     .product-card .product-image,
     .look-item .look-image img{
-      transition:transform .45s cubic-bezier(.2,.65,.25,1);
+      transition:transform var(--ax-motion-slow) var(--ax-motion-soft);
+      transform-origin:50% 52%;
     }
-    .product-card:hover .product-image{transform:scale(1.04)}
-    .look-item:hover .look-image img{transform:scale(1.035)}
+    .product-grid>.product-card:nth-child(4n+1) .product-image{transform-origin:48% 52%}
+    .product-grid>.product-card:nth-child(4n+2) .product-image{transform-origin:52% 49%}
+    .product-grid>.product-card:nth-child(4n+3) .product-image{transform-origin:51% 53%}
+    .product-grid>.product-card:nth-child(4n) .product-image{transform-origin:49% 50%}
+
+    .product-card:hover .product-image-wrap{transform:translate3d(0,-2px,0)}
+    .product-card:hover .product-image{transform:translate3d(2px,1px,0) scale(1.018)}
+    .product-grid>.product-card:nth-child(even):hover .product-image{transform:translate3d(-2px,1px,0) scale(1.018)}
+    .look-item:hover .look-image img{transform:translate3d(1px,0,0) scale(1.02)}
+
     .product-meta>a,.look-copy>a{
       display:inline-block;
-      transition:transform .2s ease,opacity .2s ease;
+      transition:
+        transform 210ms var(--ax-motion-ease) 25ms,
+        opacity var(--ax-motion-fast) ease;
     }
     .product-card:hover .product-meta>a,
-    .look-item:hover .look-copy>a{transform:translateX(3px)}
-    .editorial-style-links a{transition:padding-left .2s ease}
-    .editorial-style-links a:hover{padding-left:6px}
+    .look-item:hover .look-copy>a{transform:translate3d(2px,0,0)}
+
+    /* Header interactions are almost still; icon/text drifts a fraction after the pointer arrives. */
+    .header-search,
+    .header-saved,
+    .bag-button,
+    .categories-button{
+      transition:transform 190ms var(--ax-motion-ease),opacity var(--ax-motion-fast) ease;
+    }
+    .header-search:hover,
+    .header-saved:hover{transform:translate3d(0,-1px,0)}
+    .bag-button:hover{transform:translate3d(1px,0,0)}
+    .categories-button:hover{transform:translate3d(-1px,0,0)}
+
+    /* Directory / editorial links retain the existing structure with less predictable micro-shifts. */
+    .editorial-style-links a{transition:padding-left 210ms var(--ax-motion-ease)}
+    .editorial-style-links a:nth-child(odd):hover{padding-left:5px}
+    .editorial-style-links a:nth-child(even):hover{padding-left:3px}
+    .category-directory>a svg,
+    .info-links>a svg,
+    .collection-directory>a svg{
+      transition:transform 210ms var(--ax-motion-ease);
+    }
+    .category-directory>a:hover svg,
+    .info-links>a:hover svg,
+    .collection-directory>a:hover svg{transform:translate3d(3px,-1px,0)}
   }
 
+  /* Shared tactile feedback. Keep critical commerce controls immediate. */
   .solid-button,
   .add-bag,
   .checkout-button,
@@ -41,13 +101,17 @@
   .wide-toggle,
   .bag-button,
   .categories-button,
-  .icon-button{
+  .icon-button,
+  .filter-chips button,
+  .colour-filters button,
+  .sort-panel button,
+  .catalog-refinement-bar>button{
     transition:
-      transform .16s cubic-bezier(.2,.72,.2,1),
-      background-color .18s ease,
-      color .18s ease,
-      border-color .18s ease,
-      opacity .18s ease;
+      transform var(--ax-motion-fast) var(--ax-motion-ease),
+      background-color 180ms ease,
+      color 180ms ease,
+      border-color 180ms ease,
+      opacity 180ms ease;
   }
   .solid-button:not(:disabled):active,
   .add-bag:not(:disabled):active,
@@ -59,37 +123,71 @@
   .wide-toggle:not(:disabled):active,
   .bag-button:not(:disabled):active,
   .categories-button:not(:disabled):active,
-  .icon-button:not(:disabled):active{
-    transform:scale(.985);
-    transition-duration:.07s;
+  .icon-button:not(:disabled):active,
+  .filter-chips button:not(:disabled):active,
+  .colour-filters button:not(:disabled):active,
+  .sort-panel button:not(:disabled):active,
+  .catalog-refinement-bar>button:not(:disabled):active{
+    transform:scale(.988);
+    transition-duration:70ms;
   }
 
-  .option-values button.selected{animation:ax-option-confirm .2s cubic-bezier(.2,.8,.2,1)}
-  .search-suggestions{animation:ax-pop-in .18s ease-out both}
-  .dialog[open]{animation:ax-dialog-in .18s ease-out both}
-  .side-dialog[open],.cart-dialog[open]{animation:ax-drawer-in .24s cubic-bezier(.2,.72,.2,1) both}
-  .category-dialog[open]{animation:ax-menu-in .18s ease-out both}
-  .dialog[open]::backdrop{animation:ax-backdrop-in .18s ease-out both}
+  /* Selected states settle with a small overshoot rather than a bounce. */
+  .option-values button.selected,
+  .filter-chips button.selected,
+  .colour-filters button.selected{
+    animation:ax-option-confirm 210ms var(--ax-motion-ease);
+  }
+
+  /* Search stays conventional; panels use a tiny scale mismatch that settles quickly. */
+  .search-suggestions{animation:ax-pop-in 170ms ease-out both}
+  .catalog-panel{transform-origin:50% 0}
+  .filter-panel{animation:ax-panel-in 230ms var(--ax-motion-ease) both}
+  .sort-panel{animation:ax-panel-in-reverse 210ms var(--ax-motion-ease) both}
+
+  /* Dialogs/drawers: subtle oversize + off-axis arrival. */
+  .dialog[open]{animation:ax-dialog-in 210ms var(--ax-motion-ease) both}
+  .side-dialog[open],.cart-dialog[open]{animation:ax-drawer-in 260ms var(--ax-motion-ease) both}
+  .category-dialog[open]{animation:ax-menu-in 220ms var(--ax-motion-ease) both}
+  .dialog[open]::backdrop{animation:ax-backdrop-in 180ms ease-out both}
+
+  /* AX Island should feel anchored, not float constantly. */
+  .ax-orb{
+    transition:transform 260ms var(--ax-motion-ease);
+  }
+  @media (hover:hover) and (pointer:fine){
+    .island-stylist:hover .ax-orb{transform:translate3d(0,-2px,0) scale(1.008)}
+    .island-item{transition:transform 190ms var(--ax-motion-ease)}
+    .island-item:hover{transform:translate3d(0,-1px,0)}
+  }
 
   @keyframes ax-option-confirm{
-    0%{transform:scale(.97)}
-    65%{transform:scale(1.025)}
+    0%{transform:scale(.985)}
+    58%{transform:scale(1.012)}
     100%{transform:scale(1)}
   }
   @keyframes ax-pop-in{
-    from{opacity:0;transform:translateY(-5px)}
+    from{opacity:0;transform:translate3d(0,-4px,0)}
+    to{opacity:1;transform:none}
+  }
+  @keyframes ax-panel-in{
+    from{opacity:0;transform:translate3d(0,-4px,0) scale(1.006)}
+    to{opacity:1;transform:none}
+  }
+  @keyframes ax-panel-in-reverse{
+    from{opacity:0;transform:translate3d(2px,-3px,0) scale(.997)}
     to{opacity:1;transform:none}
   }
   @keyframes ax-dialog-in{
-    from{opacity:0;transform:translateY(7px) scale(.995)}
+    from{opacity:0;transform:translate3d(2px,6px,0) scale(1.006)}
     to{opacity:1;transform:none}
   }
   @keyframes ax-drawer-in{
-    from{opacity:.75;transform:translateX(18px)}
+    from{opacity:.82;transform:translate3d(14px,-2px,0) scale(.997)}
     to{opacity:1;transform:none}
   }
   @keyframes ax-menu-in{
-    from{opacity:0;transform:translateY(-7px)}
+    from{opacity:0;transform:translate3d(-3px,-5px,0) scale(1.004)}
     to{opacity:1;transform:none}
   }
   @keyframes ax-backdrop-in{
@@ -104,8 +202,11 @@
     transform:none!important;
     transition:none!important;
   }
+  .product-image-wrap,
   .product-image,
   .look-image img,
+  .product-meta>a,
+  .look-copy>a,
   .solid-button,
   .add-bag,
   .checkout-button,
@@ -117,9 +218,17 @@
   .bag-button,
   .categories-button,
   .icon-button,
+  .filter-chips button,
+  .colour-filters button,
+  .sort-panel button,
+  .catalog-refinement-bar>button,
+  .ax-orb,
+  .island-item,
   .dialog,
+  .catalog-panel,
   .search-suggestions{
     animation:none!important;
     transition:none!important;
+    transform:none!important;
   }
 }
