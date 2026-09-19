@@ -22,8 +22,9 @@ function respond(data,status=200,guard=null,extraHeaders={}) {
 }
 
 export async function POST(request) {
- const origin=process.env.AX_SITE_ORIGIN || (process.env.NODE_ENV!=='production' ? new URL(request.url).origin : '');
- if(!sameOriginRequest(request,origin)) return respond({ok:false,error:'Please use the AX store.'},403);
+ const requestOrigin=new URL(request.url).origin,configuredOrigin=process.env.AX_SITE_ORIGIN;
+ const originAllowed=(configuredOrigin&&sameOriginRequest(request,configuredOrigin)) || sameOriginRequest(request,requestOrigin);
+ if(!originAllowed) return respond({ok:false,error:'Please use the AX store.'},403);
  const guard=reserveCartBurst(request,{limit:cartBurstLimit()});
  if(!guard.allowed) return respond({ok:false,error:'Too many bag updates. Please wait a moment and try again.'},429,guard,{'Retry-After':String(guard.retryAfter)});
  let body;

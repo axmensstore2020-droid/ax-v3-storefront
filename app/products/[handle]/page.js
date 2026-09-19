@@ -31,9 +31,10 @@ export default async function ProductPage({params,searchParams}) {
  const selected=initialSelection(product,initialVariantId,chooseSize),variant=findVariant(product.variants || [],selected),primary=selectionImage(product,selected,variant);
  if(primary?.url) preload(imageUrl(primary.url,800),{as:'image',fetchPriority:'high',imageSrcSet:imageSrcSet(primary.url,[320,480,600,720,800,960,1100,1200]),imageSizes:'(max-width:700px) 94vw,50vw'});
  const catalog=await getProducts();
- const related=catalog.filter(p => p.handle!==handle).slice(0,4);
  const lookCandidates=complementaryProducts(product,catalog,3);
  const completeLook=(await Promise.all(lookCandidates.map(item=>getProduct(item.handle)))).filter(Boolean);
+ const lookHandles=new Set(completeLook.map(item=>item.handle));
+ const related=catalog.filter(p => p.handle!==handle && !lookHandles.has(p.handle)).slice(0,4);
  const structured=[
   productGroupJsonLd(product),
   breadcrumbJsonLd([{name:'Products',path:'/products'},{name:product.title,path:`/products/${product.handle}`}])
@@ -41,8 +42,8 @@ export default async function ProductPage({params,searchParams}) {
  return <main id="main-content">
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/>
   <div className="breadcrumb"><Link href="/products">Collection</Link><span>/</span><span>{product.title}</span></div>
-  <ProductPurchase key={product.id+':'+initialVariantId+':'+chooseSize} product={product} initialVariantId={initialVariantId} chooseSize={chooseSize}>
-   <div className="product-details"><details open><summary>About this piece</summary><p>{product.description || 'For more details about this piece, contact the AX team.'}</p></details><details><summary>Delivery & exchanges</summary><p>Shipping across India. Available delivery options and charges are shown at checkout.</p><Link className="text-link" href="/help#exchanges">Read our exchange policy</Link></details></div>
+  <ProductPurchase key={product.id+':'+initialVariantId+':'+chooseSize} product={product} initialVariantId={initialVariantId} chooseSize={chooseSize} hasCompleteLook={completeLook.length>0}>
+   <div className="product-details"><details open><summary>About this piece</summary><p>{product.description || 'For more details about this piece, contact the AX team.'}</p></details><details><summary>Delivery & exchanges</summary><p>Shipping across India. Use the pincode checker above for live Delhivery serviceability and an estimated shipping rate; the final carrier option is rechecked at checkout.</p><Link className="text-link" href="/help#exchanges">Read our exchange policy</Link></details></div>
   </ProductPurchase>
   <CompleteLook product={product} items={completeLook}/>
   {related.length>0 && <section className="section-wrap related-section"><div className="section-head"><h2 className="editorial">More to make your own.</h2><Link href="/products" className="underlined-link">EXPLORE ALL <Icon name="arrow"/></Link></div><div className="product-grid">{related.map(p => <ProductCard key={p.id} product={p}/>)}</div></section>}

@@ -30,8 +30,8 @@ export default function CompleteLook({product,items=[]}){
     await addItems(resolved.map(item=>({merchandiseId:item.variant.id,variant:item.variant,product:item.product})));
     trackStoreEvent('add_look',{productHandle:product.handle,metadata:{items:resolved.length}});
   }
-  return <section className="complete-look section-wrap" aria-labelledby="complete-look-title">
-    <div className="section-head"><div><p className="eyebrow">STYLE IT YOUR WAY</p><h2 id="complete-look-title" className="editorial">Complete the look.</h2></div><p className="muted small">Choose your options first. AX never guesses your size.</p></div>
+  return <section id="complete-look" className="complete-look section-wrap" aria-labelledby="complete-look-title">
+    <div className="section-head"><div><p className="eyebrow">PAIR WITH THIS PIECE</p><h2 id="complete-look-title" className="editorial">Complete the look.</h2></div><p className="muted small">Real in-stock pairings from AX. Choose each size/colour before adding the set.</p></div>
     <div className="look-grid">{items.map(item=><LookItem key={item.id} product={item} selection={selections[item.handle]||{}} onChange={(name,value)=>setSelections(current=>({...current,[item.handle]:{...(current[item.handle]||{}),[name]:value}}))}/>)}</div>
     <button className="solid-button add-look-button" type="button" disabled={!ready||busy} onClick={addLook}>{busy?'UPDATING BAG…':ready?'ADD SELECTED LOOK':'CHOOSE OPTIONS TO ADD THE LOOK'}</button>
   </section>;
