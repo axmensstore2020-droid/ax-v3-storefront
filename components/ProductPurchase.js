@@ -22,6 +22,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
   const variant = findVariant(product.variants || [],selected);
   const primary = selectionImage(product,selected,variant);
   const deliveryWeight=deliveryWeightForProduct(product,selected,variant);
+  const deliverySubtotal=Number(variant?.price?.amount ?? product.price ?? 0);
   const gallery = [...new Map([primary,...(product.images || [])].filter(image => image?.url).map(image => [image.url,image])).values()];
   useEffect(() => {galleryRef.current?.scrollTo({left:0,behavior:'instant'});},[primary?.url]);
   useEffect(()=>{
@@ -38,7 +39,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
     <div className="pdp-info">
       <p className="eyebrow">{product.type || 'AX MENSWEAR'}</p><h1 className="editorial">{product.title}</h1>
       <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} onSelect={(name,value) => {setSelected(current => ({...current,[name]:value}));trackStoreEvent('select_variant',{productHandle:product.handle,metadata:{option:name,value}});}}/>
-      <ShippingEstimator weightGrams={deliveryWeight} productHandle={product.handle}/>
+      <ShippingEstimator weightGrams={deliveryWeight} productHandle={product.handle} subtotal={deliverySubtotal}/>
       {hasCompleteLook && <a className="pdp-complete-look-link" href="#complete-look"><span>STYLE IT</span><strong>Complete the look</strong><Icon name="arrow" size={17}/></a>}
       {children}
       <ProductDataPanel product={product} selectedOptions={selected}/>
