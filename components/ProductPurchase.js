@@ -10,17 +10,18 @@ import {productMarketingData} from '../lib/marketing';
 import {initialSelection,productOptions,selectionImage} from '../lib/product-variants';
 import {trackMarketingEvent} from './MetaMarketing';
 import {trackStoreEvent} from '../lib/store-analytics';
-import {variantWeightGrams} from '../lib/weight';
+import {deliveryWeightForProduct} from '../lib/weight';
 import ShippingEstimator from './ShippingEstimator';
 import ProductProof from './ProductProof';
 
 const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
 
-export default function ProductPurchase({product,initialVariantId,chooseSize=false,children}) {
+export default function ProductPurchase({product,initialVariantId,chooseSize=false,hasCompleteLook=false,children}) {
   const [selected,setSelected] = useState(() => initialSelection(product,initialVariantId,chooseSize));
   const galleryRef = useRef(null), trackedView = useRef('');
   const variant = findVariant(product.variants || [],selected);
   const primary = selectionImage(product,selected,variant);
+  const deliveryWeight=deliveryWeightForProduct(product,selected,variant);
   const gallery = [...new Map([primary,...(product.images || [])].filter(image => image?.url).map(image => [image.url,image])).values()];
   useEffect(() => {galleryRef.current?.scrollTo({left:0,behavior:'instant'});},[primary?.url]);
   useEffect(()=>{
@@ -37,7 +38,8 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
     <div className="pdp-info">
       <p className="eyebrow">{product.type || 'AX MENSWEAR'}</p><h1 className="editorial">{product.title}</h1>
       <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} onSelect={(name,value) => {setSelected(current => ({...current,[name]:value}));trackStoreEvent('select_variant',{productHandle:product.handle,metadata:{option:name,value}});}}/>
-      <ShippingEstimator weightGrams={variantWeightGrams(variant)} productHandle={product.handle}/>
+      <ShippingEstimator weightGrams={deliveryWeight} productHandle={product.handle}/>
+      {hasCompleteLook && <a className="pdp-complete-look-link" href="#complete-look"><span>STYLE IT</span><strong>Complete the look</strong><Icon name="arrow" size={17}/></a>}
       {children}
       <ProductDataPanel product={product} selectedOptions={selected}/>
       <ProductProof product={product}/>
