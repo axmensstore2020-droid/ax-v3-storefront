@@ -26,7 +26,8 @@ export async function POST(request) {
   let body;
   try {body=await readLimitedJson(request,MAX_BODY_BYTES);} catch(error) {return respond({ok:false,error:error.message || 'Invalid request.'},400,guard);}
   try {
-    const result=await confirmPartialCod(body);\n  return respond({ok:true,...result},200,guard);
+    const result=await confirmPartialCod(body);
+  return respond({ok:true,...result},200,guard);
   } catch(error) {
     return respond({ok:false,error:error?.message || 'We received the payment response, but could not finish the order. Please retry once or contact AX.'},502,guard);
   }
