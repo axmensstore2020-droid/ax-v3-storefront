@@ -1,6 +1,8 @@
 import {getMerchantProducts} from '../../lib/shopify.js';
 
-export const revalidate=900;
+export const runtime='nodejs';
+export const dynamic='force-dynamic';
+export const revalidate=0;
 
 const xml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[char]));
 const id=value=>String(value||'').split('/').at(-1)||String(value||'');
@@ -24,7 +26,9 @@ function item(product,variant,storeCode){
 export async function GET(){
   if(!configured()) return new Response('Local inventory feed is not configured.',{status:503,headers:{'Cache-Control':'no-store','Content-Type':'text/plain; charset=utf-8'}});
   const storeCode=String(process.env.GOOGLE_LOCAL_STORE_CODE);
-  const products=await getMerchantProducts(100);
+  let products;
+  try { products=await getMerchantProducts(100); }
+  catch { return new Response('Local inventory feed is temporarily unavailable.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store','Retry-After':'300'}}); }
   const items=products.flatMap(product=>(product.variants||[])
     .filter(variant=>variant?.id && variant?.price?.amount && Number.isFinite(Number(variant.quantityAvailable)))
     .map(variant=>item(product,variant,storeCode))).join('\n');
