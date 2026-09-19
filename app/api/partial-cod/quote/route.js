@@ -26,7 +26,9 @@ export async function POST(request) {
   let body;
   try {body=await readLimitedJson(request,MAX_BODY_BYTES);} catch(error) {return respond({ok:false,error:error.message || 'Invalid request.'},400,guard);}
   try {
-    const result=await quotePartialCod(body.cartId,body.pincode);\n  const {cart:_cart,...customerResult}=result;\n  return respond({ok:true,...customerResult},200,guard);
+    const result=await quotePartialCod(body.cartId,body.pincode);
+  const {cart:_cart,...customerResult}=result;
+  return respond({ok:true,...customerResult},200,guard);
   } catch(error) {
     return respond({ok:false,error:error?.message || 'Partial COD is temporarily unavailable.'},400,guard);
   }
