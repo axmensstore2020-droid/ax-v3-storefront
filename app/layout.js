@@ -17,7 +17,7 @@ import {getNavigation} from '../lib/content';
 import NavigationProvider from '../components/NavigationProvider';
 import {metaCapiConfigured,metaPixelId} from '../lib/meta';
 import {SITE_NAME,SITE_URL,jsonLd,organizationJsonLd,websiteJsonLd} from '../lib/seo';
-import {FREE_SHIPPING_THRESHOLD_INR} from '../lib/shipping-policy';
+import {FREE_SHIPPING_THRESHOLD_INR} from '../lib/shipping-policy';\nimport {partialCodConfigured} from '../lib/partial-cod-server';
 const indexing=process.env.AX_ALLOW_INDEXING==='true';
 export const metadata = {
  metadataBase:new URL(SITE_URL),
@@ -39,7 +39,7 @@ export default async function RootLayout({children}) {
  const pixelId=metaPixelId(),capiEnabled=metaCapiConfigured();
  const analyticsSecret=process.env.AX_ANALYTICS_SECRET || process.env.AX_STYLIST_SECRET || '';
  const analyticsEnabled=Boolean(process.env.SUPABASE_URL && (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY) && analyticsSecret.length>=32);
- const freeShippingThreshold=FREE_SHIPPING_THRESHOLD_INR;
+ const freeShippingThreshold=FREE_SHIPPING_THRESHOLD_INR,partialCodEnabled=partialCodConfigured();
  const structured=[organizationJsonLd(),websiteJsonLd()];
- return <html lang="en-IN"><head><link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous"/></head><body><WebVitals/><MotionEnhancer/><MetaMarketing pixelId={pixelId} capiEnabled={capiEnabled} analyticsEnabled={analyticsEnabled}/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/><a className="skip-link" href="#main-content">Skip to content</a><NavigationProvider value={navigation}><CartProvider demo={demo} freeShippingThreshold={freeShippingThreshold}><StylistProvider>{demo && <div className="preview-banner">STORE PREVIEW · SAMPLE CATALOG · CHECKOUT UNAVAILABLE</div>}<Header/>{children}<Footer/><AXIsland accountUrl={accountUrl} accountEnabled={customAccount}/><CartDrawerMount/></StylistProvider></CartProvider></NavigationProvider></body></html>;
+ return <html lang="en-IN"><head><link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous"/></head><body><WebVitals/><MotionEnhancer/><MetaMarketing pixelId={pixelId} capiEnabled={capiEnabled} analyticsEnabled={analyticsEnabled}/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/><a className="skip-link" href="#main-content">Skip to content</a><NavigationProvider value={navigation}><CartProvider demo={demo} freeShippingThreshold={freeShippingThreshold} partialCodEnabled={partialCodEnabled}><StylistProvider>{demo && <div className="preview-banner">STORE PREVIEW · SAMPLE CATALOG · CHECKOUT UNAVAILABLE</div>}<Header/>{children}<Footer/><AXIsland accountUrl={accountUrl} accountEnabled={customAccount}/><CartDrawerMount/></StylistProvider></CartProvider></NavigationProvider></body></html>;
 }
