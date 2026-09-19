@@ -4,9 +4,15 @@ Partial COD is intentionally **disabled by default**. The storefront flow now ex
 
 ## Customer calculation
 
+The courier COD handling fee charged to the Partial COD order is:
+
+`max(₹40, 2% of product bill value)`
+
 The booking advance is:
 
 `max(₹100, 10% of final order value rounded to the nearest ₹10)`
+
+The COD handling fee is disclosed when the customer chooses Partial COD and is shown as its own line before payment. Pay Online does not include this fee. For Partial COD, AX quotes Delhivery freight without embedding a COD overhead, then adds the account's COD handling rule explicitly so it is not double-counted.
 
 The advance is capped at the amount due. The remaining balance is the amount Delhivery should collect as COD.
 
@@ -26,8 +32,8 @@ The shared calculation lives in `lib/partial-cod.js` and is covered by automated
 
 1. The bag keeps normal **Pay Online** checkout unchanged.
 2. **Partial COD** opens the AX-owned checkout page before Shopify checkout.
-3. AX verifies COD serviceability and live Standard/Express pricing with Delhivery.
-4. The customer sees the final order value, booking advance and remaining COD balance before payment.
+3. AX verifies COD serviceability and live Standard/Express freight with Delhivery.
+4. The customer sees products, shipping, the exact COD handling fee, final order value, booking advance and remaining COD balance before payment.
 5. Razorpay collects only the booking advance.
 6. AX verifies the Razorpay signature and captured payment server-side.
 7. Shopify receives a real order with the original variant IDs, a successful Razorpay advance transaction and financial status `PARTIALLY_PAID`.
