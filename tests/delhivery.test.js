@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-const {cartWeightGrams,configuredFreeShippingThreshold,freeShippingEligible,getDelhiveryCheckoutRates,normalizeDelhiveryResponse,normalizePincode,normalizeShippingAmount,normalizeWaybill,quoteDelhiveryRate,trackDelhiveryWaybills}=await import('../lib/delhivery.js');
+const {cartWeightGrams,configuredFreeShippingThreshold,estimateDelhiveryDelivery,freeShippingEligible,getDelhiveryCheckoutRates,normalizeDelhiveryResponse,normalizePincode,normalizeShippingAmount,normalizeShippingTat,normalizeWaybill,quoteDelhiveryRate,trackDelhiveryWaybills}=await import('../lib/delhivery.js');
 
 const payload={ShipmentData:[{Shipment:{
   AWB:'1234567890123',
@@ -197,4 +197,42 @@ test('checkout makes standard delivery free at the configured threshold but keep
  assert.equal(result.rates[0].total_price,'0');
  assert.equal(result.rates[1].service_name,'Express Delivery');
  assert.equal(result.rates[1].total_price,'9714');
+});
+
+
+test('shipping quote can expose carrier TAT when Delhivery returns it',()=>{
+ assert.deepEqual(normalizeShippingTat([{total_amount:90,tat:'3-5 days'}]),{minDays:3,maxDays:5});
+ assert.deepEqual(normalizeShippingTat([{total_amount:90,delivery_days:2}]),{minDays:2,maxDays:2});
+});
+
+test('delivery estimate returns serviceability details even when weight is not selected',async()=>{
+ const result=await estimateDelhiveryDelivery({destinationPincode:'400064',weightGrams:null},{
+  env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011'},
+  fetchImpl:async url=>{
+   const parsed=new URL(url);
+   assert.equal(parsed.pathname,'/c/api/pin-codes/json/');
+   return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',city:'Mumbai',district:'Mumbai',state_code:'MH',is_oda:'N',remarks:''}}]});
+  }
+ });
+ assert.equal(result.serviceable,true);
+ assert.equal(result.needsWeight,true);
+ assert.equal(result.location.city,'Mumbai');
+ assert.equal(result.location.stateCode,'MH');
+ assert.deepEqual(result.rates,[]);
+});
+
+test('delivery estimate shares serviceability and rate logic used by checkout',async()=>{
+ const result=await estimateDelhiveryDelivery({destinationPincode:'400064',weightGrams:500,subtotal:900},{
+  env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3'},
+  fetchImpl:async url=>{
+   const parsed=new URL(url);
+   if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',city:'Mumbai',state_code:'MH'}}]});
+   return Response.json([{total_amount:parsed.searchParams.get('md')==='S'?68.52:94.14,tat:parsed.searchParams.get('md')==='S'?'4-6':'2-3'}]);
+  }
+ });
+ assert.equal(result.serviceable,true);
+ assert.deepEqual(result.rates,[
+  {code:'standard',label:'Standard',amount:71.52,currency:'INR',minDays:4,maxDays:6},
+  {code:'express',label:'Express',amount:97.14,currency:'INR',minDays:2,maxDays:3}
+ ]);
 });
