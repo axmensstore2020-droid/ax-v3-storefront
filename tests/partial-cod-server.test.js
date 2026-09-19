@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHmac} from 'node:crypto';
-import {getShopifyAdminAccessToken,sealPartialCodSession,unsealPartialCodSession,validatePartialCodCustomer,verifyRazorpaySignature} from '../lib/partial-cod-server.js';
+import {getShopifyAdminAccessToken,sealPartialCodSession,shouldBookLiveDelhivery,unsealPartialCodSession,validatePartialCodCustomer,verifyRazorpaySignature} from '../lib/partial-cod-server.js';
 
 test('Partial COD customer data is normalized for Indian delivery',()=>{
  const customer=validatePartialCodCustomer({
@@ -64,4 +64,10 @@ test('Shopify Admin client credentials are exchanged for a short-lived token and
  assert.equal(body.get('grant_type'),'client_credentials');
  assert.equal(body.get('client_id'),'client-id');
  assert.equal(body.get('client_secret'),'client-secret');
+});
+
+
+test('Razorpay test mode never books a live Delhivery shipment',()=>{
+ assert.equal(shouldBookLiveDelhivery({testMode:true}),false);
+ assert.equal(shouldBookLiveDelhivery({testMode:false}),true);
 });
