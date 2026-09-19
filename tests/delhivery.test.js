@@ -260,3 +260,15 @@ test('extended delivery areas do not invent ETA when Delhivery omits TAT',async(
  assert.equal(result.serviceable,true);
  assert.equal(result.estimatedDelivery,null);
 });
+
+
+test('pincode serviceability exposes COD separately from prepaid',async()=>{
+ const {checkDelhiveryPincode}=await import('../lib/delhivery.js');
+ const result=await checkDelhiveryPincode('400064',{
+  env:{DELHIVERY_API_TOKEN:'private-token'},
+  fetchImpl:async()=>Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',cod:'N',remarks:''}}]})
+ });
+ assert.equal(result.serviceable,true);
+ assert.equal(result.prepaidServiceable,true);
+ assert.equal(result.codServiceable,false);
+});
