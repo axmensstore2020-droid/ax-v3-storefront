@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import {formatMoney} from '../lib/catalog';
 import ProductImage from './ProductImage';
+import WishlistButton from './WishlistButton';
 
 const GRID_WIDTHS=[180,240,280,320,360,400,480,560,640];
 const COMPACT_WIDTHS=[120,160,200,240,280,320,400];
@@ -13,6 +14,7 @@ export default function ProductCard({product,compact=false}) {
  const onSale=Number.isFinite(compareAt) && compareAt>price;
  const discount=onSale?Math.round(((compareAt-price)/compareAt)*100):0;
  return <article className={`product-card${compact?' compact':''}`}>
+  <WishlistButton handle={product.handle} className="product-card-wishlist"/>
   <Link className="product-image-wrap" href={`/products/${product.handle}`} aria-label={`${product.title}, ${formatMoney(product.price,product.currency)}`}>
    <ProductImage src={product.image} alt={product.imageAlt || product.title} sizes={sizes} widths={compact?COMPACT_WIDTHS:GRID_WIDTHS} fallbackWidth={compact?240:480}/>
   </Link>
