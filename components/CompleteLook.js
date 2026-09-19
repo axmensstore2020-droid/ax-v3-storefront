@@ -24,15 +24,16 @@ export default function CompleteLook({product,items=[]}){
   const [selections,setSelections]=useState(()=>Object.fromEntries(items.map(item=>[item.handle,initialSelection(item,'',true)])));
   const resolved=useMemo(()=>items.map(item=>({product:item,variant:findVariant(item.variants||[],selections[item.handle]||{})})),[items,selections]);
   if(!items.length)return null;
-  const ready=resolved.every(item=>item.variant?.availableForSale);
+  const selected=resolved.filter(item=>item.variant?.availableForSale);
+  const ready=selected.length>0;
   async function addLook(){
     if(!ready)return;
-    await addItems(resolved.map(item=>({merchandiseId:item.variant.id,variant:item.variant,product:item.product})));
-    trackStoreEvent('add_look',{productHandle:product.handle,metadata:{items:resolved.length}});
+    await addItems(selected.map(item=>({merchandiseId:item.variant.id,variant:item.variant,product:item.product})));
+    trackStoreEvent('add_look',{productHandle:product.handle,metadata:{items:selected.length}});
   }
   return <section id="complete-look" className="complete-look section-wrap" aria-labelledby="complete-look-title">
-    <div className="section-head"><div><p className="eyebrow">PAIR WITH THIS PIECE</p><h2 id="complete-look-title" className="editorial">Complete the look.</h2></div><p className="muted small">Real in-stock pairings from AX. Choose each size/colour before adding the set.</p></div>
+    <div className="section-head"><div><p className="eyebrow">PAIR WITH THIS PIECE</p><h2 id="complete-look-title" className="editorial">Complete the look.</h2></div><p className="muted small">Choose the size/colour for any pieces you want. Only completed selections are added.</p></div>
     <div className="look-grid">{items.map(item=><LookItem key={item.id} product={item} selection={selections[item.handle]||{}} onChange={(name,value)=>setSelections(current=>({...current,[item.handle]:{...(current[item.handle]||{}),[name]:value}}))}/>)}</div>
-    <button className="solid-button add-look-button" type="button" disabled={!ready||busy} onClick={addLook}>{busy?'UPDATING BAG…':ready?'ADD SELECTED LOOK':'CHOOSE OPTIONS TO ADD THE LOOK'}</button>
+    <button className="solid-button add-look-button" type="button" disabled={!ready||busy} onClick={addLook}>{busy?'UPDATING BAG…':ready?`ADD SELECTED LOOK${selected.length>1?` (${selected.length})`:''}`:'CHOOSE OPTIONS TO ADD THE LOOK'}</button>
   </section>;
 }
