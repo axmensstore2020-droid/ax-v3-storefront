@@ -32,7 +32,7 @@
   }
 
   .solid-button,
-  .add-bag,,
+  .add-bag,
   .checkout-button,
   .add-look-button,
   .option-values button,
@@ -50,7 +50,7 @@
       opacity .18s ease;
   }
   .solid-button:not(:disabled):active,
-  .add-bag:not(:disabled):active,,
+  .add-bag:not(:disabled):active,
   .checkout-button:not([aria-disabled="true"]):active,
   .add-look-button:not(:disabled):active,
   .option-values button:not(:disabled):active,
@@ -107,7 +107,7 @@
   .product-image,
   .look-image img,
   .solid-button,
-  .add-bag,,
+  .add-bag,
   .checkout-button,
   .add-look-button,
   .option-values button,
