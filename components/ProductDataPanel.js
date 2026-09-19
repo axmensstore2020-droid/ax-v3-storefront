@@ -8,19 +8,24 @@ export default function ProductDataPanel({product,selectedOptions={}}) {
   const hasFitContent = product.fit || product.fabric || product.color || product.style || product.care || hasNotes || hasMeasurements;
   if (!product.productNumberDisplay && !hasFitContent) return null;
   return <section className="product-data-panel" aria-label="Product information">
-    {product.productNumberDisplay && <p className="product-number">PRODUCT NO. <span>{product.productNumberDisplay}</span></p>}
-    {hasFitContent && <>
-      <dl className="product-facts">
-        {product.fit && <div><dt>Fit</dt><dd>{product.fit}</dd></div>}
-        {product.fabric && <div><dt>Fabric</dt><dd>{product.fabric}</dd></div>}
-        {product.color && <div><dt>Colour</dt><dd>{product.color}</dd></div>}
-        {product.style && <div><dt>Style</dt><dd>{product.style}</dd></div>}
-        {product.fabricFeel && <div><dt>Fabric feel</dt><dd>{product.fabricFeel}</dd></div>}
-        {product.modelHeight && <div><dt>Model height</dt><dd>{product.modelHeight}</dd></div>}
-        {product.modelSize && <div><dt>Model wears</dt><dd>{product.modelSize}</dd></div>}
-      </dl>
-      {(hasNotes || hasMeasurements || product.fit) && <MeasurementFit product={product} selectedOptions={selectedOptions}/>} 
-      {product.care && <details className="care-details"><summary>Care</summary><p>{product.care}</p></details>}
-    </>}
+    <details className="product-info-details">
+      <summary>Product information</summary>
+      <div className="product-info-content">
+        {product.productNumberDisplay && <p className="product-number">PRODUCT NO. <span>{product.productNumberDisplay}</span></p>}
+        {hasFitContent && <>
+          <dl className="product-facts">
+            {product.fit && <div><dt>Fit</dt><dd>{product.fit}</dd></div>}
+            {product.fabric && <div><dt>Fabric</dt><dd>{product.fabric}</dd></div>}
+            {product.color && <div><dt>Colour</dt><dd>{product.color}</dd></div>}
+            {product.style && <div><dt>Style</dt><dd>{product.style}</dd></div>}
+            {product.fabricFeel && <div><dt>Fabric feel</dt><dd>{product.fabricFeel}</dd></div>}
+            {product.modelHeight && <div><dt>Model height</dt><dd>{product.modelHeight}</dd></div>}
+            {product.modelSize && <div><dt>Model wears</dt><dd>{product.modelSize}</dd></div>}
+          </dl>
+          {(hasNotes || hasMeasurements || product.fit) && <MeasurementFit product={product} selectedOptions={selectedOptions}/>}
+          {product.care && <details className="care-details"><summary>Care</summary><p>{product.care}</p></details>}
+        </>}
+      </div>
+    </details>
   </section>;
 }
