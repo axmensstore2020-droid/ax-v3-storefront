@@ -73,7 +73,7 @@ Keep the feature flag false until the end-to-end production-account test passes.
 
 ## Staging acceptance before enabling
 
-- Use Razorpay test credentials first and confirm automatic capture is enabled.
+- Use Razorpay test credentials first and confirm automatic capture is enabled. While Razorpay is in test mode, AX must not create a live Delhivery shipment; the confirmation screen should explicitly say that shipment booking was skipped.
 - Confirm a successful advance creates exactly one Shopify order with status `PARTIALLY_PAID`.
 - Confirm the Shopify order total, advance transaction and outstanding amount match the amounts shown to the customer.
 - Confirm the Delhivery account accepts the selected `Surface` / `Express` shipment mode for the AX account.
