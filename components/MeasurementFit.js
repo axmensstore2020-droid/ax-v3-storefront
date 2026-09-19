@@ -5,6 +5,7 @@ import {StylistButton} from './StylistProvider';
 import Icon from './Icon';
 import MeasurementIllustration from './MeasurementIllustrations';
 import styles from './MeasurementFit.module.css';
+import {trackStoreEvent} from '../lib/store-analytics';
 import {canonicalMeasurementField,convertMeasurementValue,formatMeasurementDisplay,measurementCategory,measurementFieldsForProduct,measurementLabel,normalizeMeasurementRows} from '../lib/measurements';
 
 const GUIDE_COPY={
@@ -49,7 +50,7 @@ export default function MeasurementFit({product,selectedOptions={}}){
  },[open]);
 
  if(!hasMeasurements&&!hasNotes&&!product.fit)return null;
- const launch=()=>{setTab(hasMeasurements?'chart':'measure');setOpen(true);};
+ const launch=()=>{setTab(hasMeasurements?'chart':'measure');setOpen(true);trackStoreEvent('size_guide',{productHandle:product.handle,metadata:{hasMeasurements,category:category||''}});};
  const sheet=mounted&&open?<div className={styles.overlay} onMouseDown={()=>setOpen(false)}>
   <section className={styles.sheet} role="dialog" aria-modal="true" aria-labelledby="size-fit-title" onMouseDown={event=>event.stopPropagation()}>
    <div className={styles.handle} aria-hidden="true"/>

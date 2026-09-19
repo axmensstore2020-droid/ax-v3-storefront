@@ -25,7 +25,7 @@ export function ShirtMeasurementSvg(){return <Base label="Shirt">
  <circle cx="167" cy="115" r="2" fill="currentColor" opacity=".35"/><circle cx="167" cy="145" r="2" fill="currentColor" opacity=".35"/><circle cx="167" cy="175" r="2" fill="currentColor" opacity=".35"/>
  <line x1="126" y1="40" x2="208" y2="40" {...guide}/><line x1="114" y1="121" x2="220" y2="121" {...guide}/><line x1="126" y1="56" x2="126" y2="232" {...guide}/><line x1="208" y1="56" x2="252" y2="96" {...guide}/>
  <Dot x={126} y={56}/><Dot x={208} y={56}/><Dot x={114} y={121}/><Dot x={220} y={121}/><Dot x={126} y={232}/><Dot x={252} y={96}/>
- <Label x={167} y={26}>SHOULDER</Label><Label x={20} y={124} anchor="start">CHEST ×2</Label><Label x={226} y={173} anchor="start">FRONT LENGTH</Label><Label x={264} y={73} anchor="start">SLEEVE</Label><Footer/>
+ <Label x={167} y={26}>SHOULDER</Label><Label x={20} y={124} anchor="start">CHEST ×2</Label><Label x={226} y={173} anchor="start">LENGTH</Label><Label x={264} y={73} anchor="start">SLEEVE</Label><Footer/>
  </Base>;}
 
 export function HoodieMeasurementSvg(){return <Base label="Hoodie">

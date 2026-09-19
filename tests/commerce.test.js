@@ -41,3 +41,16 @@ test('prices preserve decimals',()=>{
  assert.equal(formatMoney(800,'INR'),'₹800');
  assert.equal(formatMoney(800.5,'INR'),'₹800.50');
 });
+
+test('cart batch actions allow a small set of valid Shopify variants only',()=>{
+ const cartId='gid://shopify/Cart/abc?key=sample';
+ const lines=[
+  {merchandiseId:'gid://shopify/ProductVariant/123',quantity:1},
+  {merchandiseId:'gid://shopify/ProductVariant/456',quantity:1}
+ ];
+ assert.equal(validateCartInput({action:'createMany',lines}),null);
+ assert.equal(validateCartInput({action:'addMany',cartId,lines}),null);
+ assert.ok(validateCartInput({action:'createMany',lines:[]}));
+ assert.ok(validateCartInput({action:'createMany',lines:[{merchandiseId:'demo',quantity:1}]}));
+ assert.ok(validateCartInput({action:'createMany',lines:Array.from({length:11},(_,i)=>({merchandiseId:'gid://shopify/ProductVariant/'+(100+i),quantity:1}))}));
+});

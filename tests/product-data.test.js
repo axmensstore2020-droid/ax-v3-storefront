@@ -70,3 +70,29 @@ test('measurement values support ranges and arrays',()=>{
  assert.equal(formatMeasurementValue(['38','40']),'38–40');
  assert.equal(formatMeasurementValue({value:39}),'39');
 });
+
+test('conversion merchandising metafields normalize without inventing proof',()=>{
+ const product=normalizeProductData({
+  id:'gid://shopify/Product/126',title:'Racing jacket',tags:[],
+  metafields:[
+   {namespace:'ax_data',key:'model_height',value:'183 cm'},
+   {namespace:'ax_data',key:'model_size',value:'L'},
+   {namespace:'ax_data',key:'fabric_feel',value:'Smooth structured leather feel'},
+   {namespace:'ax_data',key:'style',value:JSON.stringify(['Streetwear','Motorsport'])},
+   {namespace:'ax_data',key:'review_rating',value:'4.8'},
+   {namespace:'ax_data',key:'review_count',value:'12'},
+   {namespace:'ax_data',key:'ugc_images',value:JSON.stringify(['https://cdn.shopify.com/customer-look-1.jpg','not-a-url'])}
+  ]
+ });
+ assert.equal(product.modelHeight,'183 cm');
+ assert.equal(product.modelSize,'L');
+ assert.equal(product.fabricFeel,'Smooth structured leather feel');
+ assert.equal(product.style,'Streetwear, Motorsport');
+ assert.equal(product.reviewRating,4.8);
+ assert.equal(product.reviewCount,12);
+ assert.deepEqual(product.ugcImages,['https://cdn.shopify.com/customer-look-1.jpg']);
+ const empty=normalizeProductData({id:'gid://shopify/Product/127',metafields:[]});
+ assert.equal(empty.reviewRating,0);
+ assert.equal(empty.reviewCount,0);
+ assert.deepEqual(empty.ugcImages,[]);
+});

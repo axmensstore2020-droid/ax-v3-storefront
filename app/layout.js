@@ -1,5 +1,6 @@
 import './globals.css';
 import './refinements.css';
+import './conversion.css';
 import {CartProvider} from '../components/CartProvider';
 import {StylistProvider} from '../components/StylistProvider';
 import CartDrawerMount from '../components/CartDrawerMount';
@@ -7,6 +8,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AXIsland from '../components/AXIsland';
 import MetaMarketing from '../components/MetaMarketing';
+import WebVitals from '../components/WebVitals';
 import {shopifyConfigured} from '../lib/shopify';
 import {customerAccountConfigured} from '../lib/customer-account';
 import {getNavigation} from '../lib/content';
@@ -32,6 +34,9 @@ export default async function RootLayout({children}) {
  const demo=!shopifyConfigured(), domain=process.env.SHOPIFY_STORE_DOMAIN,customAccount=customerAccountConfigured();
  const accountUrl=customAccount?'/account':!demo && /^[a-z0-9-]+\.myshopify\.com$/.test(domain || '') ? 'https://'+domain+'/account' : '';
  const pixelId=metaPixelId(),capiEnabled=metaCapiConfigured();
+ const analyticsSecret=process.env.AX_ANALYTICS_SECRET || process.env.AX_STYLIST_SECRET || '';
+ const analyticsEnabled=Boolean(process.env.SUPABASE_URL && (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY) && analyticsSecret.length>=32);
+ const configuredThreshold=Number(process.env.AX_FREE_SHIPPING_THRESHOLD || 0),freeShippingThreshold=Number.isFinite(configuredThreshold)&&configuredThreshold>0?configuredThreshold:0;
  const structured=[organizationJsonLd(),websiteJsonLd()];
- return <html lang="en-IN"><head><link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous"/></head><body><MetaMarketing pixelId={pixelId} capiEnabled={capiEnabled}/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/><a className="skip-link" href="#main-content">Skip to content</a><NavigationProvider value={navigation}><CartProvider demo={demo}><StylistProvider>{demo && <div className="preview-banner">STORE PREVIEW · SAMPLE CATALOG · CHECKOUT UNAVAILABLE</div>}<Header/>{children}<Footer/><AXIsland accountUrl={accountUrl} accountEnabled={customAccount}/><CartDrawerMount/></StylistProvider></CartProvider></NavigationProvider></body></html>;
+ return <html lang="en-IN"><head><link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous"/></head><body><WebVitals/><MetaMarketing pixelId={pixelId} capiEnabled={capiEnabled} analyticsEnabled={analyticsEnabled}/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/><a className="skip-link" href="#main-content">Skip to content</a><NavigationProvider value={navigation}><CartProvider demo={demo} freeShippingThreshold={freeShippingThreshold}><StylistProvider>{demo && <div className="preview-banner">STORE PREVIEW · SAMPLE CATALOG · CHECKOUT UNAVAILABLE</div>}<Header/>{children}<Footer/><AXIsland accountUrl={accountUrl} accountEnabled={customAccount}/><CartDrawerMount/></StylistProvider></CartProvider></NavigationProvider></body></html>;
 }

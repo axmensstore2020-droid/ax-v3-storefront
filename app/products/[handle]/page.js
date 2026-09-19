@@ -3,6 +3,8 @@ import {preload} from 'react-dom';
 import {notFound} from 'next/navigation';
 import ProductPurchase from '../../../components/ProductPurchase';
 import {getProduct,getProducts} from '../../../lib/shopify';
+import CompleteLook from '../../../components/CompleteLook';
+import {complementaryProducts} from '../../../lib/merchandising';
 import ProductCard from '../../../components/ProductCard';
 import Icon from '../../../components/Icon';
 import {breadcrumbJsonLd,jsonLd,pageMetadata,productGroupJsonLd} from '../../../lib/seo';
@@ -28,7 +30,10 @@ export default async function ProductPage({params,searchParams}) {
  const query=await searchParams, initialVariantId=typeof query?.variant==='string'?query.variant:'', chooseSize=query?.chooseSize==='1';
  const selected=initialSelection(product,initialVariantId,chooseSize),variant=findVariant(product.variants || [],selected),primary=selectionImage(product,selected,variant);
  if(primary?.url) preload(imageUrl(primary.url,800),{as:'image',fetchPriority:'high',imageSrcSet:imageSrcSet(primary.url,[320,480,600,720,800,960,1100,1200]),imageSizes:'(max-width:700px) 94vw,50vw'});
- const related=(await getProducts()).filter(p => p.handle!==handle).slice(0,4);
+ const catalog=await getProducts();
+ const related=catalog.filter(p => p.handle!==handle).slice(0,4);
+ const lookCandidates=complementaryProducts(product,catalog,3);
+ const completeLook=(await Promise.all(lookCandidates.map(item=>getProduct(item.handle)))).filter(Boolean);
  const structured=[
   productGroupJsonLd(product),
   breadcrumbJsonLd([{name:'Products',path:'/products'},{name:product.title,path:`/products/${product.handle}`}])
@@ -39,6 +44,7 @@ export default async function ProductPage({params,searchParams}) {
   <ProductPurchase key={product.id+':'+initialVariantId+':'+chooseSize} product={product} initialVariantId={initialVariantId} chooseSize={chooseSize}>
    <div className="product-details"><details open><summary>About this piece</summary><p>{product.description || 'For more details about this piece, contact the AX team.'}</p></details><details><summary>Delivery & exchanges</summary><p>Shipping across India. Available delivery options and charges are shown at checkout.</p><Link className="text-link" href="/help#exchanges">Read our exchange policy</Link></details></div>
   </ProductPurchase>
+  <CompleteLook product={product} items={completeLook}/>
   {related.length>0 && <section className="section-wrap related-section"><div className="section-head"><h2 className="editorial">More to make your own.</h2><Link href="/products" className="underlined-link">EXPLORE ALL <Icon name="arrow"/></Link></div><div className="product-grid">{related.map(p => <ProductCard key={p.id} product={p}/>)}</div></section>}
  </main>;
 }

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-const {cartWeightGrams,getDelhiveryCheckoutRates,normalizeDelhiveryResponse,normalizePincode,normalizeShippingAmount,normalizeWaybill,quoteDelhiveryRate,trackDelhiveryWaybills}=await import('../lib/delhivery.js');
+const {cartWeightGrams,configuredFreeShippingThreshold,freeShippingEligible,getDelhiveryCheckoutRates,normalizeDelhiveryResponse,normalizePincode,normalizeShippingAmount,normalizeWaybill,quoteDelhiveryRate,trackDelhiveryWaybills}=await import('../lib/delhivery.js');
 
 const payload={ShipmentData:[{Shipment:{
   AWB:'1234567890123',
@@ -166,4 +166,35 @@ test('missing packed product weight fails closed before calling Delhivery',async
   assert.equal(called,false);
   assert.match(result.error,/weight/i);
   assert.deepEqual(result.rates,[]);
+});
+
+test('free standard shipping activates only from an explicit INR subtotal threshold',()=>{
+ const env={AX_FREE_SHIPPING_THRESHOLD:'1499'};
+ assert.equal(configuredFreeShippingThreshold(env),1499);
+ assert.equal(freeShippingEligible({currency:'INR',order_totals:{subtotal_price:149900}},env),true);
+ assert.equal(freeShippingEligible({currency:'INR',order_totals:{subtotal_price:149899}},env),false);
+ assert.equal(freeShippingEligible({currency:'USD',order_totals:{subtotal_price:149900}},env),false);
+ assert.equal(configuredFreeShippingThreshold({}),0);
+});
+
+test('checkout makes standard delivery free at the configured threshold but keeps express paid',async()=>{
+ const result=await getDelhiveryCheckoutRates({
+  rate:{
+   currency:'INR',
+   order_totals:{subtotal_price:150000},
+   destination:{country:'IN',postal_code:'400001'},
+   items:[{grams:500,quantity:1,requires_shipping:true}]
+  }
+ },{
+  env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3',AX_FREE_SHIPPING_THRESHOLD:'1499'},
+  fetchImpl:async url=>{
+   const parsed=new URL(url);
+   if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400001,pre_paid:'Y'}}]});
+   return Response.json([{total_amount:parsed.searchParams.get('md')==='S'?68.52:94.14}]);
+  }
+ });
+ assert.equal(result.rates[0].service_name,'Free Standard Delivery');
+ assert.equal(result.rates[0].total_price,'0');
+ assert.equal(result.rates[1].service_name,'Express Delivery');
+ assert.equal(result.rates[1].total_price,'9714');
 });

@@ -4,7 +4,7 @@ import {convertMeasurementValue,formatMeasurementDisplay,measurementCategory,mea
 
 test('AX product categories use the agreed measurement schemas',()=>{
  assert.deepEqual(measurementFieldsForProduct({title:'Oversized T-Shirt'}),['chest','shoulder','length','sleeve']);
- assert.deepEqual(measurementFieldsForProduct({title:'Linen Shirt'}),['chest','shoulder','front_length','sleeve']);
+ assert.deepEqual(measurementFieldsForProduct({title:'Linen Shirt'}),['chest','shoulder','length','sleeve']);
  assert.deepEqual(measurementFieldsForProduct({title:'Cargo Pants'}),['waist','hip','front_rise','thigh','inseam','outseam','leg_opening']);
  assert.equal(measurementCategory({title:'Relaxed Shorts'}),'shorts');
 });
@@ -25,10 +25,17 @@ test('flat legacy measurements can be standardized to full circumference cm',()=
 
 test('canonical circumference cm stays unchanged and aliases normalize',()=>{
  const result=normalizeMeasurementRows({M:{'front length':74,'chest circumference':108,sleeve_length:62}},{unit:'cm',basis:'circumference',category:'shirt'});
- assert.deepEqual(result.rows.M,{front_length:74,chest:108,sleeve:62});
+ assert.deepEqual(result.rows.M,{length:74,chest:108,sleeve:62});
 });
 
 test('inch display is derived from cm and rounded to one decimal',()=>{
  assert.equal(convertMeasurementValue(104,'inches'),40.9);
  assert.equal(formatMeasurementDisplay(convertMeasurementValue([91,97],'inches')),'35.8–38.2');
+});
+
+
+test('shirt length is retained in the size chart schema',()=>{
+ const result=normalizeMeasurementRows({S:{chest:94,shoulder:43,length:68},M:{chest:102,shoulder:44,length:70}},{unit:'cm',basis:'circumference',category:'shirt'});
+ assert.equal(result.rows.S.length,68);
+ assert.equal(result.rows.M.length,70);
 });

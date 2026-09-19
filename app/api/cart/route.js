@@ -32,12 +32,13 @@ export async function POST(request) {
  if(invalid) return respond({ok:false,error:invalid},400,guard);
  if(!shopifyConfigured()) return respond({ok:false,error:'Checkout is unavailable in this store preview.'},503,guard);
  const {action,cartId,merchandiseId,quantity=1,lineId}=body;
- const variables=action==='get'?{id:cartId}:action==='remove'?{cartId,lineIds:[lineId]}:action==='update'?{cartId,lines:[{id:lineId,quantity}]}:{...(action==='add'?{cartId}:{}),lines:[{merchandiseId,quantity}]};
+ const batch=['createMany','addMany'].includes(action)?body.lines.map(item=>({merchandiseId:item.merchandiseId,quantity:item.quantity})):null;
+ const variables=action==='get'?{id:cartId}:action==='remove'?{cartId,lineIds:[lineId]}:action==='update'?{cartId,lines:[{id:lineId,quantity}]}:batch?{...(action==='addMany'?{cartId}:{}),lines:batch}:{...(action==='add'?{cartId}:{}),lines:[{merchandiseId,quantity}]};
  // Enable only a header overwritten by the trusted hosting proxy.
  const ipHeader=process.env.SHOPIFY_BUYER_IP_HEADER,rawIp=ipHeader?request.headers.get(ipHeader)?.trim():'';
  try{
   const data=await storefront(cartOperations[action],variables,{revalidate:0,buyerIp:rawIp && isIP(rawIp)?rawIp:undefined});
-  const keys={create:'cartCreate',add:'cartLinesAdd',update:'cartLinesUpdate',remove:'cartLinesRemove'},result=action==='get'?{cart:data.cart}:data[keys[action]];
+  const keys={create:'cartCreate',createMany:'cartCreate',add:'cartLinesAdd',addMany:'cartLinesAdd',update:'cartLinesUpdate',remove:'cartLinesRemove'},result=action==='get'?{cart:data.cart}:data[keys[action]];
   if(result.userErrors?.length) return respond({ok:false,error:result.userErrors.map(e => e.message).join(' ')},400,guard);
   if(!result.cart) return respond({ok:false,code:'CART_NOT_FOUND',error:'This bag has expired. Please add your items again.'},404,guard);
   return respond({ok:true,cart:result.cart},200,guard);
