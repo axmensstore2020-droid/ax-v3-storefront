@@ -68,7 +68,8 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
    setOpen(true);
   }catch(error){setNotice(error.message);setOpen(true);}finally{locked.current=false;setBusy(false);}
  }
- function clearCart(){setCart(null);currentCartId.current=null;write(CART_ID,null);setNotice('');setOpen(false);}\n async function updateItem(id,quantity){
+ function clearCart(){setCart(null);currentCartId.current=null;write(CART_ID,null);setNotice('');setOpen(false);}
+ async function updateItem(id,quantity){
   if(locked.current)return;locked.current=true;setBusy(true);setNotice('');
   try{if(demo)saveDemo(demoRef.current.map(line => line.key===id?{...line,quantity}:line).filter(line => line.quantity>0));else saveCart(await requestCart({action:quantity===0?'remove':'update',cartId:currentCartId.current,lineId:id,quantity}));}
   catch(error){setNotice(error.message);}finally{locked.current=false;setBusy(false);}
