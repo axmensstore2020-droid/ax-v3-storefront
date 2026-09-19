@@ -27,7 +27,8 @@ test('Partial COD encrypted session round trips and rejects tampering',()=>{
  const secret='x'.repeat(40),value={kind:'partial-cod',exp:Date.now()+60_000,advance:130};
  const token=sealPartialCodSession(value,secret);
  assert.deepEqual(unsealPartialCodSession(token,secret),value);
- const changed=token.slice(0,-1)+(token.endsWith('a')?'b':'a');
+ const parts=token.split('.');parts[2]=(parts[2][0]==='A'?'B':'A')+parts[2].slice(1);
+ const changed=parts.join('.');
  assert.equal(unsealPartialCodSession(changed,secret),null);
  assert.equal(unsealPartialCodSession(token,'y'.repeat(40)),null);
 });
