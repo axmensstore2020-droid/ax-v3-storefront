@@ -6,7 +6,7 @@ import {formatMoney} from '../lib/catalog';
 import {isSizeOption,matchesSelection,optionAvailable,visibleOptions} from '../lib/product-variants';
 import Icon from './Icon';
 
-export default function AddToCart({product,options,selected,variant,onSelect}) {
+export default function AddToCart({product,options,selected,variant,onSelect,beforeAddButton=null}) {
   const {addItem,busy}=useCart(),variants=product.variants||[],shown=visibleOptions(options);
   const [showSticky,setShowSticky]=useState(false),primaryButton=useRef(null);
   const missing=shown.find(option=>!selected[option.name]);
@@ -47,6 +47,7 @@ export default function AddToCart({product,options,selected,variant,onSelect}) {
     </fieldset>)}
     {sizeOption && sizeFit?.text && <div className="size-recommendation" aria-live="polite"><p><strong>{selectedSize}</strong> · {sizeFit.text}</p><span>AX’s garment note—not a personal size recommendation.</span></div>}
     <StylistButton className="find-size" mode="size" product={{title:product.title,handle:product.handle,selectedOptions:selected}}>FIND MY SIZE WITH AX <Icon name="arrow" size={17}/></StylistButton>
+    {beforeAddButton}
     <button ref={primaryButton} type="button" className="add-bag" disabled={!available||busy} onClick={add}>{buttonText}</button>
     {showSticky && <button type="button" className="mobile-sticky-add-bag" disabled={!available||busy} onClick={add}>{buttonText}</button>}
     {product.demo && <p className="cart-note">Sample catalog. Sizes and availability will appear when the store opens.</p>}
