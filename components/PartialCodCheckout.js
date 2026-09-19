@@ -29,7 +29,7 @@ function loadRazorpay() {
 export default function PartialCodCheckout(){
   const {cart,busy:cartBusy,clearCart}=useCart();
   const [form,setForm]=useState(emptyForm),[quote,setQuote]=useState(null),[shippingCode,setShippingCode]=useState('');
-  const [accepted,setAccepted]=useState(false),[stage,setStage]=useState(''),[error,setError]=useState(''),[success,setSuccess]=useState(null);
+  const [accepted,setAccepted]=useState(false),[stage,setStage]=useState(''),[error,setError]=useState(''),[success,setSuccess]=useState(null),[pending,setPending]=useState(null);
   const selected=useMemo(()=>quote?.rates?.find(rate=>rate.code===shippingCode)||null,[quote,shippingCode]);
   const cartId=cart?.id || '';
 
@@ -64,7 +64,7 @@ export default function PartialCodCheckout(){
       clearCart();
       setSuccess({...result,paymentId:response.razorpay_payment_id});
     }catch(err){
-      setError((err.message || 'Your payment was received but the order could not be finalized.')+' If the advance was charged, do not pay again. Retry from this page or contact AX with the Razorpay payment ID.');
+      setError((err.message || 'Your payment was received but the order could not be finalized.')+' Do not pay again. Razorpay reference: '+response.razorpay_payment_id+'. Retry order confirmation below or contact AX with this reference.');
     }finally{setStage('');}
   }
 
@@ -161,7 +161,7 @@ export default function PartialCodCheckout(){
         <span>I understand the balance will be collected at delivery. For customer-attributable cancellations, refusals or accepted non-AX-fault returns, actual shipping/RTO or reverse-shipping and applicable COD/logistics charges may be deducted as described in the <Link href="/policies">AX Policies</Link>. AX-side issues are handled under the applicable refund policy.</span>
       </label>
 
-      <button className="checkout-button partial-cod-pay" type="button" disabled={!selected||!accepted||Boolean(stage)} onClick={payAdvance}>
+      <button className="checkout-button partial-cod-pay" type="button" disabled={!selected||!accepted||Boolean(stage)||Boolean(pending)} onClick={payAdvance}>
         {stage==='prepare'?'PREPARING PAYMENT…':stage==='confirm'?'CONFIRMING ORDER…':selected?'PAY '+formatMoney(selected.advance,'INR')+' ADVANCE':'CHOOSE DELIVERY'}
       </button>
       <p className="partial-cod-secure">Secure payment by Razorpay · card, UPI and supported wallets. AX never receives your card number, CVV or UPI PIN.</p>
