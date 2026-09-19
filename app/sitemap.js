@@ -1,7 +1,8 @@
 import {getCollections,getProducts} from '../lib/shopify';
 import {absoluteUrl} from '../lib/seo';
 
-export const revalidate=3600;
+export const dynamic='force-dynamic';
+export const revalidate=0;
 
 function modified(value){
  const date=value?new Date(value):null;
@@ -9,7 +10,9 @@ function modified(value){
 }
 
 export default async function sitemap(){
- const [products,collections]=await Promise.all([getProducts(250),getCollections(250)]);
+ let products=[],collections=[];
+ try { [products,collections]=await Promise.all([getProducts(250),getCollections(250)]); }
+ catch { products=[];collections=[]; }
  const staticPages=[
   ['/',1,'daily'],['/products',0.9,'daily'],['/collections',0.8,'weekly'],['/stores',0.8,'monthly'],
   ['/about',0.6,'monthly'],['/help',0.5,'monthly'],['/faqs',0.5,'monthly'],['/contact',0.5,'monthly'],
