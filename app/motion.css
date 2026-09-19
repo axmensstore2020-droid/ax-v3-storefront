@@ -1,0 +1,128 @@
+/* AX motion system: restrained interaction feedback, no heavy animation runtime. */
+@media (prefers-reduced-motion:no-preference){
+  html.ax-motion-enabled [data-ax-reveal]{
+    opacity:0;
+    transform:translate3d(0,16px,0);
+    transition:
+      opacity .5s ease var(--ax-motion-delay,0ms),
+      transform .62s cubic-bezier(.2,.72,.2,1) var(--ax-motion-delay,0ms);
+    will-change:opacity,transform;
+  }
+  html.ax-motion-enabled [data-ax-reveal].ax-motion-visible{
+    opacity:1;
+    transform:none;
+    will-change:auto;
+  }
+
+  @media (hover:hover) and (pointer:fine){
+    .product-card .product-image,
+    .look-item .look-image img{
+      transition:transform .45s cubic-bezier(.2,.65,.25,1);
+    }
+    .product-card:hover .product-image{transform:scale(1.04)}
+    .look-item:hover .look-image img{transform:scale(1.035)}
+    .product-meta>a,.look-copy>a{
+      display:inline-block;
+      transition:transform .2s ease,opacity .2s ease;
+    }
+    .product-card:hover .product-meta>a,
+    .look-item:hover .look-copy>a{transform:translateX(3px)}
+    .editorial-style-links a{transition:padding-left .2s ease}
+    .editorial-style-links a:hover{padding-left:6px}
+  }
+
+  .solid-button,
+  .add-bag,
+  .mobile-sticky-add-bag,
+  .checkout-button,
+  .add-look-button,
+  .option-values button,
+  .shipping-estimator button,
+  .quantity button,
+  .wide-toggle,
+  .bag-button,
+  .categories-button,
+  .icon-button{
+    transition:
+      transform .16s cubic-bezier(.2,.72,.2,1),
+      background-color .18s ease,
+      color .18s ease,
+      border-color .18s ease,
+      opacity .18s ease;
+  }
+  .solid-button:not(:disabled):active,
+  .add-bag:not(:disabled):active,
+  .mobile-sticky-add-bag:not(:disabled):active,
+  .checkout-button:not([aria-disabled="true"]):active,
+  .add-look-button:not(:disabled):active,
+  .option-values button:not(:disabled):active,
+  .shipping-estimator button:not(:disabled):active,
+  .quantity button:not(:disabled):active,
+  .wide-toggle:not(:disabled):active,
+  .bag-button:not(:disabled):active,
+  .categories-button:not(:disabled):active,
+  .icon-button:not(:disabled):active{
+    transform:scale(.985);
+    transition-duration:.07s;
+  }
+
+  .option-values button.selected{animation:ax-option-confirm .2s cubic-bezier(.2,.8,.2,1)}
+  .search-suggestions{animation:ax-pop-in .18s ease-out both}
+  .dialog[open]{animation:ax-dialog-in .18s ease-out both}
+  .side-dialog[open],.cart-dialog[open]{animation:ax-drawer-in .24s cubic-bezier(.2,.72,.2,1) both}
+  .category-dialog[open]{animation:ax-menu-in .18s ease-out both}
+  .dialog[open]::backdrop{animation:ax-backdrop-in .18s ease-out both}
+
+  @keyframes ax-option-confirm{
+    0%{transform:scale(.97)}
+    65%{transform:scale(1.025)}
+    100%{transform:scale(1)}
+  }
+  @keyframes ax-pop-in{
+    from{opacity:0;transform:translateY(-5px)}
+    to{opacity:1;transform:none}
+  }
+  @keyframes ax-dialog-in{
+    from{opacity:0;transform:translateY(7px) scale(.995)}
+    to{opacity:1;transform:none}
+  }
+  @keyframes ax-drawer-in{
+    from{opacity:.75;transform:translateX(18px)}
+    to{opacity:1;transform:none}
+  }
+  @keyframes ax-menu-in{
+    from{opacity:0;transform:translateY(-7px)}
+    to{opacity:1;transform:none}
+  }
+  @keyframes ax-backdrop-in{
+    from{opacity:0}
+    to{opacity:1}
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  html.ax-motion-enabled [data-ax-reveal]{
+    opacity:1!important;
+    transform:none!important;
+    transition:none!important;
+  }
+  .product-image,
+  .look-image img,
+  .solid-button,
+  .add-bag,
+  .mobile-sticky-add-bag,
+  .checkout-button,
+  .add-look-button,
+  .option-values button,
+  .shipping-estimator button,
+  .quantity button,
+  .wide-toggle,
+  .bag-button,
+  .categories-button,
+  .icon-button,
+  .dialog,
+  .search-suggestions{
+    animation:none!important;
+    transition:none!important;
+  }
+}
