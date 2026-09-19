@@ -123,7 +123,7 @@
   .ax-orb{
     transition:transform 260ms var(--ax-motion-ease);
   }
-  @media (hover:hover) and (pointer:fine){
+  @media (hover:hover) and (pointer:fine) and (max-width:1099px){
     .island-stylist:hover .ax-orb{transform:translate3d(0,-2px,0) scale(1.008)}
     .island-item{transition:transform 190ms var(--ax-motion-ease)}
     .island-item:hover{transform:translate3d(0,-1px,0)}
