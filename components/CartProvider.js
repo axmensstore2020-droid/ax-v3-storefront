@@ -11,7 +11,7 @@ async function requestCart(body){
  if(!data.ok){const error=new Error(data.error || 'We couldn’t update your bag. Please try again.');error.code=data.code;throw error;}
  return data.cart;
 }
-export function CartProvider({children,demo=false,freeShippingThreshold=0}) {
+export function CartProvider({children,demo=false,freeShippingThreshold=0,partialCodEnabled=false}) {
  const [cart,setCart]=useState(null),[demoLines,setDemoLines]=useState([]),[open,setOpen]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const locked=useRef(false),currentCartId=useRef(null),demoRef=useRef([]);
  useEffect(() => {
@@ -68,12 +68,13 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0}) {
    setOpen(true);
   }catch(error){setNotice(error.message);setOpen(true);}finally{locked.current=false;setBusy(false);}
  }
+ function clearCart(){setCart(null);currentCartId.current=null;write(CART_ID,null);setNotice('');setOpen(false);}
  async function updateItem(id,quantity){
   if(locked.current)return;locked.current=true;setBusy(true);setNotice('');
   try{if(demo)saveDemo(demoRef.current.map(line => line.key===id?{...line,quantity}:line).filter(line => line.quantity>0));else saveCart(await requestCart({action:quantity===0?'remove':'update',cartId:currentCartId.current,lineId:id,quantity}));}
   catch(error){setNotice(error.message);}finally{locked.current=false;setBusy(false);}
  }
  const count=demo?demoLines.reduce((sum,line)=>sum+line.quantity,0):(cart?.totalQuantity||0);
- return <Context.Provider value={{cart,demoLines,demo,count,open,setOpen,busy,notice,addItem,addItems,updateItem,freeShippingThreshold}}>{children}</Context.Provider>;
+ return <Context.Provider value={{cart,demoLines,demo,count,open,setOpen,busy,notice,addItem,addItems,updateItem,clearCart,freeShippingThreshold,partialCodEnabled}}>{children}</Context.Provider>;
 }
 export const useCart=()=>useContext(Context);
