@@ -108,9 +108,9 @@ export default function PartialCodCheckout(){
       <div><span>Order</span><strong>{success.orderName || 'Confirmed'}</strong></div>
       <div><span>Advance paid</span><strong>{formatMoney(success.advance,'INR')}</strong></div>
       <div><span>Balance on delivery</span><strong>{formatMoney(success.codBalance,'INR')}</strong></div>
-      <div><span>Delhivery waybill</span><strong>{success.waybill}</strong></div>
+      <div><span>Delhivery</span><strong>{success.deliveryBooking==='test-skipped'?'Not booked in test mode':success.waybill}</strong></div>
     </div>
-    <p className="muted">Keep your order details and Razorpay payment reference until delivery. Delhivery will collect only the balance shown above.</p>
+    <p className="muted">{success.deliveryBooking==='test-skipped'?'Test mode: no live Delhivery shipment was created.':'Keep your order details and Razorpay payment reference until delivery. Delhivery will collect only the balance shown above.'}</p>
     <Link className="solid-button partial-cod-home" href="/">CONTINUE SHOPPING</Link>
   </section>;
 
