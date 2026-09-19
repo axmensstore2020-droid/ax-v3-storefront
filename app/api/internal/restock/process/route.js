@@ -1,10 +1,10 @@
 import {timingSafeEqual} from 'node:crypto';
 import {NextResponse} from 'next/server';
-import {createDatabase} from '../../../../lib/stylist/database.js';
-import {getProduct} from '../../../../lib/shopify.js';
-import {sendRestockEmail} from '../../../../lib/restock-email.js';
-import {processRestockSubscriptions} from '../../../../lib/restock-processor.js';
-import {restockProcessorConfigured} from '../../../../lib/restock-config.js';
+import {createDatabase} from '../../../../../lib/stylist/database.js';
+import {getProduct} from '../../../../../lib/shopify.js';
+import {sendRestockEmail} from '../../../../../lib/restock-email.js';
+import {processRestockSubscriptions} from '../../../../../lib/restock-processor.js';
+import {restockProcessorConfigured} from '../../../../../lib/restock-config.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
