@@ -42,7 +42,7 @@ export default function OpeningIntro(){
 
       const arrive=animate(
         logo,
-        {opacity:[0,1],transform:['translate3d(0,0,0) scale(1.055)','translate3d(0,0,0) scale(1)']},
+        {opacity:[1,1],transform:['translate3d(0,0,0) scale(1.04)','translate3d(0,0,0) scale(1)']},
         AX_MOTION.introReveal
       );
       active.push(arrive);
