@@ -31,8 +31,25 @@ const ENTRY_SELECTOR=[
   '.search-suggestions',
   '.delivery-location-row',
   '.delivery-services-list',
-  '.size-recommendation'
+  '.size-recommendation',
+  '.cart-line',
+  '.cart-quantity-value',
+  '.shipping-progress',
+  '.cart-recommendation',
+  '.cart-total',
+  '.checkout-methods',
+  '.partial-cod-status',
+  '.partial-cod-continue',
+  '.empty-cart',
+  '.category-menu-item'
 ].join(',');
+
+function siblingIndex(node,selector){
+  const parent=node.parentElement;
+  if(!parent) return 0;
+  const siblings=[...parent.children].filter(child=>child.matches?.(selector));
+  return Math.max(0,siblings.indexOf(node));
+}
 
 function revealPreset(node){
   if(node.classList.contains('pdp-gallery')) return {x:-5,y:0,delay:0,transition:AX_MOTION.pdp};
@@ -82,6 +99,45 @@ function entryPreset(node){
     transition:AX_MOTION.feedback,
     delay:0
   };
+  if(node.classList.contains('cart-line')) {
+    const index=siblingIndex(node,'.cart-line');
+    return {
+      from:'translate3d(5px,0px,0px) scale(.998)',
+      transition:AX_MOTION.commerce,
+      delay:Math.min(index,4)*.035
+    };
+  }
+  if(node.classList.contains('cart-quantity-value')) return {
+    from:'translate3d(0px,2px,0px) scale(.94)',
+    transition:AX_MOTION.feedback,
+    delay:0
+  };
+  if(node.classList.contains('cart-recommendation')) {
+    const index=siblingIndex(node,'.cart-recommendation');
+    return {
+      from:'translate3d(4px,2px,0px) scale(.998)',
+      transition:AX_MOTION.commerce,
+      delay:Math.min(index,3)*.03
+    };
+  }
+  if(node.classList.contains('shipping-progress')||node.classList.contains('cart-total')||node.classList.contains('checkout-methods')) return {
+    from:'translate3d(0px,3px,0px) scale(1)',
+    transition:AX_MOTION.commerce,
+    delay:.025
+  };
+  if(node.classList.contains('partial-cod-status')||node.classList.contains('partial-cod-continue')||node.classList.contains('empty-cart')) return {
+    from:'translate3d(0px,3px,0px) scale(.999)',
+    transition:AX_MOTION.feedback,
+    delay:0
+  };
+  if(node.classList.contains('category-menu-item')) {
+    const index=siblingIndex(node,'.category-menu-item');
+    return {
+      from:'translate3d(3px,0px,0px) scale(1)',
+      transition:AX_MOTION.cascade,
+      delay:Math.min(index,7)*.025
+    };
+  }
   return {
     from:'translate3d(0px,-4px,0px) scale(1)',
     transition:AX_MOTION.search,
@@ -168,16 +224,22 @@ export default function MotionEnhancer(){
       }
     }
 
+    function detailsTarget(details){
+      if(details.classList.contains('product-info-details')) return details.querySelector(':scope > .product-info-content');
+      if(details.classList.contains('menu-group')) return details.querySelector(':scope > nav');
+      return null;
+    }
+
     function prepareDetails(root){
       const nodes=[];
-      if(root instanceof HTMLDetailsElement && root.classList.contains('product-info-details')) nodes.push(root);
-      root.querySelectorAll?.('details.product-info-details').forEach(node=>nodes.push(node));
+      if(root instanceof HTMLDetailsElement && (root.classList.contains('product-info-details')||root.classList.contains('menu-group'))) nodes.push(root);
+      root.querySelectorAll?.('details.product-info-details,details.menu-group').forEach(node=>nodes.push(node));
 
       for(const details of nodes){
         if(detailListeners.has(details)) continue;
         const handler=()=>{
           if(!details.open) return;
-          const content=details.querySelector(':scope > .product-info-content');
+          const content=detailsTarget(details);
           if(!content) return;
           content.style.willChange='opacity, transform';
           track(animate(
