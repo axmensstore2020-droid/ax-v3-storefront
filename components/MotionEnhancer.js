@@ -15,15 +15,36 @@ const REVEAL_SELECTOR=[
   '.complete-look',
   '.related-section',
   '.store-card',
-  '.account-page section'
+  '.account-page section',
+  '.pdp-gallery',
+  '.pdp-info>.eyebrow',
+  '.pdp-info>.pdp-title-row',
+  '.pdp-info>.buy-box',
+  '.product-data-panel',
+  '.pdp-after-product-info',
+  '.product-proof'
 ].join(',');
 
-const ENTRY_SELECTOR='.filter-panel,.sort-panel,.search-suggestions';
+const ENTRY_SELECTOR=[
+  '.filter-panel',
+  '.sort-panel',
+  '.search-suggestions',
+  '.delivery-location-row',
+  '.delivery-services-list',
+  '.size-recommendation'
+].join(',');
 
 function revealPreset(node){
-  if(!node.classList.contains('product-card')) return {x:0,y:9,delay:0};
+  if(node.classList.contains('pdp-gallery')) return {x:-5,y:0,delay:0,transition:AX_MOTION.pdp};
+  if(node.classList.contains('pdp-title-row')) return {x:4,y:0,delay:.035,transition:AX_MOTION.pdp};
+  if(node.classList.contains('buy-box')) return {x:0,y:7,delay:.055,transition:AX_MOTION.pdp};
+  if(node.classList.contains('product-data-panel')) return {x:0,y:5,delay:0,transition:AX_MOTION.pdp};
+  if(node.classList.contains('pdp-after-product-info')||node.classList.contains('product-proof')) return {x:0,y:5,delay:.025,transition:AX_MOTION.pdp};
+  if(node.matches?.('.pdp-info>.eyebrow')) return {x:2,y:0,delay:.015,transition:AX_MOTION.pdp};
+
+  if(!node.classList.contains('product-card')) return {x:0,y:9,delay:0,transition:AX_MOTION.reveal};
   const parent=node.parentElement;
-  if(!parent) return {x:0,y:8,delay:0};
+  if(!parent) return {x:0,y:8,delay:0,transition:AX_MOTION.reveal};
   const cards=[...parent.children].filter(child=>child.classList?.contains('product-card'));
   const index=Math.max(0,cards.indexOf(node));
   const offsets=[
@@ -32,25 +53,39 @@ function revealPreset(node){
     {x:3,y:9},
     {x:-1,y:7}
   ];
-  return {...offsets[index%4],delay:Math.min(index%4,3)*0.045};
+  return {...offsets[index%4],delay:Math.min(index%4,3)*0.045,transition:AX_MOTION.reveal};
 }
 
 function entryPreset(node){
-  if(node.classList.contains('filter-panel')) {
-    return {
-      from:'translate3d(0px,-4px,0px) scale(1.006)',
-      duration:AX_MOTION.panel.duration
-    };
-  }
-  if(node.classList.contains('sort-panel')) {
-    return {
-      from:'translate3d(2px,-3px,0px) scale(.997)',
-      duration:AX_MOTION.sort.duration
-    };
-  }
+  if(node.classList.contains('filter-panel')) return {
+    from:'translate3d(0px,-4px,0px) scale(1.006)',
+    transition:AX_MOTION.panel,
+    delay:0
+  };
+  if(node.classList.contains('sort-panel')) return {
+    from:'translate3d(2px,-3px,0px) scale(.997)',
+    transition:AX_MOTION.sort,
+    delay:0
+  };
+  if(node.classList.contains('delivery-location-row')) return {
+    from:'translate3d(-2px,0px,0px) scale(1)',
+    transition:AX_MOTION.service,
+    delay:0
+  };
+  if(node.classList.contains('delivery-services-list')) return {
+    from:'translate3d(0px,5px,0px) scale(.999)',
+    transition:AX_MOTION.service,
+    delay:.035
+  };
+  if(node.classList.contains('size-recommendation')) return {
+    from:'translate3d(0px,3px,0px) scale(1)',
+    transition:AX_MOTION.feedback,
+    delay:0
+  };
   return {
     from:'translate3d(0px,-4px,0px) scale(1)',
-    duration:AX_MOTION.search.duration
+    transition:AX_MOTION.search,
+    delay:0
   };
 }
 
@@ -61,25 +96,29 @@ export default function MotionEnhancer(){
     if(reduced.matches) return;
 
     document.documentElement.classList.add('ax-motion-enabled');
-    const active=new Set();
+    const active=new Set(),detailListeners=new Map();
+
+    function track(controls,node=null){
+      active.add(controls);
+      controls.then?.(()=>{
+        active.delete(controls);
+        if(node) node.style.willChange='';
+      });
+      return controls;
+    }
 
     function runReveal(node){
-      const {x,y,delay}=revealPreset(node);
+      const {x,y,delay,transition}=revealPreset(node);
       const from=`translate3d(${x}px,${y}px,0px)`;
       node.style.opacity='0';
       node.style.transform=from;
       node.style.willChange='opacity, transform';
-      const controls=animate(
+      track(animate(
         node,
         {opacity:[0,1],transform:[from,'translate3d(0px,0px,0px)']},
-        {...AX_MOTION.reveal,delay}
-      );
-      active.add(controls);
-      controls.then?.(()=>{
-        active.delete(controls);
-        node.style.willChange='';
-        node.classList.add('ax-motion-visible');
-      });
+        {...transition,delay}
+      ),node);
+      node.classList.add('ax-motion-visible');
     }
 
     const observer=new IntersectionObserver(entries=>{
@@ -120,17 +159,41 @@ export default function MotionEnhancer(){
         if(node.dataset.axEntryMotionReady==='true') continue;
         node.dataset.axEntryMotionReady='true';
         const preset=entryPreset(node);
-        const controls=animate(
+        node.style.willChange='opacity, transform';
+        track(animate(
           node,
           {opacity:[0,1],transform:[preset.from,'translate3d(0px,0px,0px) scale(1)']},
-          {duration:preset.duration,ease:AX_MOTION.panel.ease}
-        );
-        active.add(controls);
-        controls.then?.(()=>active.delete(controls));
+          {...preset.transition,delay:preset.delay}
+        ),node);
+      }
+    }
+
+    function prepareDetails(root){
+      const nodes=[];
+      if(root instanceof HTMLDetailsElement && root.classList.contains('product-info-details')) nodes.push(root);
+      root.querySelectorAll?.('details.product-info-details').forEach(node=>nodes.push(node));
+
+      for(const details of nodes){
+        if(detailListeners.has(details)) continue;
+        const handler=()=>{
+          if(!details.open) return;
+          const content=details.querySelector(':scope > .product-info-content');
+          if(!content) return;
+          content.style.willChange='opacity, transform';
+          track(animate(
+            content,
+            {opacity:[0,1],transform:['translate3d(0px,-4px,0px)','translate3d(0px,0px,0px)']},
+            AX_MOTION.accordion
+          ),content);
+        };
+        details.addEventListener('toggle',handler);
+        detailListeners.set(details,handler);
       }
     }
 
     prepareReveal(document);
+    prepareDetails(document);
+
     let frame=0;
     const mutationObserver=new MutationObserver(mutations=>{
       cancelAnimationFrame(frame);
@@ -140,6 +203,7 @@ export default function MotionEnhancer(){
             if(node.nodeType!==Node.ELEMENT_NODE) continue;
             prepareReveal(node);
             animateEntries(node);
+            prepareDetails(node);
           }
         }
       });
@@ -150,6 +214,8 @@ export default function MotionEnhancer(){
       cancelAnimationFrame(frame);
       mutationObserver.disconnect();
       observer.disconnect();
+      for(const [details,handler] of detailListeners) details.removeEventListener('toggle',handler);
+      detailListeners.clear();
       for(const controls of active) controls.stop?.();
       active.clear();
       document.documentElement.classList.remove('ax-motion-enabled');

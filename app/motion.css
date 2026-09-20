@@ -1,5 +1,6 @@
-/* AX motion system — Stage 1
+/* AX motion system — Stages 1 + 2
    Quiet by default, slightly unexpected on interaction.
+   Stage 2 adds PDP/service choreography and a restrained AX Stylist glow.
    Motion.dev owns coordinated/dynamic animation; CSS owns tiny hover and press feedback. */
 
 :root{
@@ -122,6 +123,14 @@
   /* AX Island should feel anchored, not float constantly. */
   .ax-orb{
     transition:transform 260ms var(--ax-motion-ease);
+  }
+  .island-stylist .ax-orb .brand-mark.inverse img{
+    filter:invert(1) drop-shadow(0 0 4px rgba(117,190,255,.20));
+    transition:filter 360ms var(--ax-motion-soft);
+  }
+  .island-stylist:hover .ax-orb .brand-mark.inverse img,
+  .ax-island:focus-within .ax-orb .brand-mark.inverse img{
+    filter:invert(1) drop-shadow(0 0 7px rgba(117,190,255,.42));
   }
   @media (hover:hover) and (pointer:fine) and (max-width:1099px){
     .island-stylist:hover .ax-orb{transform:translate3d(0,-2px,0) scale(1.008)}
