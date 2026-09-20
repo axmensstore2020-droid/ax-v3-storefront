@@ -62,19 +62,22 @@ export default function OpeningIntro(){
       await nextFrame();
       if(disposed || skipped) return;
 
+      // Measure the unscaled header position synchronously, then restore the opening zoom
+      // before the browser gets a chance to paint a normal-scale frame.
+      shell.style.transform='none';
       const markRect=mark.getBoundingClientRect();
       if(!markRect.width || !markRect.height){
         finish();
         return;
       }
 
-      const originX=markRect.left+markRect.width/2;
-      const originY=markRect.top+markRect.height/2;
+      const originX=markRect.left+2;
+      const originY=markRect.top+2;
       shell.style.transformOrigin=`${originX}px ${originY}px`;
       shell.style.willChange='transform';
       shell.style.transform=`translate3d(0,0,0) scale(${zoom})`;
 
-      await wait(compact?180:260);
+      await wait(compact?220:280);
       if(disposed || skipped) return;
 
       const zoomOut=track(animate(
