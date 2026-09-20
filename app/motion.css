@@ -18,7 +18,7 @@
   overflow:hidden;
   pointer-events:auto;
 }
-html[data-ax-intro="play"] .ax-opening-intro{display:block}
+html[data-ax-intro="play"] .ax-opening-intro,\nhtml[data-ax-intro="handoff"] .ax-opening-intro{display:block}\nhtml[data-ax-intro="play"] .header .brand{opacity:0}
 .ax-opening-curtain{
   position:absolute;
   inset:0;
