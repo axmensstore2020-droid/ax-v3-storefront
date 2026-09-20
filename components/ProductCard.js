@@ -29,11 +29,19 @@ function explicitlyProductOnly(image){
 }
 function wideViewImage(product){
  const images=(product.images||[]).filter(image=>image?.url);
+ if(!images.length) return null;
+
+ const type=String(product.type||product.productType||'');
+ if(/chain|accessor/i.test(type)) return images[1] || images[0];
+
  const explicit=images.find(explicitlyProductOnly);
  if(explicit) return explicit;
 
  const mappedIndex=WIDE_VIEW_IMAGE_INDEX[product.handle];
  if(Number.isInteger(mappedIndex) && images[mappedIndex]) return images[mappedIndex];
+
+ const hasPeopleImage=images.some(image=>PEOPLE_WORDS.test(imageText(image)));
+ if(!hasPeopleImage) return images[1] || images[0];
 
  return null;
 }
