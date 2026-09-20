@@ -60,7 +60,7 @@ export default function ProductGridClient({products,title='New in',initialTerm='
  const [size,setSize]=useState(''),[color,setColor]=useState(''),[fit,setFit]=useState(''),[availability,setAvailability]=useState('');
  const [priceMin,setPriceMin]=useState(0),[priceMax,setPriceMax]=useState(priceCeiling),[sort,setSort]=useState('featured');
  const [filtersOpen,setFiltersOpen]=useState(false),[sortOpen,setSortOpen]=useState(false);
- const input=useRef(null),searchTimer=useRef(null);
+ const input=useRef(null),searchTimer=useRef(null),gridRef=useRef(null),gridMotionReady=useRef(false);
 
  useEffect(()=>{setTerm(initialTerm);setCategory(initialType);setStyle(initialStyle);},[initialTerm,initialType,initialStyle]);
  useEffect(()=>{setPriceMin(0);setPriceMax(priceCeiling);},[priceCeiling]);
@@ -99,6 +99,12 @@ export default function ProductGridClient({products,title='New in',initialTerm='
    return 0;
   });
  },[products,category,style,term,size,color,fit,availability,priceMin,priceMax,sort]);
+
+ useEffect(()=>{
+  if(!gridMotionReady.current){gridMotionReady.current=true;return;}
+  const frame=requestAnimationFrame(()=>window.dispatchEvent(new CustomEvent('ax:grid-change',{detail:{grid:gridRef.current}})));
+  return()=>cancelAnimationFrame(frame);
+ },[filtered,wide]);
 
  const suggestions=useMemo(()=>term.trim().length>=2?products.filter(product=>matchesSearch(product,term)).slice(0,5):[],[products,term]);
  const heading=styleWorlds.find(item=>item.key===canonicalStyle(style))?.label||title,Heading=home?'h2':'h1';
@@ -146,5 +152,5 @@ export default function ProductGridClient({products,title='New in',initialTerm='
   </section>}
  </>}
 
- {filtered.length?<section className={`product-grid${wide?' wide':''}`} aria-label="Products">{filtered.map(product=><ProductCard key={product.id} product={product} compact={wide}/>)}</section>:<div className="empty-products"><h2 className="editorial">Nothing here just yet.</h2><p>{term?'Try a different search or change a filter.':'More pieces are on the way. Explore what’s new at AX.'}</p>{collection?<Link className="underlined-link" href="/products">EXPLORE NEW IN <Icon name="arrow"/></Link>:<button className="underlined-link" onClick={resetFilters}>VIEW ALL PIECES <Icon name="arrow"/></button>}</div>}</>;
+ {filtered.length?<section ref={gridRef} className={`product-grid${wide?' wide':''}`} aria-label="Products">{filtered.map(product=><ProductCard key={product.id} product={product} compact={wide}/>)}</section>:<div className="empty-products"><h2 className="editorial">Nothing here just yet.</h2><p>{term?'Try a different search or change a filter.':'More pieces are on the way. Explore what’s new at AX.'}</p>{collection?<Link className="underlined-link" href="/products">EXPLORE NEW IN <Icon name="arrow"/></Link>:<button className="underlined-link" onClick={resetFilters}>VIEW ALL PIECES <Icon name="arrow"/></button>}</div>}</>;
 }

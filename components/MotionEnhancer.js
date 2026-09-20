@@ -52,6 +52,17 @@ function siblingIndex(node,selector){
 }
 
 function revealPreset(node){
+  if(node.classList.contains('editorial-welcome')) return {x:0,y:12,delay:.01,transition:AX_MOTION.reveal};
+  if(node.classList.contains('editorial-campaign')){
+    const index=siblingIndex(node,'.editorial-campaign');
+    return {x:index%2===0?-4:4,y:8,delay:.025+Math.min(index,2)*.05,transition:AX_MOTION.reveal};
+  }
+  if(node.classList.contains('editorial-split-campaign')) return {x:4,y:8,delay:.035,transition:AX_MOTION.reveal};
+  if(node.classList.contains('editorial-feature')) return {x:-4,y:8,delay:.04,transition:AX_MOTION.reveal};
+  if(node.classList.contains('editorial-special')) return {x:4,y:7,delay:.045,transition:AX_MOTION.reveal};
+  if(node.classList.contains('editorial-style-index')) return {x:0,y:9,delay:.035,transition:AX_MOTION.reveal};
+  if(node.classList.contains('editorial-close')) return {x:0,y:7,delay:.025,transition:AX_MOTION.reveal};
+
   if(node.classList.contains('pdp-gallery')) return {x:-5,y:0,delay:0,transition:AX_MOTION.pdp};
   if(node.classList.contains('pdp-title-row')) return {x:4,y:0,delay:.035,transition:AX_MOTION.pdp};
   if(node.classList.contains('buy-box')) return {x:0,y:7,delay:.055,transition:AX_MOTION.pdp};
@@ -152,7 +163,7 @@ export default function MotionEnhancer(){
     if(reduced.matches) return;
 
     document.documentElement.classList.add('ax-motion-enabled');
-    const active=new Set(),detailListeners=new Map();
+    const active=new Set(),detailListeners=new Map(),transientControls=new WeakMap();
 
     function track(controls,node=null){
       active.add(controls);
@@ -161,6 +172,19 @@ export default function MotionEnhancer(){
         if(node) node.style.willChange='';
       });
       return controls;
+    }
+
+    function runTransient(node,keyframes,options){
+      if(!(node instanceof Element)) return;
+      transientControls.get(node)?.stop?.();
+      node.style.willChange='opacity, transform';
+      const controls=track(animate(node,keyframes,options),node);
+      transientControls.set(node,controls);
+      controls.then?.(()=>{
+        if(transientControls.get(node)===controls) transientControls.delete(node);
+        node.style.opacity='';
+        node.style.transform='';
+      });
     }
 
     function runReveal(node){
@@ -253,8 +277,32 @@ export default function MotionEnhancer(){
       }
     }
 
+    function onGalleryPrimaryChange(event){
+      const gallery=event.detail?.gallery;
+      const image=gallery?.querySelector?.('.pdp-image:first-child .product-image');
+      if(!image) return;
+      runTransient(
+        image,
+        {opacity:[.82,1],transform:['translate3d(0,2px,0) scale(1.012)','translate3d(0,0,0) scale(1)']},
+        AX_MOTION.gallery
+      );
+    }
+
+    function onGridChange(event){
+      const grid=event.detail?.grid;
+      if(!grid?.querySelectorAll) return;
+      const cards=[...grid.querySelectorAll(':scope > .product-card')].slice(0,24);
+      cards.forEach((card,index)=>runTransient(
+        card,
+        {opacity:[.86,1],transform:['translate3d(0,5px,0)','translate3d(0,0,0)']},
+        {...AX_MOTION.grid,delay:Math.min(index,8)*.012}
+      ));
+    }
+
     prepareReveal(document);
     prepareDetails(document);
+    window.addEventListener('ax:gallery-primary-change',onGalleryPrimaryChange);
+    window.addEventListener('ax:grid-change',onGridChange);
 
     let frame=0;
     const mutationObserver=new MutationObserver(mutations=>{
@@ -276,6 +324,8 @@ export default function MotionEnhancer(){
       cancelAnimationFrame(frame);
       mutationObserver.disconnect();
       observer.disconnect();
+      window.removeEventListener('ax:gallery-primary-change',onGalleryPrimaryChange);
+      window.removeEventListener('ax:grid-change',onGridChange);
       for(const [details,handler] of detailListeners) details.removeEventListener('toggle',handler);
       detailListeners.clear();
       for(const controls of active) controls.stop?.();
