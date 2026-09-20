@@ -1,7 +1,8 @@
-/* AX motion system — Stages 1 + 2 + 3
+/* AX motion system — Stages 1–4
    Quiet by default, slightly unexpected on interaction.
    Stage 2 adds PDP/service choreography and a restrained AX Stylist glow.
    Stage 3 adds commerce feedback for bag, quantity, COD and category interactions.
+   Stage 4 connects navigation, gallery changes, filtered grids and editorial sequencing.
    Motion.dev owns coordinated/dynamic animation; CSS owns tiny hover and press feedback. */
 
 :root{
