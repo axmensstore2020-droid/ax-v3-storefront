@@ -22,3 +22,9 @@ test('leather products do not get machine-wash guidance',()=>{
   assert.match(care,/wipe clean/i);
   assert.doesNotMatch(care,/machine wash cold/i);
 });
+
+test('chains and accessories never get garment washing instructions',()=>{
+  const care=productCareInstructions({type:'Chain / Accessories',fabric:'Stainless steel'});
+  assert.equal(care,'Store dry and avoid prolonged contact with water, perfume and chemicals.');
+  assert.doesNotMatch(care,/wash|bleach|garment/i);
+});
