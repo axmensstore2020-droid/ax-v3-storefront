@@ -1,0 +1,55 @@
+/* PDP cleanup: compact sizing, delivery services, and non-duplicated product facts. */
+.option-block legend.option-legend-with-action{display:flex;width:100%;align-items:center;justify-content:space-between;gap:16px;margin-bottom:13px}
+.option-legend-with-action>span:first-child{font-size:14px;font-weight:500}
+.size-option-block .option-values{gap:9px}
+.size-option-block .option-values button{min-width:58px;min-height:50px;padding:9px 15px}
+.size-recommendation{border:0;border-top:1px solid var(--line);background:transparent;padding:11px 0;margin:13px 0 0}
+.size-recommendation p{font-size:12px}.size-recommendation span{font-size:10px}
+
+.shipping-estimator{border:0;border-top:1px solid var(--line);background:transparent;padding:24px 0 0;margin-top:30px}
+.shipping-estimator-heading{margin:0 0 15px}
+.shipping-estimator-heading strong{font-size:17px;font-weight:500;letter-spacing:-.01em}
+.shipping-estimator form{min-height:50px;border:1px solid var(--line);background:transparent}
+.shipping-estimator input{font-size:14px;padding:12px 14px}
+.shipping-estimator form button{min-width:94px;border-left:1px solid var(--line);background:var(--ink);color:#fff;font-size:10px;letter-spacing:.08em}
+.shipping-estimator-note,.shipping-estimator-error{font-size:11px;margin-top:10px}
+.delivery-location-row{min-height:54px;border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 13px}
+.delivery-location-row>div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.delivery-location-row strong{font-size:14px;font-weight:500}
+.delivery-location-row span{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shipping-estimator .delivery-change{min-width:0;border:0;background:transparent;color:var(--ink);padding:8px 0;font-size:10px;font-weight:500;letter-spacing:.06em;text-decoration:underline;text-underline-offset:4px}
+.delivery-services-list{display:grid;gap:0;margin-top:13px}
+.delivery-service{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:start;padding:13px 0;border-bottom:1px solid var(--line)}
+.delivery-service-primary{border:1px solid var(--line);padding:14px 13px;margin-bottom:2px}
+.delivery-service-mark{width:18px;height:18px;border:1px solid var(--ink);border-radius:50%;display:grid;place-items:center;font-size:10px;line-height:1;margin-top:1px}
+.delivery-service>div{display:flex;flex-direction:column;gap:2px}
+.delivery-service small{font-size:9px;letter-spacing:.08em;color:var(--muted)}
+.delivery-service strong{font-size:13px;font-weight:500;line-height:1.35}
+.delivery-service span:not(.delivery-service-mark){font-size:10px;color:var(--muted);line-height:1.45}
+.delivery-service-unavailable{color:var(--muted)}
+.delivery-service-unavailable .delivery-service-mark{border-color:var(--muted)}
+.delivery-result{margin-top:13px;border-top:0;padding:12px 0;border-bottom:1px solid var(--line)}
+
+.product-data-panel{margin-top:30px}
+.product-info-details{padding:19px 0}
+.product-info-details>summary{font-size:15px;font-weight:400}
+.product-info-content{padding-top:22px}
+.product-info-section{border-top:1px solid var(--line);padding:18px 0 0;margin-top:18px}
+.product-info-section:first-child{border-top:0;padding-top:0;margin-top:0}
+.product-info-section h3{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:0 0 9px}
+.product-details-copy .product-description{font-size:13px;line-height:1.65;margin:0;color:var(--muted)}
+.product-facts{border-top:1px solid var(--line);padding:18px 0 0;margin:18px 0 0;gap:18px 30px}
+.product-facts dt{font-size:9px;margin-bottom:5px}
+.product-facts dd{font-size:13px;line-height:1.5}
+.product-care p{font-size:12px;color:var(--muted);line-height:1.65;white-space:pre-line;margin:0}
+.product-number{border-top:1px solid var(--line);padding-top:17px;margin:19px 0 0;font-size:9px}
+
+@media(max-width:700px){
+ .option-block legend.option-legend-with-action{margin-bottom:12px}
+ .size-option-block .option-values button{min-width:55px;min-height:48px}
+ .shipping-estimator{margin-top:26px;padding-top:22px}
+ .shipping-estimator-heading strong{font-size:16px}
+ .delivery-service-primary{padding:13px 12px}
+ .product-info-content{padding-top:20px}
+ .product-facts{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 18px}
+}

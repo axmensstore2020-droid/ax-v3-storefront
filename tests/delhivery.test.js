@@ -185,6 +185,7 @@ test('checkout makes standard delivery free at the configured threshold but keep
   }
  },{
   env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3'},
+  now:new Date('2026-09-20T03:30:00Z'),
   fetchImpl:async url=>{
    const parsed=new URL(url);
    if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400001,pre_paid:'Y'}}]});
@@ -206,10 +207,11 @@ test('shipping quote can expose carrier TAT when Delhivery returns it',()=>{
 test('delivery estimate returns serviceability details even when weight is not selected',async()=>{
  const result=await estimateDelhiveryDelivery({destinationPincode:'400064',weightGrams:null},{
   env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011'},
+  now:new Date('2026-09-20T03:30:00Z'),
   fetchImpl:async url=>{
    const parsed=new URL(url);
    assert.equal(parsed.pathname,'/c/api/pin-codes/json/');
-   return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',city:'Mumbai',district:'Mumbai',state_code:'MH',is_oda:'N',remarks:''}}]});
+   return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',cod:'Y',city:'Mumbai',district:'Mumbai',state_code:'MH',is_oda:'N',remarks:''}}]});
   }
  });
  assert.equal(result.serviceable,true);
@@ -217,12 +219,14 @@ test('delivery estimate returns serviceability details even when weight is not s
  assert.equal(result.location.city,'Mumbai');
  assert.equal(result.location.stateCode,'MH');
  assert.deepEqual(result.rates,[]);
- assert.equal(result.estimatedDelivery,null);
+ assert.equal(result.codAvailable,true);
+ assert.deepEqual(result.estimatedDelivery,{minDays:null,maxDays:7,source:'ax_fallback',dispatchDate:'2026-09-20',earliestDate:null,latestDate:'2026-09-27',service:'standard'});
 });
 
 test('delivery estimate shares serviceability and rate logic used by checkout',async()=>{
  const result=await estimateDelhiveryDelivery({destinationPincode:'400064',weightGrams:500,subtotal:900},{
   env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3'},
+  now:new Date('2026-09-20T03:30:00Z'),
   fetchImpl:async url=>{
    const parsed=new URL(url);
    if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',city:'Mumbai',state_code:'MH'}}]});
@@ -234,13 +238,14 @@ test('delivery estimate shares serviceability and rate logic used by checkout',a
   {code:'standard',label:'Standard',amount:71.52,currency:'INR',minDays:4,maxDays:6},
   {code:'express',label:'Express',amount:97.14,currency:'INR',minDays:2,maxDays:3}
  ]);
- assert.deepEqual(result.estimatedDelivery,{minDays:4,maxDays:6,source:'delhivery'});
+ assert.deepEqual(result.estimatedDelivery,{minDays:4,maxDays:6,source:'delhivery',dispatchDate:'2026-09-20',earliestDate:'2026-09-24',latestDate:'2026-09-26',service:'standard'});
 });
 
 
-test('serviceable weighted delivery does not invent ETA when Delhivery omits TAT',async()=>{
+test('serviceable weighted delivery uses a conservative fallback date when Delhivery omits TAT',async()=>{
  const result=await estimateDelhiveryDelivery({destinationPincode:'400064',weightGrams:500,subtotal:900},{
   env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3'},
+  now:new Date('2026-09-20T03:30:00Z'),
   fetchImpl:async url=>{
    const parsed=new URL(url);
    if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',city:'Mumbai',state_code:'MH'}}]});
@@ -249,16 +254,17 @@ test('serviceable weighted delivery does not invent ETA when Delhivery omits TAT
  });
  assert.equal(result.serviceable,true);
  assert.equal(result.rates.length,2);
- assert.equal(result.estimatedDelivery,null);
+ assert.deepEqual(result.estimatedDelivery,{minDays:null,maxDays:7,source:'ax_fallback',dispatchDate:'2026-09-20',earliestDate:null,latestDate:'2026-09-27',service:'standard'});
 });
 
-test('extended delivery areas do not invent ETA when Delhivery omits TAT',async()=>{
+test('extended delivery areas use the longer conservative fallback when Delhivery omits TAT',async()=>{
  const result=await estimateDelhiveryDelivery({destinationPincode:'744101',weightGrams:null},{
   env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011'},
+  now:new Date('2026-09-20T03:30:00Z'),
   fetchImpl:async()=>Response.json({delivery_codes:[{postal_code:{pin:744101,pre_paid:'Y',city:'Port Blair',state_code:'AN',is_oda:'Y'}}]})
  });
  assert.equal(result.serviceable,true);
- assert.equal(result.estimatedDelivery,null);
+ assert.deepEqual(result.estimatedDelivery,{minDays:null,maxDays:10,source:'ax_fallback',dispatchDate:'2026-09-20',earliestDate:null,latestDate:'2026-09-30',service:'standard'});
 });
 
 
