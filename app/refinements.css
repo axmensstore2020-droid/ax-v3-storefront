@@ -318,7 +318,7 @@ h1,h2,h3{font-weight:300}
 .editorial-hero-visual:hover .editorial-hero-video{transform:scale(1.015)}
 .editorial-image-caption{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:70px 24px 19px;background:linear-gradient(transparent,#181916a8);color:#fff;font-size:11px;letter-spacing:.08em}
 @media(prefers-reduced-motion:reduce){.editorial-hero-video{display:none}}
-.editorial-hero-copy{display:flex;flex-direction:column;justify-content:space-between;padding:clamp(42px,6vw,96px) clamp(26px,5vw,80px) clamp(30px,4vw,60px);background:#fff}
+.editorial-hero-copy{display:flex;flex-direction:column;justify-content:space-between;padding:clamp(42px,6vw,96px) clamp(26px,5vw,80px) clamp(30px,4vw,60px);background:var(--paper)}
 .editorial-hero-copy h1{font-size:clamp(55px,6.2vw,104px);max-width:700px;margin:0 0 34px}
 .editorial-hero-copy h1 em{font-style:normal;color:#6c756d}
 .editorial-lede{max-width:360px;font-size:15px;line-height:1.75;color:#5f665f;margin:0}
