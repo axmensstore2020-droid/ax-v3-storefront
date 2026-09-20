@@ -21,7 +21,7 @@
 html[data-ax-intro="play"]{overflow:hidden}
 html[data-ax-intro="play"] .ax-opening-intro{display:block}
 .ax-site-shell{
-  transform-origin:calc(var(--gutter) + 40px) 45.5px;
+  transform-origin:var(--gutter) 22px;
 }
 html[data-ax-intro="play"] .ax-site-shell{
   transform:translate3d(0,0,0) scale(3.4);
@@ -29,10 +29,10 @@ html[data-ax-intro="play"] .ax-site-shell{
   backface-visibility:hidden;
 }
 @media(max-width:1000px){
-  .ax-site-shell{transform-origin:calc(var(--gutter) + 40px) 39px}
+  .ax-site-shell{transform-origin:var(--gutter) 16px}
 }
 @media(max-width:700px){
-  .ax-site-shell{transform-origin:53px 34px}
+  .ax-site-shell{transform-origin:20px 15px}
   html[data-ax-intro="play"] .ax-site-shell{transform:translate3d(0,0,0) scale(3.6)}
 }
 
