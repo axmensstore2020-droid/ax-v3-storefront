@@ -1,6 +1,7 @@
 import './globals.css';
 import './refinements.css';
 import './conversion.css';
+import './pdp-cleanup.css';
 import './motion.css';
 import {CartProvider} from '../components/CartProvider';
 import {StylistProvider} from '../components/StylistProvider';
