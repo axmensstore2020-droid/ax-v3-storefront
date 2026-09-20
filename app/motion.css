@@ -3,49 +3,37 @@
    Stage 2 adds PDP/service choreography and a restrained AX Stylist glow.
    Stage 3 adds commerce feedback for bag, quantity, COD and category interactions.
    Stage 4 connects navigation, gallery changes, filtered grids and editorial sequencing.
-   Stage 5 adds a session-scoped opening logo handoff into the live header.
+   Stage 5 adds a session-scoped homepage camera pull-back anchored on the AX logo.
    Motion.dev owns coordinated/dynamic animation; CSS owns tiny hover and press feedback. */
 
 
-/* First document load: centered AX mark docks into the real header logo.
-   The pre-hydration bootstrap chooses play/skip before paint, so repeat page loads in
-   the same tab do not flash the intro. The bootstrap also has a 1.6s escape hatch. */
+/* First homepage load: begin close on the real top-left AX mark, then pull the
+   whole storefront back into view. The pre-hydration state prevents a normal-scale flash. */
 .ax-opening-intro{
   display:none;
   position:fixed;
   inset:0;
   z-index:1200;
-  overflow:hidden;
   pointer-events:auto;
   touch-action:manipulation;
-  contain:layout paint style;
+  background:transparent;
 }
-html[data-ax-intro="play"] .ax-opening-intro,
-html[data-ax-intro="handoff"] .ax-opening-intro{display:block}
-html[data-ax-intro="play"] .header .brand{opacity:0}
-.ax-opening-curtain{
-  position:absolute;
-  inset:0;
-  background:var(--paper);
+html[data-ax-intro="play"]{overflow:hidden}
+html[data-ax-intro="play"] .ax-opening-intro{display:block}
+.ax-site-shell{
+  transform-origin:var(--gutter) 22px;
 }
-.ax-opening-logo-anchor{
-  position:absolute;
-  inset:0;
-  display:grid;
-  place-items:center;
+html[data-ax-intro="play"] .ax-site-shell{
+  transform:translate3d(0,0,0) scale(3.4);
+  will-change:transform;
+  backface-visibility:hidden;
 }
-.ax-opening-logo{
-  display:block;
-  width:clamp(122px,11vw,156px);
-  height:auto;
-  opacity:1;
-  transform:translate3d(0,0,0) scale(1.04);
-  transform-origin:50% 50%;
-  user-select:none;
-  -webkit-user-drag:none;
+@media(max-width:1000px){
+  .ax-site-shell{transform-origin:var(--gutter) 16px}
 }
 @media(max-width:700px){
-  .ax-opening-logo{width:112px}
+  .ax-site-shell{transform-origin:20px 15px}
+  html[data-ax-intro="play"] .ax-site-shell{transform:translate3d(0,0,0) scale(3.6)}
 }
 
 :root{
@@ -204,6 +192,7 @@ html[data-ax-intro="play"] .header .brand{opacity:0}
 
 @media (prefers-reduced-motion:reduce){
   .ax-opening-intro{display:none!important}
+  html[data-ax-intro="play"] .ax-site-shell{transform:none!important}
   html.ax-motion-enabled [data-ax-reveal]{
     opacity:1!important;
     transform:none!important;

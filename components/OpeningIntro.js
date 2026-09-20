@@ -5,23 +5,28 @@ import {animate} from 'motion';
 import {AX_MOTION} from '../lib/motion';
 
 const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
 export default function OpeningIntro(){
-  const rootRef=useRef(null),curtainRef=useRef(null),logoRef=useRef(null);
+  const blockerRef=useRef(null);
 
   useEffect(()=>{
     const root=document.documentElement;
     if(root.dataset.axIntro!=='play') return;
 
-    const overlay=rootRef.current,curtain=curtainRef.current,logo=logoRef.current;
-    const target=document.querySelector('.header .brand .brand-mark');
-    if(!overlay || !curtain || !logo || !target){
+    const blocker=blockerRef.current;
+    const shell=document.querySelector('.ax-site-shell');
+    const mark=document.querySelector('.header .brand .brand-mark');
+    if(!blocker || !shell || !mark){
       root.dataset.axIntro='skip';
       return;
     }
 
     let disposed=false,skipped=false;
     const active=new Set();
+    const compact=window.matchMedia('(max-width: 700px)').matches;
+    const zoom=compact?3.6:3.4;
+    const timing=compact?AX_MOTION.introCompact:AX_MOTION.intro;
 
     const track=control=>{
       active.add(control);
@@ -29,12 +34,11 @@ export default function OpeningIntro(){
       return control;
     };
 
-    const clearTransientStyles=()=>{
-      logo.style.willChange='';
-      logo.style.opacity='';
-      logo.style.transform='';
-      curtain.style.willChange='';
-      curtain.style.opacity='';
+    const clear=()=>{
+      shell.style.willChange='';
+      shell.style.transform='';
+      shell.style.transformOrigin='';
+      shell.style.filter='';
     };
 
     const finish=()=>{
@@ -43,7 +47,7 @@ export default function OpeningIntro(){
       for(const control of active) control.stop?.();
       active.clear();
       root.dataset.axIntro='skip';
-      clearTransientStyles();
+      clear();
     };
 
     const onPointerDown=()=>finish();
@@ -51,80 +55,62 @@ export default function OpeningIntro(){
       if(event.key==='Escape' || event.key==='Enter' || event.key===' ') finish();
     };
 
-    overlay.addEventListener('pointerdown',onPointerDown,{passive:true});
+    blocker.addEventListener('pointerdown',onPointerDown,{passive:true});
     window.addEventListener('keydown',onKeyDown);
 
     async function run(){
       await nextFrame();
       if(disposed || skipped) return;
 
-      const from=logo.getBoundingClientRect(),to=target.getBoundingClientRect();
-      if(!from.width || !from.height || !to.width || !to.height){
+      // Measure the unscaled header position synchronously, then restore the opening zoom
+      // before the browser gets a chance to paint a normal-scale frame.
+      shell.style.transform='none';
+      const markRect=mark.getBoundingClientRect();
+      if(!markRect.width || !markRect.height){
         finish();
         return;
       }
 
-      const dx=(to.left+to.width/2)-(from.left+from.width/2);
-      const dy=(to.top+to.height/2)-(from.top+from.height/2);
-      const scale=Math.min(to.width/from.width,to.height/from.height);
-      const compact=window.matchMedia('(max-width: 700px)').matches;
-      const intro=compact?AX_MOTION.introCompact:AX_MOTION.intro;
+      const originX=markRect.left+2;
+      const originY=markRect.top+2;
+      shell.style.transformOrigin=`${originX}px ${originY}px`;
+      shell.style.willChange='transform';
+      shell.style.transform=`translate3d(0,0,0) scale(${zoom})`;
 
-      logo.style.willChange='transform, opacity';
-      curtain.style.willChange='opacity';
-
-      const arrive=track(animate(
-        logo,
-        {opacity:[1,1],transform:['translate3d(0,0,0) scale(1.035)','translate3d(0,0,0) scale(1)']},
-        compact?AX_MOTION.introRevealCompact:AX_MOTION.introReveal
-      ));
-      await arrive;
+      await wait(compact?220:280);
       if(disposed || skipped) return;
 
-      const dock=track(animate(
-        logo,
+      const zoomOut=track(animate(
+        shell,
         {
           transform:[
-            'translate3d(0,0,0) scale(1)',
-            `translate3d(${dx}px,${dy}px,0) scale(${scale})`
+            `translate3d(0,0,0) scale(${zoom})`,
+            `translate3d(0,0,0) scale(${zoom*.985})`,
+            'translate3d(0,0,0) scale(1)'
           ]
         },
-        intro
+        {...timing,times:[0,.12,1]}
       ));
-      const reveal=track(animate(
-        curtain,
-        {opacity:[1,1,.70,0]},
-        {...intro,delay:.025}
-      ));
-      await Promise.all([dock,reveal]);
-      if(disposed || skipped) return;
 
-      root.dataset.axIntro='handoff';
-      const handoff=track(animate(logo,{opacity:[1,0]},{duration:.08,ease:'linear'}));
-      await handoff;
+      await zoomOut;
       if(disposed || skipped) return;
 
       root.dataset.axIntro='skip';
-      clearTransientStyles();
+      clear();
     }
 
     run().catch(()=>finish());
 
     return()=>{
       disposed=true;
-      overlay.removeEventListener('pointerdown',onPointerDown);
+      blocker.removeEventListener('pointerdown',onPointerDown);
       window.removeEventListener('keydown',onKeyDown);
       for(const control of active) control.stop?.();
       active.clear();
       if(root.dataset.axIntro!=='skip') root.dataset.axIntro='skip';
-      clearTransientStyles();
+      clear();
     };
   },[]);
 
-  return <div ref={rootRef} className="ax-opening-intro" aria-hidden="true">
-    <div ref={curtainRef} className="ax-opening-curtain"/>
-    <div className="ax-opening-logo-anchor">
-      <img ref={logoRef} className="ax-opening-logo" src="/ax-logo-160.webp" alt="" width="320" height="186" decoding="sync" fetchPriority="high" draggable="false"/>
-    </div>
-  </div>;
+  return <div ref={blockerRef} className="ax-opening-intro" aria-hidden="true"/>;
 }
