@@ -8,20 +8,34 @@ const COMPACT_WIDTHS=[120,160,200,240,280,320,400];
 const PEOPLE_WORDS=/\b(model|human|person|man|men|male|wearing|worn|styled|outfit|lookbook|on[-_ ]?model)\b/i;
 const PRODUCT_ONLY_WORDS=/\b(wide[-_ ]?view|product[-_ ]?only|flat[-_ ]?lay|flatlay|garment[-_ ]?only|packshot|isolated|no[-_ ]?model|hanger|hanging|mannequin|dummy|torso|dress[-_ ]?form)\b/i;
 
+// These products use legacy/random Shopify filenames with blank alt text.
+// Pick the known alternate media slot for Wide View instead of trusting the featured image.
+const WIDE_VIEW_IMAGE_INDEX={
+ 'black-premium-linen-button-down-shirt':1,
+ 'maroon-premium-linen-button-down-shirt':1,
+ 'brown-premium-linen-button-down-shirt':1,
+ 'lavender-premium-linen-button-down-shirt':1,
+ 'white-premium-linen-button-down-shirt':1,
+ 'green-motorsport-inspired-racing-jacket':2
+};
+
 function imageText(image){
  return `${image?.altText||''} ${image?.url||''}`;
 }
-function safeWideImage(image){
- return Boolean(image?.url)&&!PEOPLE_WORDS.test(imageText(image));
+function explicitlyProductOnly(image){
+ if(!image?.url) return false;
+ const text=imageText(image);
+ return PRODUCT_ONLY_WORDS.test(text) && !PEOPLE_WORDS.test(text);
 }
 function wideViewImage(product){
  const images=(product.images||[]).filter(image=>image?.url);
- const explicit=images.find(image=>safeWideImage(image)&&PRODUCT_ONLY_WORDS.test(imageText(image)));
- const variant=safeWideImage(product.variantImage)?product.variantImage:null;
- const featured=product.image || '';
- const alternate=images.find(image=>image.url!==featured&&safeWideImage(image));
- const anySafe=images.find(safeWideImage);
- return explicit || variant || alternate || anySafe || null;
+ const explicit=images.find(explicitlyProductOnly);
+ if(explicit) return explicit;
+
+ const mappedIndex=WIDE_VIEW_IMAGE_INDEX[product.handle];
+ if(Number.isInteger(mappedIndex) && images[mappedIndex]) return images[mappedIndex];
+
+ return null;
 }
 
 export default function ProductCard({product,compact=false}) {
@@ -32,7 +46,7 @@ export default function ProductCard({product,compact=false}) {
  const onSale=Number.isFinite(compareAt) && compareAt>price;
  const discount=onSale?Math.round(((compareAt-price)/compareAt)*100):0;
  const selectedImage=compact?wideViewImage(product):null;
- const imageSrc=selectedImage?.url || product.image;
+ const imageSrc=compact ? (selectedImage?.url || '') : product.image;
  const imageAlt=selectedImage?.altText || product.imageAlt || product.title;
  return <article className={`product-card${compact?' compact':''}`}>
   {!compact&&<WishlistButton handle={product.handle} className="product-card-wishlist"/>}
