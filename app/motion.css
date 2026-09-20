@@ -17,6 +17,8 @@
   z-index:1200;
   overflow:hidden;
   pointer-events:auto;
+  touch-action:manipulation;
+  contain:layout paint style;
 }
 html[data-ax-intro="play"] .ax-opening-intro,\nhtml[data-ax-intro="handoff"] .ax-opening-intro{display:block}\nhtml[data-ax-intro="play"] .header .brand{opacity:0}
 .ax-opening-curtain{
@@ -37,6 +39,8 @@ html[data-ax-intro="play"] .ax-opening-intro,\nhtml[data-ax-intro="handoff"] .ax
   opacity:1;
   transform:translate3d(0,0,0) scale(1.04);
   transform-origin:50% 50%;
+  user-select:none;
+  -webkit-user-drag:none;
 }
 @media(max-width:700px){
   .ax-opening-logo{width:112px}
