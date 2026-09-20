@@ -21,7 +21,7 @@ function sizeOrder(product,measurements,fits){const optionValues=product.options
 function observedColumns(measurements){const columns=[];Object.values(measurements||{}).forEach(row=>{if(!row||typeof row!=='object'||Array.isArray(row))return;Object.keys(row).forEach(raw=>{const key=canonicalMeasurementField(raw);if(!columns.includes(key))columns.push(key);});});return columns;}
 function hasValue(value){return value!==undefined&&value!==null&&value!=='';}
 
-export default function MeasurementFit({product,selectedOptions={}}){
+export default function MeasurementFit({product,selectedOptions={},inline=false}){
  const [unit,setUnit]=useState('cm');
  const [open,setOpen]=useState(false);
  const [tab,setTab]=useState('chart');
@@ -34,6 +34,8 @@ export default function MeasurementFit({product,selectedOptions={}}){
  const columns=(preferred.length?preferred:observed).filter(field=>sizes.some(size=>hasValue(measurements[size]?.[field])));
  const hasMeasurements=columns.length>0&&sizes.some(size=>measurements[size]&&typeof measurements[size]==='object');
  const hasNotes=sizes.some(size=>product.sizeFits?.[size]?.text);
+ const hasFitContent=Boolean(product.fit||hasNotes||product.modelHeight||product.modelSize);
+ const canMeasure=Boolean(category&&GUIDE_COPY[category]);
  const canConvert=normalized.unit==='cm',displayUnit=canConvert?unit:normalized.unit||product.measurementUnit||'';
  const fullCircumference=normalized.basis==='circumference';
  const scrollTable=columns.length>4;
@@ -49,8 +51,12 @@ export default function MeasurementFit({product,selectedOptions={}}){
   return()=>{document.body.style.overflow=previous;window.removeEventListener('keydown',onKey);};
  },[open]);
 
- if(!hasMeasurements&&!hasNotes&&!product.fit)return null;
- const launch=()=>{setTab(hasMeasurements?'chart':'measure');setOpen(true);trackStoreEvent('size_guide',{productHandle:product.handle,metadata:{hasMeasurements,category:category||''}});};
+ if(!hasMeasurements&&!hasFitContent&&!canMeasure)return null;
+ const launch=()=>{
+  setTab(hasMeasurements?'chart':hasFitContent?'fit':'measure');
+  setOpen(true);
+  trackStoreEvent('size_guide',{productHandle:product.handle,metadata:{hasMeasurements,category:category||''}});
+ };
  const sheet=mounted&&open?<div className={styles.overlay} onMouseDown={()=>setOpen(false)}>
   <section className={styles.sheet} role="dialog" aria-modal="true" aria-labelledby="size-fit-title" onMouseDown={event=>event.stopPropagation()}>
    <div className={styles.handle} aria-hidden="true"/>
@@ -60,7 +66,8 @@ export default function MeasurementFit({product,selectedOptions={}}){
    </div>
    <div className={styles.tabs} role="tablist" aria-label="Size and fit sections">
     {hasMeasurements&&<button type="button" role="tab" aria-selected={tab==='chart'} className={tab==='chart'?styles.activeTab:''} onClick={()=>setTab('chart')}>Size chart</button>}
-    {category&&<button type="button" role="tab" aria-selected={tab==='measure'} className={tab==='measure'?styles.activeTab:''} onClick={()=>setTab('measure')}>How to measure</button>}
+    {hasFitContent&&<button type="button" role="tab" aria-selected={tab==='fit'} className={tab==='fit'?styles.activeTab:''} onClick={()=>setTab('fit')}>Fit</button>}
+    {canMeasure&&<button type="button" role="tab" aria-selected={tab==='measure'} className={tab==='measure'?styles.activeTab:''} onClick={()=>setTab('measure')}>How to measure</button>}
    </div>
    <div className={styles.sheetBody}>
     {tab==='chart'&&hasMeasurements&&<div className={styles.chartPanel}>
@@ -77,12 +84,17 @@ export default function MeasurementFit({product,selectedOptions={}}){
      </div>
      <p className={styles.measurementNote}>{fullCircumference?'Chest, waist, hip, thigh and leg opening are shown as full garment circumference where applicable.':'Compare the chart with a similar garment you own before choosing a size.'}</p>
      <StylistButton className={styles.stylistButton} mode="size" product={{title:product.title,handle:product.handle,selectedOptions}}><span>Find my size with AX</span><Icon name="arrow"/></StylistButton>
-     {(product.fit||hasNotes)&&<div className={styles.fitNotes}>
-      {product.fit&&<p><strong>Fit note</strong><span>{product.fit} fit.</span></p>}
-      {sizes.filter(size=>product.sizeFits?.[size]?.text).map(size=><p key={size}><strong>{size}</strong><span>{product.sizeFits[size].text}</span></p>)}
-     </div>}
     </div>}
-    {tab==='measure'&&category&&guide&&<div className={styles.measurePanel}>
+    {tab==='fit'&&hasFitContent&&<div className={styles.fitPanel}>
+      <p className={styles.eyebrow}>Fit guidance</p>
+      <div className={styles.fitNotes}>
+       {product.fit&&<p><strong>Fit</strong><span>{product.fit}</span></p>}
+       {(product.modelHeight||product.modelSize)&&<p><strong>Model</strong><span>{[product.modelHeight&&`Height ${product.modelHeight}`,product.modelSize&&`Wears ${product.modelSize}`].filter(Boolean).join(' · ')}</span></p>}
+       {sizes.filter(size=>product.sizeFits?.[size]?.text).map(size=><p key={size}><strong>{size}</strong><span>{product.sizeFits[size].text}</span></p>)}
+      </div>
+      <StylistButton className={styles.stylistButton} mode="size" product={{title:product.title,handle:product.handle,selectedOptions}}><span>Find my size with AX</span><Icon name="arrow"/></StylistButton>
+    </div>}
+    {tab==='measure'&&canMeasure&&<div className={styles.measurePanel}>
      <div className={styles.measureHeading}><p className={styles.measureTitle}>{guide.title}</p><p>{guide.sub}</p></div>
      <div className={styles.diagramCard}><MeasurementIllustration category={category}/><p>{guide.note}</p></div>
      <div className={styles.steps} aria-label="Measurement steps"><span><b>1</b>Lay garment flat</span><span><b>2</b>Do not stretch</span><span><b>3</b>Use cm</span></div>
@@ -92,9 +104,11 @@ export default function MeasurementFit({product,selectedOptions={}}){
  </div>:null;
 
  return <>
-  <button type="button" className={styles.trigger} onClick={launch} aria-haspopup="dialog">
-   <span><strong>Size &amp; fit</strong><small>{hasMeasurements?'Size chart · Find my size':'Find my size with AX'}</small></span><span className={styles.triggerIcon}>+</span>
-  </button>
+  {inline
+    ? <button type="button" className={styles.inlineTrigger} onClick={launch} aria-haspopup="dialog">{hasMeasurements?'Size chart':'Fit guide'} <span aria-hidden="true">›</span></button>
+    : <button type="button" className={styles.trigger} onClick={launch} aria-haspopup="dialog">
+       <span><strong>Size &amp; fit</strong><small>{hasMeasurements?'Size chart · Find my size':'Find my size with AX'}</small></span><span className={styles.triggerIcon}>+</span>
+      </button>}
   {sheet&&createPortal(sheet,document.body)}
  </>;
 }
