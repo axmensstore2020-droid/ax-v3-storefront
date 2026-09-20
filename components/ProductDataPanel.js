@@ -1,3 +1,5 @@
+import {productCareInstructions} from '../lib/product-care';
+
 function readableDescription(value=''){
   const text=String(value||'')
     .replace(/\s+/g,' ')
@@ -10,8 +12,9 @@ function readableDescription(value=''){
 
 export default function ProductDataPanel({product}) {
   const description=readableDescription(product.description);
+  const care=productCareInstructions(product);
   const hasFacts=product.fabric || product.color || product.style || product.fabricFeel;
-  if (!product.productNumberDisplay && !hasFacts && !product.care && !description) return null;
+  if (!product.productNumberDisplay && !hasFacts && !care && !description) return null;
 
   return <section className="product-data-panel" aria-label="Product information">
     <details className="product-info-details">
@@ -27,9 +30,9 @@ export default function ProductDataPanel({product}) {
           {product.style && <div><dt>Style</dt><dd>{product.style}</dd></div>}
           {product.fabricFeel && <div><dt>Fabric feel</dt><dd>{product.fabricFeel}</dd></div>}
         </dl>}
-        {product.care&&<section className="product-info-section product-care">
-          <h3>Material &amp; Care</h3>
-          <p>{product.care}</p>
+        {care&&<section className="product-info-section product-care">
+          <h3>Care instructions</h3>
+          <p>{care}</p>
         </section>}
         {product.productNumberDisplay && <p className="product-number">PRODUCT NO. <span>{product.productNumberDisplay}</span></p>}
       </div>
