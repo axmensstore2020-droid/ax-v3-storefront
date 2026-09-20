@@ -20,13 +20,21 @@ const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
 
 export default function ProductPurchase({product,initialVariantId,chooseSize=false,restockAlertsEnabled=false,children,afterProductInfo=null}) {
   const [selected,setSelected] = useState(() => initialSelection(product,initialVariantId,chooseSize));
-  const galleryRef = useRef(null), trackedView = useRef('');
+  const galleryRef = useRef(null), trackedView = useRef(''), previousPrimary = useRef('');
   const variant = findVariant(product.variants || [],selected);
   const primary = selectionImage(product,selected,variant);
   const deliveryWeight=deliveryWeightForProduct(product,selected,variant);
   const deliverySubtotal=Number(variant?.price?.amount ?? product.price ?? 0);
   const gallery = [...new Map([primary,...(product.images || [])].filter(image => image?.url).map(image => [image.url,image])).values()];
-  useEffect(() => {galleryRef.current?.scrollTo({left:0,behavior:'instant'});},[primary?.url]);
+  useEffect(() => {
+    galleryRef.current?.scrollTo({left:0,behavior:'auto'});
+    const next=primary?.url || '';
+    const previous=previousPrimary.current;
+    previousPrimary.current=next;
+    if(!previous || !next || previous===next) return;
+    const frame=requestAnimationFrame(()=>window.dispatchEvent(new CustomEvent('ax:gallery-primary-change',{detail:{gallery:galleryRef.current}})));
+    return()=>cancelAnimationFrame(frame);
+  },[primary?.url]);
   useEffect(()=>{
     if(!product.demo) rememberRecentlyViewed(product.handle);
   },[product.demo,product.handle]);
