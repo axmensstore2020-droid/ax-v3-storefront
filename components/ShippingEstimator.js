@@ -81,7 +81,7 @@ export default function ShippingEstimator({weightGrams,productHandle='',classNam
       </div>
       <div className="delivery-service">
         <span className="delivery-service-mark" aria-hidden="true">✓</span>
-        <div><strong>7-day exchange available</strong><span>For eligible unworn, unwashed and undamaged items.</span></div>
+        <div><strong>7-day exchange available</strong><span>Return + forward shipping charges apply. Exchange is subject to availability of the requested replacement.</span></div>
       </div>
       {result.location?.isOda&&<p className="shipping-estimator-note">Extended delivery area — timing can vary with local carrier operations.</p>}
     </div>}
