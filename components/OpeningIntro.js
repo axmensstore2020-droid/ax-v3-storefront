@@ -68,7 +68,8 @@ export default function OpeningIntro(){
       await Promise.all([dock,reveal]);
       if(disposed) return;
 
-      const handoff=animate(logo,{opacity:[1,0]},{duration:.08,ease:'linear'});
+      root.dataset.axIntro='handoff';
+      const handoff=animate(logo,{opacity:[1,0]},{duration:.10,ease:'linear'});
       active.push(handoff);
       await handoff;
       if(disposed) return;
