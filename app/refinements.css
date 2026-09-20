@@ -341,7 +341,7 @@ h1,h2,h3{font-weight:300}
 .editorial-campaign-copy h2{font-size:clamp(36px,4.5vw,70px);margin:0 0 20px}
 .editorial-campaign-copy p:not(.eyebrow){max-width:360px;color:#5d625f;font-size:14px;margin:0 0 27px}
 .editorial-campaign-copy .editorial-action{margin-top:auto}
-.editorial-pastel-sage{background:#dce7df}.editorial-pastel-peach{background:#f1d8cf}.editorial-pastel-blue{background:#d8e3ed}.editorial-pastel-butter{background:#eee7c8}.editorial-pastel-lilac{background:#e6dced}
+.editorial-pastel-sage,.editorial-pastel-peach,.editorial-pastel-blue,.editorial-pastel-butter,.editorial-pastel-lilac{background:var(--paper)}
 .editorial-split-campaign{display:grid;grid-template-columns:minmax(300px,.75fr) minmax(0,1.25fr);gap:16px;margin:clamp(16px,2vw,30px) var(--gutter) 0;min-height:clamp(520px,58vw,820px)}
 .editorial-split-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:clamp(38px,6vw,100px)}
 .editorial-split-copy h2,.editorial-feature-copy h2,.editorial-special-copy h2{font-size:clamp(50px,6.4vw,105px);margin:0 0 24px}
