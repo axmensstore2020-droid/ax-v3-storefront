@@ -226,6 +226,7 @@ test('delivery estimate returns serviceability details even when weight is not s
 test('delivery estimate shares serviceability and rate logic used by checkout',async()=>{
  const result=await estimateDelhiveryDelivery({destinationPincode:'400064',weightGrams:500,subtotal:900},{
   env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3'},
+  now:new Date('2026-09-20T03:30:00Z'),
   fetchImpl:async url=>{
    const parsed=new URL(url);
    if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',city:'Mumbai',state_code:'MH'}}]});
@@ -244,6 +245,7 @@ test('delivery estimate shares serviceability and rate logic used by checkout',a
 test('serviceable weighted delivery uses a conservative fallback date when Delhivery omits TAT',async()=>{
  const result=await estimateDelhiveryDelivery({destinationPincode:'400064',weightGrams:500,subtotal:900},{
   env:{DELHIVERY_API_TOKEN:'private-token',DELHIVERY_ORIGIN_PIN:'641011',AX_SHIPPING_ORDER_FEE:'3'},
+  now:new Date('2026-09-20T03:30:00Z'),
   fetchImpl:async url=>{
    const parsed=new URL(url);
    if(parsed.pathname==='/c/api/pin-codes/json/') return Response.json({delivery_codes:[{postal_code:{pin:400064,pre_paid:'Y',city:'Mumbai',state_code:'MH'}}]});
