@@ -85,6 +85,10 @@ export default async function Home() {
   <section className={`editorial-hero ${heroCampaign.theme}`} aria-labelledby="editorial-hero-title">
    <Link className="editorial-hero-visual" href={heroCampaign.ctaLink} aria-label={heroCampaign.ctaLabel}>
     <EditorialImage src={heroCampaign.imageSrc} mobileSrc={heroCampaign.mobileImageSrc} alt={heroCampaign.imageAlt || 'AX editorial campaign'} sizes="(max-width:700px) 100vw, 62vw" eager/>
+    <video className="editorial-hero-video" autoPlay muted loop playsInline preload="metadata" aria-hidden="true">
+     <source media="(max-width:700px)" src="https://d2ol7oe51mr4n9.cloudfront.net/user_3JHmA5rA3F2ZOEAYLj6xipUiqFY/c97b0b2a-49f6-470d-b72f-c48b562a33c3.mp4" type="video/mp4"/>
+     <source src="https://d2ol7oe51mr4n9.cloudfront.net/user_3JHmA5rA3F2ZOEAYLj6xipUiqFY/bb44e5e9-95de-42eb-ace5-7078d0e149c5.mp4" type="video/mp4"/>
+    </video>
     <span className="editorial-image-caption">{heroCampaign.ctaLabel} <Icon name="arrow" size={17}/></span>
    </Link>
    <div className="editorial-hero-copy">

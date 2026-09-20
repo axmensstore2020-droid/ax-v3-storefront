@@ -313,8 +313,11 @@ h1,h2,h3{font-weight:300}
 .editorial-hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(340px,.8fr);min-height:min(760px,calc(100svh - 132px));margin:0 var(--gutter);border-bottom:1px solid var(--line)}
 .editorial-hero-visual{display:block;position:relative;min-height:560px;background:#d8d6c9;overflow:hidden}
 .editorial-hero-visual .product-image,.editorial-campaign-image .product-image,.editorial-split-image .product-image,.editorial-feature-image .product-image,.editorial-special-image .product-image{width:100%;height:100%;object-fit:cover;transition:transform .55s cubic-bezier(.2,.65,.25,1)}
+.editorial-hero-video{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;background:transparent;transition:transform .55s cubic-bezier(.2,.65,.25,1)}
 .editorial-hero-visual:hover .product-image,.editorial-campaign:hover .product-image,.editorial-split-campaign:hover .product-image,.editorial-feature:hover .product-image,.editorial-special:hover .product-image{transform:scale(1.025)}
-.editorial-image-caption{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:70px 24px 19px;background:linear-gradient(transparent,#181916a8);color:#fff;font-size:11px;letter-spacing:.08em}
+.editorial-hero-visual:hover .editorial-hero-video{transform:scale(1.015)}
+.editorial-image-caption{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:70px 24px 19px;background:linear-gradient(transparent,#181916a8);color:#fff;font-size:11px;letter-spacing:.08em}
+@media(prefers-reduced-motion:reduce){.editorial-hero-video{display:none}}
 .editorial-hero-copy{display:flex;flex-direction:column;justify-content:space-between;padding:clamp(42px,6vw,96px) clamp(26px,5vw,80px) clamp(30px,4vw,60px);background:#dce7df}
 .editorial-hero-copy h1{font-size:clamp(55px,6.2vw,104px);max-width:700px;margin:0 0 34px}
 .editorial-hero-copy h1 em{font-style:normal;color:#6c756d}
