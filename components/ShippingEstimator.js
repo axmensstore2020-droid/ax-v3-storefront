@@ -1,22 +1,23 @@
 'use client';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {trackStoreEvent} from '../lib/store-analytics';
 
 const PIN_KEY='ax_delivery_pincode';
 
-function deliveryWindow(estimate){
-  const min=Number(estimate?.minDays),max=Number(estimate?.maxDays);
-  if(!Number.isFinite(min) || min<=0) return '';
-  if(!Number.isFinite(max) || max<=0 || max===min) return min+' working day'+(min===1?'':'s');
-  return min+'–'+max+' working days';
-}
 function locationLabel(result){
   const values=[result?.location?.city,result?.location?.stateCode].filter(Boolean);
   return values.length?values.join(', '):result?.pincode || '';
 }
+function formatDeliveryDate(value){
+  const match=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!match)return '';
+  const date=new Date(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3])));
+  return new Intl.DateTimeFormat('en-IN',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'}).format(date);
+}
 
 export default function ShippingEstimator({weightGrams,productHandle='',className='',subtotal=0,compact=false}) {
   const [pincode,setPincode]=useState(''),[result,setResult]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
+  const inputRef=useRef(null);
   const hasWeight=Number.isFinite(Number(weightGrams)) && Number(weightGrams)>0;
 
   useEffect(()=>{
@@ -41,34 +42,48 @@ export default function ShippingEstimator({weightGrams,productHandle='',classNam
         productHandle,
         metadata:{
           serviceable:Boolean(data.serviceable),
+          codAvailable:Boolean(data.codAvailable),
           minDays:data.estimatedDelivery?.minDays || null,
-          maxDays:data.estimatedDelivery?.maxDays || null
+          maxDays:data.estimatedDelivery?.maxDays || null,
+          estimateSource:data.estimatedDelivery?.source || null
         }
       });
     }catch(err){setError(err.message || 'Delivery check is temporarily unavailable.');}
     finally{setBusy(false);}
   }
 
-  const place=locationLabel(result),eta=deliveryWindow(result?.estimatedDelivery);
-  return <section className={`shipping-estimator ${compact?'shipping-estimator-compact':''} ${className}`.trim()} aria-label="Check delivery">
-    <div className="shipping-estimator-heading">
-      <div><span className="shipping-estimator-kicker">DELIVERY</span><strong>Check pincode & delivery</strong></div>
-      {result?.serviceable && <span className="delivery-status delivery-status-ok">DELIVERABLE</span>}
-    </div>
-    <form onSubmit={check}>
-      <label><span className="sr-only">Delivery pincode</span><input inputMode="numeric" autoComplete="postal-code" maxLength={6} pattern="[0-9]{6}" value={pincode} onChange={e=>{setPincode(e.target.value.replace(/\D/g,'').slice(0,6));setResult(null);setError('');}} placeholder="Enter 6-digit pincode" required/></label>
-      <button type="submit" disabled={busy || pincode.length!==6}>{busy?'CHECKING…':'CHECK'}</button>
-    </form>
+  function changeLocation(){
+    setResult(null);setError('');
+    requestAnimationFrame(()=>inputRef.current?.focus());
+  }
+
+  const place=locationLabel(result);
+  const deliveryDate=formatDeliveryDate(result?.estimatedDelivery?.latestDate);
+  return <section className={`shipping-estimator ${compact?'shipping-estimator-compact':''} ${className}`.trim()} aria-label="Delivery and services">
+    <div className="shipping-estimator-heading"><strong>Delivery &amp; Services</strong></div>
+    {result
+      ? <div className="delivery-location-row"><div><strong>{result.pincode}</strong>{place&&<span>{place}</span>}</div><button type="button" className="delivery-change" onClick={changeLocation}>CHANGE</button></div>
+      : <form onSubmit={check}>
+          <label><span className="sr-only">Delivery pincode</span><input ref={inputRef} inputMode="numeric" autoComplete="postal-code" maxLength={6} pattern="[0-9]{6}" value={pincode} onChange={e=>{setPincode(e.target.value.replace(/\D/g,'').slice(0,6));setError('');}} placeholder="Enter pincode" required/></label>
+          <button type="submit" disabled={busy || pincode.length!==6}>{busy?'CHECKING…':'CHECK'}</button>
+        </form>}
     {error && <p className="shipping-estimator-error" role="alert">{error}</p>}
-    {result && !result.serviceable && <div className="delivery-result delivery-result-no"><strong>Not deliverable</strong><span>Delivery is currently unavailable to {result.pincode}.</span></div>}
-    {result?.serviceable && <div className="delivery-result delivery-result-ok">
-      <strong>{'Deliverable'+(place?' to '+place:'')}</strong>
-      {eta
-        ? <div className="delivery-estimate"><span>Estimated delivery</span><strong>{eta}</strong></div>
-        : <p className="shipping-estimator-note">Delivery is available. Our delivery partner hasn’t provided an estimated delivery time yet.</p>}
-      {result.location?.isOda&&<p className="shipping-estimator-note">Extended delivery area — carrier timing may vary.</p>}
-      {eta&&<small>Estimated timing is provided by our delivery partner and can change with carrier operations or local conditions.</small>}
+    {result && !result.serviceable && <div className="delivery-result delivery-result-no"><strong>Delivery unavailable</strong><span>We currently cannot deliver to this pincode.</span></div>}
+    {result?.serviceable && <div className="delivery-services-list">
+      <div className="delivery-service delivery-service-primary">
+        <span className="delivery-service-mark" aria-hidden="true">✓</span>
+        <div><small>STANDARD DELIVERY</small><strong>{deliveryDate?`Estimated delivery by ${deliveryDate}`:'Delivery available'}</strong>{place&&<span>To {place}</span>}</div>
+      </div>
+      <div className={`delivery-service ${result.codAvailable?'':'delivery-service-unavailable'}`}>
+        <span className="delivery-service-mark" aria-hidden="true">{result.codAvailable?'✓':'×'}</span>
+        <div><strong>Cash on Delivery {result.codAvailable?'available':'unavailable'}</strong>{result.codAvailable&&<span>COD handling: ₹40 or 2% of product value, whichever is higher.</span>}</div>
+      </div>
+      <div className="delivery-service">
+        <span className="delivery-service-mark" aria-hidden="true">✓</span>
+        <div><strong>7-day exchange available</strong><span>For eligible unworn, unwashed and undamaged items.</span></div>
+      </div>
+      {result.location?.isOda&&<p className="shipping-estimator-note">Extended delivery area — timing can vary with local carrier operations.</p>}
     </div>}
-    {!result && !error && <p className="shipping-estimator-note">Enter your pincode to check live delivery availability. Estimated delivery time is shown when provided by our delivery partner.</p>}
+    {!result && !error && <p className="shipping-estimator-note">Enter your pincode to see the delivery date and Cash on Delivery availability.</p>}
   </section>;
 }
