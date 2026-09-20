@@ -217,9 +217,9 @@ h1,h2,h3{font-weight:300}
   border-radius:50%;
   box-shadow:
    inset 1px 1px 2px #ffffff8c,
-   0 2px 7px #0a68ff3d;
+   0 2px 7px rgba(95,118,101,.28);
   background:
-   radial-gradient(circle at 32% 28%,#dff6ff 0 12%,#6fc8ff 20%,#2485ff 58%,#0d3e9d 100%);
+   radial-gradient(circle at 32% 28%,#f5fbf7 0 12%,#dce7df 20%,#b8cbbf 58%,#7f9988 100%);
  }
  .ax-marble-field i:nth-child(1){width:8px;height:8px;top:2px;left:34px}
  .ax-marble-field i:nth-child(2){width:6px;height:6px;right:4px;top:45px}

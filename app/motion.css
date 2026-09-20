@@ -164,12 +164,12 @@ html[data-ax-intro="play"] .ax-site-shell{
     transition:transform 260ms var(--ax-motion-ease);
   }
   .island-stylist .ax-orb .brand-mark.inverse img{
-    filter:invert(1) drop-shadow(0 0 4px rgba(117,190,255,.20));
+    filter:invert(1) drop-shadow(0 0 4px rgba(127,153,136,.22));
     transition:filter 360ms var(--ax-motion-soft);
   }
   .island-stylist:hover .ax-orb .brand-mark.inverse img,
   .ax-island:focus-within .ax-orb .brand-mark.inverse img{
-    filter:invert(1) drop-shadow(0 0 7px rgba(117,190,255,.42));
+    filter:invert(1) drop-shadow(0 0 7px rgba(127,153,136,.46));
   }
   .island-stylist:active .ax-orb{transform:scale(.965)}
   .island-stylist:active .ax-marble-field{transform:translate(-50%,-50%) scale(.94)}
