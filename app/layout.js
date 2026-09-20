@@ -12,6 +12,7 @@ import AXIsland from '../components/AXIsland';
 import MetaMarketing from '../components/MetaMarketing';
 import WebVitals from '../components/WebVitals';
 import MotionEnhancer from '../components/MotionEnhancer';
+import RouteMotion from '../components/RouteMotion';
 import {shopifyConfigured} from '../lib/shopify';
 import {customerAccountConfigured} from '../lib/customer-account';
 import {getNavigation} from '../lib/content';
@@ -43,5 +44,5 @@ export default async function RootLayout({children}) {
  const analyticsEnabled=Boolean(process.env.SUPABASE_URL && (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY) && analyticsSecret.length>=32);
  const freeShippingThreshold=FREE_SHIPPING_THRESHOLD_INR,partialCodEnabled=partialCodConfigured();
  const structured=[organizationJsonLd(),websiteJsonLd()];
- return <html lang="en-IN"><head><link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous"/></head><body><WebVitals/><MotionEnhancer/><MetaMarketing pixelId={pixelId} capiEnabled={capiEnabled} analyticsEnabled={analyticsEnabled}/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/><a className="skip-link" href="#main-content">Skip to content</a><NavigationProvider value={navigation}><CartProvider demo={demo} freeShippingThreshold={freeShippingThreshold} partialCodEnabled={partialCodEnabled}><StylistProvider>{demo && <div className="preview-banner">STORE PREVIEW · SAMPLE CATALOG · CHECKOUT UNAVAILABLE</div>}<Header/>{children}<Footer/><AXIsland accountUrl={accountUrl} accountEnabled={customAccount}/><CartDrawerMount/></StylistProvider></CartProvider></NavigationProvider></body></html>;
+ return <html lang="en-IN"><head><link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous"/></head><body><WebVitals/><RouteMotion/><MotionEnhancer/><MetaMarketing pixelId={pixelId} capiEnabled={capiEnabled} analyticsEnabled={analyticsEnabled}/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/><a className="skip-link" href="#main-content">Skip to content</a><NavigationProvider value={navigation}><CartProvider demo={demo} freeShippingThreshold={freeShippingThreshold} partialCodEnabled={partialCodEnabled}><StylistProvider>{demo && <div className="preview-banner">STORE PREVIEW · SAMPLE CATALOG · CHECKOUT UNAVAILABLE</div>}<Header/>{children}<Footer/><AXIsland accountUrl={accountUrl} accountEnabled={customAccount}/><CartDrawerMount/></StylistProvider></CartProvider></NavigationProvider></body></html>;
 }
