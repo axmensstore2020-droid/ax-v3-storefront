@@ -1,6 +1,7 @@
-/* AX motion system — Stages 1 + 2
+/* AX motion system — Stages 1 + 2 + 3
    Quiet by default, slightly unexpected on interaction.
    Stage 2 adds PDP/service choreography and a restrained AX Stylist glow.
+   Stage 3 adds commerce feedback for bag, quantity, COD and category interactions.
    Motion.dev owns coordinated/dynamic animation; CSS owns tiny hover and press feedback. */
 
 :root{
@@ -82,7 +83,10 @@
   .filter-chips button,
   .colour-filters button,
   .sort-panel button,
-  .catalog-refinement-bar>button{
+  .catalog-refinement-bar>button,
+  .remove-item,
+  .partial-cod-pincode-form button,
+  .partial-cod-continue{
     transition:
       transform var(--ax-motion-fast) var(--ax-motion-ease),
       background-color 180ms ease,
@@ -104,7 +108,10 @@
   .filter-chips button:not(:disabled):active,
   .colour-filters button:not(:disabled):active,
   .sort-panel button:not(:disabled):active,
-  .catalog-refinement-bar>button:not(:disabled):active{
+  .catalog-refinement-bar>button:not(:disabled):active,
+  .remove-item:not(:disabled):active,
+  .partial-cod-pincode-form button:not(:disabled):active,
+  .partial-cod-continue:active{
     transform:scale(.988);
     transition-duration:70ms;
   }
@@ -132,6 +139,8 @@
   .ax-island:focus-within .ax-orb .brand-mark.inverse img{
     filter:invert(1) drop-shadow(0 0 7px rgba(117,190,255,.42));
   }
+  .island-stylist:active .ax-orb{transform:scale(.965)}
+  .island-stylist:active .ax-marble-field{transform:translate(-50%,-50%) scale(.94)}
   @media (hover:hover) and (pointer:fine) and (max-width:1099px){
     .island-stylist:hover .ax-orb{transform:translate3d(0,-2px,0) scale(1.008)}
     .island-item{transition:transform 190ms var(--ax-motion-ease)}
