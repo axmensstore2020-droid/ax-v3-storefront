@@ -5,8 +5,8 @@ import WishlistButton from './WishlistButton';
 
 const GRID_WIDTHS=[180,240,280,320,360,400,480,560,640];
 const COMPACT_WIDTHS=[120,160,200,240,280,320,400];
-const PEOPLE_WORDS=/\b(model|mannequin|dummy|torso|human|person|man|men|male|wearing|worn|styled|outfit|lookbook|on[-_ ]?model)\b/i;
-const PRODUCT_ONLY_WORDS=/\b(wide[-_ ]?view|product[-_ ]?only|flat[-_ ]?lay|flatlay|garment[-_ ]?only|packshot|isolated|no[-_ ]?model|hanger|hanging)\b/i;
+const PEOPLE_WORDS=/\b(model|human|person|man|men|male|wearing|worn|styled|outfit|lookbook|on[-_ ]?model)\b/i;
+const PRODUCT_ONLY_WORDS=/\b(wide[-_ ]?view|product[-_ ]?only|flat[-_ ]?lay|flatlay|garment[-_ ]?only|packshot|isolated|no[-_ ]?model|hanger|hanging|mannequin|dummy|torso|dress[-_ ]?form)\b/i;
 
 function imageText(image){
  return `${image?.altText||''} ${image?.url||''}`;
