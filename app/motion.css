@@ -1,9 +1,46 @@
-/* AX motion system — Stages 1–4
+/* AX motion system — Stages 1–5
    Quiet by default, slightly unexpected on interaction.
    Stage 2 adds PDP/service choreography and a restrained AX Stylist glow.
    Stage 3 adds commerce feedback for bag, quantity, COD and category interactions.
    Stage 4 connects navigation, gallery changes, filtered grids and editorial sequencing.
+   Stage 5 adds a session-scoped opening logo handoff into the live header.
    Motion.dev owns coordinated/dynamic animation; CSS owns tiny hover and press feedback. */
+
+
+/* First document load: centered AX mark docks into the real header logo.
+   The pre-hydration bootstrap chooses play/skip before paint, so repeat page loads in
+   the same tab do not flash the intro. The bootstrap also has a 2.2s escape hatch. */
+.ax-opening-intro{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:1200;
+  overflow:hidden;
+  pointer-events:auto;
+}
+html[data-ax-intro="play"] .ax-opening-intro{display:block}
+.ax-opening-curtain{
+  position:absolute;
+  inset:0;
+  background:var(--paper);
+}
+.ax-opening-logo-anchor{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+}
+.ax-opening-logo{
+  display:block;
+  width:clamp(122px,11vw,156px);
+  height:auto;
+  opacity:1;
+  transform:translate3d(0,0,0) scale(1.04);
+  transform-origin:50% 50%;
+}
+@media(max-width:700px){
+  .ax-opening-logo{width:112px}
+}
 
 :root{
   --ax-motion-fast:150ms;
@@ -160,6 +197,7 @@
 }
 
 @media (prefers-reduced-motion:reduce){
+  .ax-opening-intro{display:none!important}
   html.ax-motion-enabled [data-ax-reveal]{
     opacity:1!important;
     transform:none!important;
