@@ -59,6 +59,7 @@ export default function ShippingEstimator({weightGrams,productHandle='',classNam
 
   const place=locationLabel(result);
   const deliveryDate=formatDeliveryDate(result?.estimatedDelivery?.latestDate);
+  const deliveryService=result?.estimatedDelivery?.service==='express'?'EXPRESS DELIVERY':'STANDARD DELIVERY';
   return <section className={`shipping-estimator ${compact?'shipping-estimator-compact':''} ${className}`.trim()} aria-label="Delivery and services">
     <div className="shipping-estimator-heading"><strong>Delivery &amp; Services</strong></div>
     {result
@@ -72,7 +73,7 @@ export default function ShippingEstimator({weightGrams,productHandle='',classNam
     {result?.serviceable && <div className="delivery-services-list">
       <div className="delivery-service delivery-service-primary">
         <span className="delivery-service-mark" aria-hidden="true">✓</span>
-        <div><small>STANDARD DELIVERY</small><strong>{deliveryDate?`Estimated delivery by ${deliveryDate}`:'Delivery available'}</strong>{place&&<span>To {place}</span>}</div>
+        <div><small>{deliveryService}</small><strong>{deliveryDate?`Estimated delivery by ${deliveryDate}`:'Delivery available'}</strong>{place&&<span>To {place}</span>}</div>
       </div>
       <div className={`delivery-service ${result.codAvailable?'':'delivery-service-unavailable'}`}>
         <span className="delivery-service-mark" aria-hidden="true">{result.codAvailable?'✓':'×'}</span>
