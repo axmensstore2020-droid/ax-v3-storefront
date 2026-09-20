@@ -9,7 +9,7 @@
 
 /* First document load: centered AX mark docks into the real header logo.
    The pre-hydration bootstrap chooses play/skip before paint, so repeat page loads in
-   the same tab do not flash the intro. The bootstrap also has a 2.2s escape hatch. */
+   the same tab do not flash the intro. The bootstrap also has a 1.6s escape hatch. */
 .ax-opening-intro{
   display:none;
   position:fixed;
@@ -20,7 +20,9 @@
   touch-action:manipulation;
   contain:layout paint style;
 }
-html[data-ax-intro="play"] .ax-opening-intro,\nhtml[data-ax-intro="handoff"] .ax-opening-intro{display:block}\nhtml[data-ax-intro="play"] .header .brand{opacity:0}
+html[data-ax-intro="play"] .ax-opening-intro,
+html[data-ax-intro="handoff"] .ax-opening-intro{display:block}
+html[data-ax-intro="play"] .header .brand{opacity:0}
 .ax-opening-curtain{
   position:absolute;
   inset:0;
