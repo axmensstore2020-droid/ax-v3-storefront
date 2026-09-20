@@ -23,7 +23,7 @@ import {SITE_NAME,SITE_URL,jsonLd,organizationJsonLd,websiteJsonLd} from '../lib
 import {FREE_SHIPPING_THRESHOLD_INR} from '../lib/shipping-policy';
 import {partialCodConfigured} from '../lib/partial-cod-server';
 const indexing=process.env.AX_ALLOW_INDEXING==='true';
-const openingIntroBootstrap=`(function(){var root=document.documentElement,key='ax_opening_intro_v1',reduced=false,play=false;try{reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;play=!reduced&&!window.sessionStorage.getItem(key);if(play)window.sessionStorage.setItem(key,'1');}catch(e){play=!reduced;}root.dataset.axIntro=play?'play':'skip';if(play)window.setTimeout(function(){if(root.dataset.axIntro==='play')root.dataset.axIntro='skip';},2200);})();`;
+const openingIntroBootstrap=`(function(){var root=document.documentElement,key='ax_opening_intro_v1',reduced=false,play=false;try{reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;play=!reduced&&!window.sessionStorage.getItem(key);if(play)window.sessionStorage.setItem(key,'1');}catch(e){play=!reduced;}root.dataset.axIntro=play?'play':'skip';if(play)window.setTimeout(function(){if(root.dataset.axIntro!=='skip')root.dataset.axIntro='skip';},2200);})();`;
 export const metadata = {
  metadataBase:new URL(SITE_URL),
  applicationName:SITE_NAME,
