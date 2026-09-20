@@ -220,7 +220,7 @@ test('delivery estimate returns serviceability details even when weight is not s
  assert.equal(result.location.stateCode,'MH');
  assert.deepEqual(result.rates,[]);
  assert.equal(result.codAvailable,true);
- assert.deepEqual(result.estimatedDelivery,{minDays:null,maxDays:7,source:'ax_fallback',dispatchDate:'2026-09-20',earliestDate:null,latestDate:'2026-09-27'});
+ assert.deepEqual(result.estimatedDelivery,{minDays:null,maxDays:7,source:'ax_fallback',dispatchDate:'2026-09-20',earliestDate:null,latestDate:'2026-09-27',service:'standard'});
 });
 
 test('delivery estimate shares serviceability and rate logic used by checkout',async()=>{
@@ -238,7 +238,7 @@ test('delivery estimate shares serviceability and rate logic used by checkout',a
   {code:'standard',label:'Standard',amount:71.52,currency:'INR',minDays:4,maxDays:6},
   {code:'express',label:'Express',amount:97.14,currency:'INR',minDays:2,maxDays:3}
  ]);
- assert.deepEqual(result.estimatedDelivery,{minDays:4,maxDays:6,source:'delhivery',dispatchDate:'2026-09-20',earliestDate:'2026-09-24',latestDate:'2026-09-26'});
+ assert.deepEqual(result.estimatedDelivery,{minDays:4,maxDays:6,source:'delhivery',dispatchDate:'2026-09-20',earliestDate:'2026-09-24',latestDate:'2026-09-26',service:'standard'});
 });
 
 
@@ -254,7 +254,7 @@ test('serviceable weighted delivery uses a conservative fallback date when Delhi
  });
  assert.equal(result.serviceable,true);
  assert.equal(result.rates.length,2);
- assert.deepEqual(result.estimatedDelivery,{minDays:null,maxDays:7,source:'ax_fallback',dispatchDate:'2026-09-20',earliestDate:null,latestDate:'2026-09-27'});
+ assert.deepEqual(result.estimatedDelivery,{minDays:null,maxDays:7,source:'ax_fallback',dispatchDate:'2026-09-20',earliestDate:null,latestDate:'2026-09-27',service:'standard'});
 });
 
 test('extended delivery areas use the longer conservative fallback when Delhivery omits TAT',async()=>{
@@ -264,7 +264,7 @@ test('extended delivery areas use the longer conservative fallback when Delhiver
   fetchImpl:async()=>Response.json({delivery_codes:[{postal_code:{pin:744101,pre_paid:'Y',city:'Port Blair',state_code:'AN',is_oda:'Y'}}]})
  });
  assert.equal(result.serviceable,true);
- assert.deepEqual(result.estimatedDelivery,{minDays:null,maxDays:10,source:'ax_fallback',dispatchDate:'2026-09-20',earliestDate:null,latestDate:'2026-09-30'});
+ assert.deepEqual(result.estimatedDelivery,{minDays:null,maxDays:10,source:'ax_fallback',dispatchDate:'2026-09-20',earliestDate:null,latestDate:'2026-09-30',service:'standard'});
 });
 
 
