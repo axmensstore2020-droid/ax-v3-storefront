@@ -1,12 +1,11 @@
 'use client';
 import {useCart} from './CartProvider';
-import {StylistButton} from './StylistProvider';
 import {formatMoney} from '../lib/catalog';
 import {isSizeOption,matchesSelection,optionAvailable,visibleOptions} from '../lib/product-variants';
-import Icon from './Icon';
 import BackInStockAlert from './BackInStockAlert';
+import MeasurementFit from './MeasurementFit';
 
-export default function AddToCart({product,options,selected,variant,onSelect,beforeAddButton=null,restockAlertsEnabled=false}) {
+export default function AddToCart({product,options,selected,variant,onSelect,beforeAddButton=null,afterAddButton=null,restockAlertsEnabled=false}) {
   const {addItem,busy}=useCart(),variants=product.variants||[],shown=visibleOptions(options);
   const missing=shown.find(option=>!selected[option.name]);
   const available=!missing && (product.demo || Boolean(variant?.availableForSale));
@@ -36,14 +35,20 @@ export default function AddToCart({product,options,selected,variant,onSelect,bef
       </div>
       <span className={`availability-label${lowStock?' low-stock':''}`}>{product.demo?'Sample piece':missing?'Choose '+missing.name.toLowerCase():lowStock?`Only ${quantity} left`:available?'Available':soldOutVariant?'Sold out':'Unavailable'}</span>
     </div>
-    {shown.map(option=><fieldset className="option-block" key={option.name}>
-      <legend>{option.name}: {selected[option.name]||'Choose an option'}</legend>
-      <div className="option-values">{option.values.map(value=>{const possible=optionAvailable(variants,selected,option.name,value);return <button type="button" key={value} disabled={busy} aria-pressed={selected[option.name]===value} className={`${selected[option.name]===value?'selected':''} ${possible?'':'unavailable'}`} onClick={()=>onSelect(option.name,value)}>{value}<span className="sr-only">{possible?'':' — unavailable with this selection'}</span></button>;})}</div>
-    </fieldset>)}
-    {sizeOption && sizeFit?.text && <div className="size-recommendation" aria-live="polite"><p><strong>{selectedSize}</strong> · {sizeFit.text}</p><span>AX’s garment note—not a personal size recommendation.</span></div>}
-    <StylistButton className="find-size" mode="size" product={{title:product.title,handle:product.handle,selectedOptions:selected}}>FIND MY SIZE WITH AX <Icon name="arrow" size={17}/></StylistButton>
+    {shown.map(option=>{
+      const size=isSizeOption(option.name);
+      return <fieldset className={`option-block${size?' size-option-block':''}`} key={option.name}>
+        <legend className={size?'option-legend-with-action':''}>
+          <span>{size?'Select Size':`${option.name}: ${selected[option.name]||'Choose an option'}`}</span>
+          {size&&<MeasurementFit product={product} selectedOptions={selected} inline/>}
+        </legend>
+        <div className="option-values">{option.values.map(value=>{const possible=optionAvailable(variants,selected,option.name,value);return <button type="button" key={value} disabled={busy} aria-pressed={selected[option.name]===value} className={`${selected[option.name]===value?'selected':''} ${possible?'':'unavailable'}`} onClick={()=>onSelect(option.name,value)}>{value}<span className="sr-only">{possible?'':' — unavailable with this selection'}</span></button>;})}</div>
+      </fieldset>;
+    })}
+    {sizeOption && sizeFit?.text && <div className="size-recommendation" aria-live="polite"><p><strong>{selectedSize}</strong> · {sizeFit.text}</p><span>AX garment fit note.</span></div>}
     {beforeAddButton}
     <button type="button" className="add-bag" disabled={!available||busy} onClick={add}>{buttonText}</button>
+    {afterAddButton}
     {soldOutVariant&&restockAlertsEnabled&&<BackInStockAlert productHandle={product.handle} variantId={variant.id} variantLabel={variantLabel}/>}
     {product.demo && <p className="cart-note">Sample catalog. Sizes and availability will appear when the store opens.</p>}
   </div>;
