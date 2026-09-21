@@ -5,8 +5,9 @@ import {formatMoney} from '../lib/catalog';
 import {isSizeOption,matchesSelection,optionAvailable,visibleOptions} from '../lib/product-variants';
 import BackInStockAlert from './BackInStockAlert';
 import MeasurementFit from './MeasurementFit';
+import LinkedColourways from './LinkedColourways';
 
-export default function AddToCart({product,options,selected,variant,onSelect,beforeAddButton=null,afterAddButton=null,restockAlertsEnabled=false}) {
+export default function AddToCart({product,options,selected,variant,onSelect,colourways=[],beforeAddButton=null,afterAddButton=null,restockAlertsEnabled=false}) {
   const {addItem,buyNow,busy,setOpen,cart,demoLines,demo,notice}=useCart(),variants=product.variants||[],shown=visibleOptions(options);
   const [buying,setBuying]=useState(false);
   const missing=shown.find(option=>!selected[option.name]);
@@ -50,6 +51,7 @@ export default function AddToCart({product,options,selected,variant,onSelect,bef
       </div>
       <span className={`availability-label${lowStock?' low-stock':''}`}>{product.demo?'Sample piece':missing?'Choose '+missing.name.toLowerCase():lowStock?`Only ${quantity} left`:available?'Available':soldOutVariant?'Sold out':'Unavailable'}</span>
     </div>
+    <LinkedColourways product={product} items={colourways}/>
     {shown.map(option=>{
       const size=isSizeOption(option.name);
       return <fieldset className={`option-block${size?' size-option-block':''}`} key={option.name}>

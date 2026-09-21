@@ -29,6 +29,8 @@ test('Shopify minimum-length namespace ax_data is normalized',()=>{
    {namespace:'ax_data',key:'product_number',value:'AX-SHT-005'},
    {namespace:'ax_data',key:'fit',value:'Relaxed'},
    {namespace:'ax_data',key:'fabric',value:'70% cotton, 30% linen'},
+   {namespace:'ax_data',key:'color',value:'Ivory'},
+   {namespace:'ax_data',key:'color_group',value:'linen-shirt-001'},
    {namespace:'ax_data',key:'measurement_unit',value:'cm'},
    {namespace:'ax_data',key:'measurements',value:JSON.stringify({S:{chest:104},M:{chest:110}})}
   ]
@@ -36,6 +38,8 @@ test('Shopify minimum-length namespace ax_data is normalized',()=>{
  assert.equal(product.productNumber,'AX-SHT-005');
  assert.equal(product.fit,'Relaxed');
  assert.equal(product.fabric,'70% cotton, 30% linen');
+ assert.equal(product.color,'Ivory');
+ assert.equal(product.colorGroup,'linen-shirt-001');
  assert.equal(product.sizeMeasurements.M.chest,110);
 });
 
