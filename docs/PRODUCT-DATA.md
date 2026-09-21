@@ -12,6 +12,7 @@ In Shopify **Settings → Metafields and metaobjects → Products**, add or insp
 | `ax_data.fit` | Single line text | Intended cut: regular, relaxed, oversized, tapered etc., required |
 | `ax_data.fabric` | Single line text | Verified composition, e.g. 70% cotton / 30% linen, required |
 | `ax_data.color` | Single line text | Accurate merchandising colour; variants remain authoritative |
+| `ax_data.color_group` | Single line text | Shared stable key linking separately published colourways of the same item, e.g. `wide-leg-jean-001` |
 | `ax_data.style` | Single line text | Old money, Korean fits, streetwear, formal wear etc. |
 | `ax_data.care` | Multi-line text | Actual care-label guidance |
 | `ax_data.measurement_unit` | Single line text | `cm` or `inches`, mandatory when measurements are present |
@@ -20,7 +21,7 @@ In Shopify **Settings → Metafields and metaobjects → Products**, add or insp
 | `ax_data.size_recommendations` | JSON | Optional garment notes only, never “recommended for everyone” |
 | `ax_data.size_guide` | JSON | Approved body ranges for personal sizing; see section C |
 
-The existing `ax_data.colour` alias is supported, but use `ax_data.color` consistently for new entries. Do not create a new field simply to duplicate native Shopify Size or Color options. Customer body measurements do not belong in public product metafields.
+The existing `ax_data.colour` alias is supported, but use `ax_data.color` consistently for new entries. `ax_data.color_group` is only a relationship key for intentionally separate colourway products; it does not replace a native Color option. Do not create another field simply to duplicate native Shopify Size or Color options. Customer body measurements do not belong in public product metafields.
 
 ## B. Enter each product and its variants
 
@@ -29,12 +30,12 @@ The existing `ax_data.colour` alias is supported, but use `ax_data.color` consis
 | Identity | Title, product type/category, vendor, description | “Relaxed Linen Blend Shirt”; say what the garment actually is |
 | Product number | Stable unique style number | `AX-SHT-000123`; never reuse after deletion |
 | Search indexing | Put the exact product number in a plain Shopify tag, as well as the metafield | Tag `AX-SHT-000123`; product metafields are not universally indexed by Shopify search |
-| Variants | Every Size × Color combination | Use standard option names `Size` and `Color`; no combined “M Black” single option |
+| Variants | Every sellable option combination | Use standard option names. For a multi-colour product use `Size` × `Color`; for intentionally demerged AX colourway products, keep each product’s real Size variants and give sibling products the same `ax_data.color_group`. |
 | SKU | Unique SKU for every sellable variant | `AX-SHT-000123-CRM-M`; same base style across variants |
 | Commerce | Price, genuine compare-at price, inventory, tracking, weight and shipping/tax fields | Do not create fake crossed-out prices or stock |
 | Cut and construction | Intended fit, sleeve, collar, rise, leg shape, length, closure, lining, pockets | Put searchable details in the description; use the fit field for the cut |
 | Fabric | Composition, texture, stretch, thickness/opacity where verified | “70% cotton, 30% linen; woven, no stretch”; don't infer from photos |
-| Colour | Actual variant colours and clear colour names | Cream / washed black; avoid generic image-based guesses |
+| Colour | Actual product/variant colour and clear colour names | Cream / washed black; avoid generic image-based guesses. Separately published sibling colours must share the same `color_group`. |
 | Measurements | Actual chart for every size and colourway variation, clear unit/basis | Chest, shoulder, length, sleeve for tops; waist, hip, rise, inseam, leg opening for bottoms |
 | Size guide | AX-approved BODY ranges and intended cut | Only where a merchandiser has verified the ranges; otherwise leave absent |
 | Style/occasion/season | Clear plain tags for retrieval | `Old money`, `Linen`, `Summer Arc`, `Vacation`; collections should contain their real products |
