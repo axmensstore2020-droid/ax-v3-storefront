@@ -32,7 +32,7 @@ export default async function ProductPage({params,searchParams}) {
  const selected=initialSelection(product,initialVariantId,chooseSize),variant=findVariant(product.variants || [],selected),primary=selectionImage(product,selected,variant);
  if(primary?.url) preload(imageUrl(primary.url,800),{as:'image',fetchPriority:'high',imageSrcSet:imageSrcSet(primary.url,[320,480,600,720,800,960,1100,1200]),imageSizes:'(max-width:700px) 94vw,50vw'});
  let catalog=[];
- try { catalog=await getProducts(); } catch {}
+ try { catalog=await getProducts(250); } catch {}
  const colourGroup=String(product.colorGroup||'').trim().toLowerCase();
  const colourwayListings=colourGroup?catalog.filter(item=>item.handle!==product.handle && String(item.colorGroup||'').trim().toLowerCase()===colourGroup):[];
  const colourways=colourwayListings.length?[product,...colourwayListings]:[];
