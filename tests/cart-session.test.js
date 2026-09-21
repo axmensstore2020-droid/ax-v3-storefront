@@ -13,8 +13,8 @@ test('cart ownership tokens bind one opaque Shopify cart to one browser session'
 });
 
 test('cart ownership expires and request checks use the signed HttpOnly cookie value',()=>{
-  const token=sealCartOwnership(cart,secret,1000);
-  assert.equal(ownsCartToken(token,cart,secret,1000+31*24*60*60*1000),false);
+  const now=Date.now(),token=sealCartOwnership(cart,secret,now);
+  assert.equal(ownsCartToken(token,cart,secret,now+31*24*60*60*1000),false);
   const request=new Request('https://axstore.in/api/cart',{headers:{cookie:'ax_cart_owner='+token}});
   assert.equal(requestOwnsCart(request,cart,{AX_CART_SESSION_SECRET:secret}),true);
   assert.ok(cartOwnerCookie(cart,{AX_CART_SESSION_SECRET:secret}));
