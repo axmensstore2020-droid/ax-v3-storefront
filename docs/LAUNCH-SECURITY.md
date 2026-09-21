@@ -42,3 +42,17 @@ AX servers must never collect or store card numbers, CVVs, UPI PINs, banking cre
 ## Secret rotation procedure
 
 Rotate one integration at a time: create the new secret in the provider, update the Hostinger server variable, deploy and smoke-test, then revoke the old secret. Never commit a live secret to Git, screenshots, issues, PR comments or chat.
+
+
+## Cost-abuse, accessibility and consent hardening
+
+- Public cart, shipping and restock endpoints use per-browser burst limits plus a shared Supabase-backed provider budget across all hosting instances when Supabase is configured.
+- Default shared caps are `AX_CART_DAILY_LIMIT=10000`, `AX_SHIPPING_DAILY_LIMIT=5000` and `AX_RESTOCK_DAILY_SIGNUP_LIMIT=500`; tune them to real traffic before launch rather than removing the caps.
+- AX Stylist keeps its separate shared daily and per-visitor limits, model-call/tool-call ceilings, request-body caps and provider timeouts.
+- Outbound Shopify, Delhivery, OpenAI, Resend, WhatsApp and Meta requests have hard timeouts so a provider stall cannot keep server work running indefinitely.
+- Product images always render an `alt` attribute; interactive controls have visible `:focus-visible` styling and the site keeps a keyboard skip link.
+- WhatsApp retention is disabled by default and the account action requires an explicit consent checkbox before saving an opt-in. Restock alerts are transactional, email-verified and explicitly do not subscribe the customer to marketing.
+- Private Supabase tables use RLS, revoked anon/authenticated grants and explicit deny policies. Security-definer RPCs are executable only by `service_role`.
+- `scripts/security-invariants.mjs` runs in CI and blocks regressions such as public-looking secrets, raw images without alt text, unsafe `target=_blank` links, missing security headers, missing provider timeouts, removed rate-limit guards or removed consent/RLS controls.
+
+Provider dashboards still matter. In Hostinger, Supabase, OpenAI, Resend, Meta and any future paid API, configure the lowest practical billing alerts/quotas available. Application limits reduce abuse but are not a substitute for provider-side account caps.
