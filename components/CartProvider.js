@@ -25,7 +25,7 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
  function saveDemo(lines){demoRef.current=lines;setDemoLines(lines);write(DEMO_LINES,JSON.stringify(lines));}
  function saveCart(value){setCart(value);currentCartId.current=value.id;write(CART_ID,value.id);}
  async function addItem({merchandiseId,variant,product}){
-  if(locked.current)return;locked.current=true;setBusy(true);setNotice('');
+  if(locked.current)return false;locked.current=true;setBusy(true);setNotice('');
   try{
    if(demo && product.demo){
     const lines=demoRef.current,key=merchandiseId||product.handle,found=lines.find(line => line.key===key);
@@ -37,15 +37,15 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
     catch(error){if(['CART_NOT_FOUND','CART_OWNERSHIP'].includes(error.code))saveCart(await requestCart({action:'create',merchandiseId,quantity:1}));else throw error;}
     const marketing=productMarketingData(product,variant,1);
     trackMarketingEvent('AddToCart',marketing);
-    trackStoreEvent('add_to_cart',{productHandle:product.handle,value:marketing.value,currency:marketing.currency,metadata:{variantId:variant?.id || ''}});
+    trackStoreEvent('add_to_cart',{productHandle:product.handle,value:marketing.value,currency:marketing.currency,metadata:{variantId:variant?.id || '',surface:'pdp'}});
    }
-   setOpen(true);
-  }catch(error){setNotice(error.message);setOpen(true);}finally{locked.current=false;setBusy(false);}
+   return true;
+  }catch(error){setNotice(error.message);return false;}finally{locked.current=false;setBusy(false);}
  }
  async function addItems(items=[]){
-  if(locked.current || !Array.isArray(items) || !items.length)return;
+  if(locked.current || !Array.isArray(items) || !items.length)return false;
   const safe=items.filter(item=>item?.merchandiseId && item?.variant && item?.product).slice(0,10);
-  if(!safe.length)return;
+  if(!safe.length)return false;
   locked.current=true;setBusy(true);setNotice('');
   try{
    if(demo){
@@ -65,8 +65,24 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
       trackStoreEvent('add_to_cart',{productHandle:item.product.handle,value:marketing.value,currency:marketing.currency,metadata:{variantId:item.variant?.id || '',surface:'complete-look'}});
     }
    }
-   setOpen(true);
-  }catch(error){setNotice(error.message);setOpen(true);}finally{locked.current=false;setBusy(false);}
+   return true;
+  }catch(error){setNotice(error.message);return false;}finally{locked.current=false;setBusy(false);}
+ }
+ async function buyNow({merchandiseId,variant,product}){
+  if(locked.current)return false;locked.current=true;setBusy(true);setNotice('');
+  try{
+   if(demo || product.demo)throw new Error('Checkout is unavailable in store preview.');
+   if(!merchandiseId)throw new Error('Please select an available option.');
+   const quickCart=await requestCart({action:'buyNow',merchandiseId,quantity:1});
+   if(!quickCart?.checkoutUrl)throw new Error('Checkout is unavailable right now.');
+   const marketing=productMarketingData(product,variant,1);
+   trackMarketingEvent('AddToCart',marketing);
+   trackMarketingEvent('InitiateCheckout',marketing);
+   trackStoreEvent('add_to_cart',{productHandle:product.handle,value:marketing.value,currency:marketing.currency,metadata:{variantId:variant?.id || '',surface:'buy-now'}});
+   trackStoreEvent('begin_checkout',{productHandle:product.handle,value:marketing.value,currency:marketing.currency,metadata:{items:1,variantId:variant?.id || '',surface:'buy-now'}});
+   window.location.assign(quickCart.checkoutUrl);
+   return true;
+  }catch(error){setNotice(error.message);return false;}finally{locked.current=false;setBusy(false);}
  }
  function clearCart(){setCart(null);currentCartId.current=null;write(CART_ID,null);setNotice('');setOpen(false);}
  async function updateItem(id,quantity){
@@ -75,6 +91,6 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
   catch(error){if(error.code==='CART_OWNERSHIP'){setCart(null);currentCartId.current=null;write(CART_ID,null);setNotice('Your bag session expired. Please add the item again.');}else setNotice(error.message);}finally{locked.current=false;setBusy(false);}
  }
  const count=demo?demoLines.reduce((sum,line)=>sum+line.quantity,0):(cart?.totalQuantity||0);
- return <Context.Provider value={{cart,demoLines,demo,count,open,setOpen,busy,notice,addItem,addItems,updateItem,clearCart,freeShippingThreshold,partialCodEnabled}}>{children}</Context.Provider>;
+ return <Context.Provider value={{cart,demoLines,demo,count,open,setOpen,busy,notice,addItem,addItems,buyNow,updateItem,clearCart,freeShippingThreshold,partialCodEnabled}}>{children}</Context.Provider>;
 }
 export const useCart=()=>useContext(Context);
