@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {recommendFit} from '../lib/stylist/fit.js';
-import {normalizeProfile,validateChat,readLimitedJson} from '../lib/stylist/validation.js';
+import {normalizeProfile,validateChat} from '../lib/stylist/validation.js';
+import {readLimitedJson} from '../lib/request-body.js';
 import {normalizeProductData} from '../lib/product-data.js';
 
 export const shirt = () => ({handle:'linen-shirt',title:'Linen shirt',measurementUnit:'cm',measurementBasis:'circumference',

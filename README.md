@@ -12,13 +12,30 @@ A separate Next.js menswear storefront for AX Men’s Store. Shopify remains the
 - Floating Home / Explore / AX Stylist / Search / Profile island, safe-area spacing, native modal dialogs and reduced-motion support.
 - Shopify CDN responsive images, lazy loading, system fonts and a dynamically loaded Stylist panel.
 
+## System and data flow
+
+The application is a Next.js storefront with server-only integrations behind route handlers and library modules:
+
+```text
+Shopper browser
+  -> Next.js pages/components
+      -> Shopify Storefront API          (catalog, variants, carts, normal checkout)
+      -> Shopify Customer Account API    (signed-in profile, addresses, orders)
+      -> Razorpay -> Shopify Admin API -> delivery partner   (feature-gated Partial COD)
+      -> OpenAI + server-only Supabase   (AX Stylist)
+      -> server-only Supabase            (restock requests, analytics, WhatsApp preferences)
+      -> Sentry                          (sanitized application errors when configured)
+```
+
+Customer-account access tokens are encrypted in HttpOnly cookies and are used only server-side. Private Supabase tables have RLS enabled with direct anonymous/authenticated grants revoked. AX Stylist profile records are keyed by an HMAC of the anonymous Stylist session rather than a client-supplied database ID. Shopify cart IDs can additionally be bound to a signed HttpOnly browser cookie. Restock alerts remain inactive until the email owner confirms a one-time link.
+
 ## Commerce boundary
 
 `lib/shopify.js` is server-only. Product and collection reads cache for 60 seconds. Cart requests are uncached and normal prepaid checkout uses Shopify's returned checkout URL. The optional Partial COD flow is a separate feature-gated AX checkout path that verifies a Razorpay advance, creates a partially-paid Shopify order and books the remaining balance as Delhivery COD.
 
 Without credentials, the preview displays the supplied sample catalog, labels it clearly, and disables checkout. With credentials, failed requests surface errors; they never substitute sample products or a demo cart. The `Partial Payment` helper product is excluded from listings, collections and detail pages.
 
-Live product sizes, colors, availability and prices come from Shopify variants. The bag supports add, quantity updates and removal. The Profile panel uses the headless Shopify Customer Account API when configured, with a Shopify-hosted account fallback during setup.
+Live product sizes, colors, availability and prices come from Shopify variants. The bag supports add, quantity updates and removal. When a cart-session secret is configured, Shopify cart IDs are also bound to a signed HttpOnly AX browser cookie, so a copied cart ID alone cannot be read or mutated through AX APIs. The Profile panel uses the headless Shopify Customer Account API when configured, with a Shopify-hosted account fallback during setup.
 
 AX Stylist uses a configuration-gated Luna/Terra Responses backend with central routing, bounded context, silent fallback and private usage analytics, read-only live Shopify tools, approved-chart fit guidance, optional photo input, explicit consent, private browser-linked profiles, deletion, moderation and shared usage limits. It is **disabled by default** and requires OpenAI/Supabase credentials plus a reviewed SQL migration and purge schedule before activation. No cloud database or API project is provisioned by the code. See [AX Stylist setup](docs/AX-STYLIST-SETUP.md), [product data](docs/PRODUCT-DATA.md), and [live evaluation cases](docs/AX-STYLIST-EVALS.md).
 
@@ -37,6 +54,22 @@ npm run dev
 Next.js 16.3.5 and React 19.3.0 are pinned; the lockfile is committed. `npm run start` serves the production build.
 
 Set values from `.env.example` privately in your hosting environment before building. Local development can use an ignored `.env.local`. Never commit tokens or prefix private credentials with `NEXT_PUBLIC_`.
+
+## Restock alert ownership
+
+Back-in-stock requests remain inactive until the supplied email address is confirmed. AX stores only a server-HMAC of the one-time confirmation token, the confirmation link expires after 24 hours, and only confirmed rows enter the scheduled restock processor. This prevents someone who merely knows another person's email address from activating alerts for them.
+
+## Error tracking
+
+The storefront reports unhandled Next.js request failures and React error-boundary failures to Sentry when `SENTRY_DSN` is configured. Client failures are relayed through the same-origin, rate-limited `/api/errors/client` endpoint so the DSN does not need to be exposed in browser configuration. Reports include the error name/message, stack, route path, environment and optional release identifier; request bodies, query strings, account tokens and customer form data are not attached.
+
+Set `SENTRY_DSN`, `AX_ERROR_ENVIRONMENT` and optionally `AX_ERROR_RELEASE` in Hostinger. Create alert rules in Sentry for new production issues and error-volume spikes.
+
+## Handoff / repository controls
+
+The repository has a real Git history and all production changes should continue through pull requests. In GitHub repository settings, protect `main` by requiring the `Security & Build` status check and at least one approving review before merge; prevent force pushes and direct deletion of the branch. Hostinger production should deploy only from `main`.
+
+The GitHub connector used for this handoff can create branches/commits/PRs but does not expose branch-protection writes, so that repository-setting toggle remains an owner/admin setting rather than an application-code change.
 
 ## Deployment and remaining work
 

@@ -4,6 +4,8 @@ import {getProduct} from '../../../lib/shopify.js';
 import {readLimitedJson,reserveRestockBurst,RESTOCK_GUARD_COOKIE,sameOriginRequest} from '../../../lib/request-security.js';
 import {normalizeRestockEmail,normalizeRestockHandle,normalizeRestockVariantId,restockVariantLabel,soldOutVariantForProduct} from '../../../lib/restock-alerts.js';
 import {restockAlertSignupConfigured,restockSecret} from '../../../lib/restock-config.js';
+import {createRestockVerification} from '../../../lib/restock-verification.js';
+import {sendRestockVerificationEmail} from '../../../lib/restock-email.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -34,11 +36,13 @@ export async function POST(request){
     const variant=soldOutVariantForProduct(product,variantId);
     if(!variant) return json({ok:false,error:'That product option is not eligible for a restock alert.'},400,headers);
 
+    const verification=createRestockVerification(restockSecret());
     await createDatabase().saveRestockSubscription({
       email,productHandle,variantId,
-      variantLabel:restockVariantLabel(variant)
+      variantLabel:restockVariantLabel(variant),verificationHash:verification.hash,verificationExpiresAt:verification.expiresAt
     });
-    return json({ok:true},201,headers);
+    await sendRestockVerificationEmail({email,product,variant,token:verification.token,verificationHash:verification.hash});
+    return json({ok:true,verificationRequired:true},201,headers);
   }catch{
     return json({ok:false,error:'We couldn’t save that restock request right now.'},502,headers);
   }

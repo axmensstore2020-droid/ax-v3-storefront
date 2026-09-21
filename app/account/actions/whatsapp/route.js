@@ -1,5 +1,6 @@
 import {NextResponse} from 'next/server';
 import {customerAccountConfig,queryCustomerAccount,readAccountSession,sessionExpired} from '../../../../lib/customer-account.js';
+import {sameOriginRequest} from '../../../../lib/request-security.js';
 import {createDatabase,databaseConfigured} from '../../../../lib/stylist/database.js';
 import {normalizeWhatsappPhone} from '../../../../lib/whatsapp.js';
 
@@ -11,16 +12,12 @@ function redirect(request,status){
   url.hash='whatsapp';
   return NextResponse.redirect(url,303);
 }
-function sameOrigin(request,origin){
-  const source=request.headers.get('origin');
-  return !source || source===origin;
-}
 
 export async function POST(request){
   const config=customerAccountConfig();
   const enabled=process.env.AX_WHATSAPP_RETENTION_ENABLED==='true' && databaseConfigured() && String(process.env.AX_STYLIST_SECRET || '').length>=32;
   if(!config.enabled || !enabled) return redirect(request,'unavailable');
-  if(!sameOrigin(request,config.siteOrigin)) return new NextResponse('Forbidden',{status:403});
+  if(!sameOriginRequest(request,config.siteOrigin)) return new NextResponse('Forbidden',{status:403});
   const session=readAccountSession(request,config);
   if(!session) return redirect(request,'signin');
   if(sessionExpired(session)){
