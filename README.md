@@ -38,6 +38,12 @@ Next.js 16.3.5 and React 19.3.0 are pinned; the lockfile is committed. `npm run 
 
 Set values from `.env.example` privately in your hosting environment before building. Local development can use an ignored `.env.local`. Never commit tokens or prefix private credentials with `NEXT_PUBLIC_`.
 
+## Error tracking
+
+The storefront reports unhandled Next.js request failures and React error-boundary failures to Sentry when `SENTRY_DSN` is configured. Client failures are relayed through the same-origin, rate-limited `/api/errors/client` endpoint so the DSN does not need to be exposed in browser configuration. Reports include the error name/message, stack, route path, environment and optional release identifier; request bodies, query strings, account tokens and customer form data are not attached.
+
+Set `SENTRY_DSN`, `AX_ERROR_ENVIRONMENT` and optionally `AX_ERROR_RELEASE` in Hostinger. Create alert rules in Sentry for new production issues and error-volume spikes.
+
 ## Deployment and remaining work
 
 See [Hostinger staging](docs/HOSTINGER-STAGING.md), [live shipping rates](docs/SHIPPING-RATES.md), [Partial COD](docs/PARTIAL-COD.md), [customer account setup](docs/CUSTOMER-ACCOUNT-SETUP.md) and [verification](docs/VERIFICATION.md).
