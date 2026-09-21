@@ -50,6 +50,18 @@ test('payment helper product is removed from list, collection and detail',async 
  assert.equal((await live.getCollection('shirts')).products.length,1);
  assert.equal(await live.getProduct('partial-payment'),null);
 });
+test('targeted handle lookup does not scan the whole catalog and preserves requested order',async t=>{
+ t.after(()=>{globalThis.fetch=realFetch;});
+ const second={...sample,id:'gid://shopify/Product/2',handle:'second-shirt',title:'Second Shirt'};
+ let request;
+ globalThis.fetch=async(url,init)=>{request=JSON.parse(init.body);return Response.json({data:{products:{nodes:[second,sample]}}});};
+ const items=await live.getProductsByHandles(['real-shirt','second-shirt']);
+ assert.match(request.query,/ProductsByHandles/);
+ assert.equal(request.variables.first,2);
+ assert.equal(request.variables.query,'handle:real-shirt OR handle:second-shirt');
+ assert.deepEqual(items.map(item=>item.handle),['real-shirt','second-shirt']);
+});
+
 test('Shopify optionValues maps to variant selector values',async t=>{
  t.after(()=>{globalThis.fetch=realFetch;});
  globalThis.fetch=async()=>Response.json({data:{product:{...sample,images:{nodes:[]},options:[{name:'Size',optionValues:[{name:'M'},{name:'L'}]}],variants:{nodes:[]}}}});
