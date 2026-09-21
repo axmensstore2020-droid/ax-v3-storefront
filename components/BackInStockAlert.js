@@ -20,7 +20,7 @@ export default function BackInStockAlert({productHandle,variantId,variantLabel='
       }
       if(!response.ok) throw new Error(data?.error || 'Restock signup is unavailable right now.');
       setStatus('success');
-      setMessage('Saved. We’ll use this email only for this restock request.');
+      setMessage('Check your email to confirm this restock alert. The confirmation link expires in 24 hours.');
       setEmail('');
     }catch(error){
       setStatus('error');setMessage(error?.message || 'Restock signup is unavailable right now.');

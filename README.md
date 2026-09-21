@@ -38,6 +38,10 @@ Next.js 16.3.5 and React 19.3.0 are pinned; the lockfile is committed. `npm run 
 
 Set values from `.env.example` privately in your hosting environment before building. Local development can use an ignored `.env.local`. Never commit tokens or prefix private credentials with `NEXT_PUBLIC_`.
 
+## Restock alert ownership
+
+Back-in-stock requests remain inactive until the supplied email address is confirmed. AX stores only a server-HMAC of the one-time confirmation token, the confirmation link expires after 24 hours, and only confirmed rows enter the scheduled restock processor. This prevents someone who merely knows another person's email address from activating alerts for them.
+
 ## Error tracking
 
 The storefront reports unhandled Next.js request failures and React error-boundary failures to Sentry when `SENTRY_DSN` is configured. Client failures are relayed through the same-origin, rate-limited `/api/errors/client` endpoint so the DSN does not need to be exposed in browser configuration. Reports include the error name/message, stack, route path, environment and optional release identifier; request bodies, query strings, account tokens and customer form data are not attached.
