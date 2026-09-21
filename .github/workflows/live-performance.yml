@@ -109,8 +109,47 @@ jobs:
           NODE
           }
 
+          resolve_product_path() {
+            tmp="$(mktemp)"
+            curl --fail --silent --show-error --location \
+              --retry 5 --retry-delay 10 --retry-all-errors \
+              --connect-timeout 15 --max-time 45 \
+              --user-agent "AX-V3-Lighthouse/1.0" \
+              --output "${tmp}" "${BASE}/products"
+
+            path="$(grep -oE 'href="/products/[^"?#]+' "${tmp}" | sed -E 's/^href="//' | grep -v '^/products
+            rm -f "${tmp}"
+
+            if [ -z "${path}" ]; then
+              echo "Could not discover a live product link from /products."
+              return 1
+            fi
+
+            printf '%s' "${path}"
+          }
+
           audit_page home "/"
           sleep 15
           audit_page products "/products"
           sleep 15
-          audit_page product-detail "/products/khorasan-graphic-sleeveless-cropped-tee"
+          PDP_PATH="$(resolve_product_path)"
+          echo "Discovered live PDP for audit: ${PDP_PATH}"
+          audit_page product-detail "${PDP_PATH}"
+ | head -n 1 || true)"
+            rm -f "${tmp}"
+
+            if [ -z "${path}" ]; then
+              echo "Could not discover a live product link from /products."
+              return 1
+            fi
+
+            printf '%s' "${path}"
+          }
+
+          audit_page home "/"
+          sleep 15
+          audit_page products "/products"
+          sleep 15
+          PDP_PATH="$(resolve_product_path)"
+          echo "Discovered live PDP for audit: ${PDP_PATH}"
+          audit_page product-detail "${PDP_PATH}"
