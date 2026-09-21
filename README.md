@@ -12,6 +12,23 @@ A separate Next.js menswear storefront for AX Men’s Store. Shopify remains the
 - Floating Home / Explore / AX Stylist / Search / Profile island, safe-area spacing, native modal dialogs and reduced-motion support.
 - Shopify CDN responsive images, lazy loading, system fonts and a dynamically loaded Stylist panel.
 
+## System and data flow
+
+The application is a Next.js storefront with server-only integrations behind route handlers and library modules:
+
+```text
+Shopper browser
+  -> Next.js pages/components
+      -> Shopify Storefront API          (catalog, variants, carts, normal checkout)
+      -> Shopify Customer Account API    (signed-in profile, addresses, orders)
+      -> Razorpay -> Shopify Admin API -> delivery partner   (feature-gated Partial COD)
+      -> OpenAI + server-only Supabase   (AX Stylist)
+      -> server-only Supabase            (restock requests, analytics, WhatsApp preferences)
+      -> Sentry                          (sanitized application errors when configured)
+```
+
+Customer-account access tokens are encrypted in HttpOnly cookies and are used only server-side. Private Supabase tables have RLS enabled with direct anonymous/authenticated grants revoked. AX Stylist profile records are keyed by an HMAC of the anonymous Stylist session rather than a client-supplied database ID. Shopify cart IDs can additionally be bound to a signed HttpOnly browser cookie. Restock alerts remain inactive until the email owner confirms a one-time link.
+
 ## Commerce boundary
 
 `lib/shopify.js` is server-only. Product and collection reads cache for 60 seconds. Cart requests are uncached and normal prepaid checkout uses Shopify's returned checkout URL. The optional Partial COD flow is a separate feature-gated AX checkout path that verifies a Razorpay advance, creates a partially-paid Shopify order and books the remaining balance as Delhivery COD.
@@ -47,6 +64,12 @@ Back-in-stock requests remain inactive until the supplied email address is confi
 The storefront reports unhandled Next.js request failures and React error-boundary failures to Sentry when `SENTRY_DSN` is configured. Client failures are relayed through the same-origin, rate-limited `/api/errors/client` endpoint so the DSN does not need to be exposed in browser configuration. Reports include the error name/message, stack, route path, environment and optional release identifier; request bodies, query strings, account tokens and customer form data are not attached.
 
 Set `SENTRY_DSN`, `AX_ERROR_ENVIRONMENT` and optionally `AX_ERROR_RELEASE` in Hostinger. Create alert rules in Sentry for new production issues and error-volume spikes.
+
+## Handoff / repository controls
+
+The repository has a real Git history and all production changes should continue through pull requests. In GitHub repository settings, protect `main` by requiring the `Security & Build` status check and at least one approving review before merge; prevent force pushes and direct deletion of the branch. Hostinger production should deploy only from `main`.
+
+The GitHub connector used for this handoff can create branches/commits/PRs but does not expose branch-protection writes, so that repository-setting toggle remains an owner/admin setting rather than an application-code change.
 
 ## Deployment and remaining work
 

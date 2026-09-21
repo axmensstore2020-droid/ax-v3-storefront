@@ -21,6 +21,7 @@ const {
   authorizationUrl,
   callbackUrl,
   customerAccountConfig,
+  discoverCustomerAccount,
   discoverCustomerAccountApi,
   exchangeCode,
   logoutRedirectUrl,
@@ -80,6 +81,23 @@ test('OAuth uses PKCE, the registered callback and confidential token exchange',
   assert.equal(body.get('client_id'),'client-id');
   assert.equal(body.get('code_verifier'),verifier);
   assert.equal(body.get('redirect_uri'),callbackUrl(config));
+});
+
+test('Shopify account discovery is cached per fetch implementation',async()=>{
+  const config=customerAccountConfig(baseEnv),calls=[];
+  const fetcher=async url=>{
+    calls.push(url);
+    if(url.endsWith('/.well-known/openid-configuration')) return Response.json(discovery);
+    return Response.json({graphql_api:discovery.graphql_api});
+  };
+  const first=await discoverCustomerAccount(config,fetcher);
+  const second=await discoverCustomerAccount(config,fetcher);
+  assert.equal(first.tokenEndpoint,discovery.token_endpoint);
+  assert.equal(second.tokenEndpoint,discovery.token_endpoint);
+  assert.equal(calls.filter(url=>url.endsWith('/.well-known/openid-configuration')).length,1);
+  assert.equal(await discoverCustomerAccountApi(config,fetcher),discovery.graphql_api);
+  assert.equal(await discoverCustomerAccountApi(config,fetcher),discovery.graphql_api);
+  assert.equal(calls.filter(url=>url.endsWith('/.well-known/customer-account-api')).length,1);
 });
 
 test('Customer Account GraphQL endpoint uses Shopify API discovery',async()=>{
