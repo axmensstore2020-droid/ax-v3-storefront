@@ -3,7 +3,6 @@ import {preload} from 'react-dom';
 import {notFound} from 'next/navigation';
 import ProductPurchase from '../../../components/ProductPurchase';
 import {getProduct,getProducts} from '../../../lib/shopify';
-import CompleteLook from '../../../components/CompleteLook';
 import {complementaryProducts} from '../../../lib/merchandising';
 import ProductCard from '../../../components/ProductCard';
 import Icon from '../../../components/Icon';
@@ -46,7 +45,7 @@ export default async function ProductPage({params,searchParams}) {
  return <main id="main-content">
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/>
   <div className="breadcrumb"><Link href="/products">Collection</Link><span>/</span><span>{product.title}</span></div>
-  <ProductPurchase key={product.id+':'+initialVariantId+':'+chooseSize} product={product} initialVariantId={initialVariantId} chooseSize={chooseSize} restockAlertsEnabled={restockAlertSignupConfigured()} afterProductInfo={<CompleteLook product={product} items={completeLook}/>}/>
+  <ProductPurchase key={product.id+':'+initialVariantId+':'+chooseSize} product={product} initialVariantId={initialVariantId} chooseSize={chooseSize} restockAlertsEnabled={restockAlertSignupConfigured()} completeLookItems={completeLook}/>
   {related.length>0 && <section className="section-wrap related-section"><div className="section-head"><h2 className="editorial">More to make your own.</h2><Link href="/products" className="underlined-link">EXPLORE ALL <Icon name="arrow"/></Link></div><div className="product-grid">{related.map(p => <ProductCard key={p.id} product={p}/>)}</div></section>}
   <RecentlyViewed excludeHandles={[product.handle]}/>
  </main>;
