@@ -6,6 +6,7 @@ import {normalizeRestockEmail,normalizeRestockHandle,normalizeRestockVariantId,r
 import {restockAlertSignupConfigured,restockSecret} from '../../../lib/restock-config.js';
 import {createRestockVerification} from '../../../lib/restock-verification.js';
 import {sendRestockVerificationEmail} from '../../../lib/restock-email.js';
+import {reserveProviderBudget} from '../../../lib/provider-budget.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -35,6 +36,9 @@ export async function POST(request){
     if(exact.availableForSale) return json({ok:false,available:true,error:'This option is available now.'},409,headers);
     const variant=soldOutVariantForProduct(product,variantId);
     if(!variant) return json({ok:false,error:'That product option is not eligible for a restock alert.'},400,headers);
+
+    const budget=await reserveProviderBudget('restock-signup',{limit:Math.min(5000,Math.max(50,Number(process.env.AX_RESTOCK_DAILY_SIGNUP_LIMIT)||500))});
+    if(!budget.allowed) return json({ok:false,error:'Restock signups are temporarily limited. Please try again later.'},429,headers);
 
     const verification=createRestockVerification(restockSecret());
     await createDatabase().saveRestockSubscription({

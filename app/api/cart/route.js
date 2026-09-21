@@ -5,6 +5,7 @@ import {cartOperations} from '../../../lib/shopify-queries';
 import {validateCartInput} from '../../../lib/commerce';
 import {CART_GUARD_COOKIE,readLimitedJson,reserveCartBurst,sameOriginRequest} from '../../../lib/request-security.js';
 import {CART_OWNER_COOKIE,cartOwnerCookie,cartOwnerCookieOptions,cartSessionConfigured,requestOwnsCart} from '../../../lib/cart-session.js';
+import {reserveProviderBudget} from '../../../lib/provider-budget.js';
 
 const MAX_CART_BODY_BYTES=8192;
 const cartBurstLimit=()=>Math.min(120,Math.max(10,Number(process.env.AX_CART_BURST_LIMIT)||40));
@@ -34,6 +35,8 @@ export async function POST(request) {
  const invalid=validateCartInput(body);
  if(invalid) return respond({ok:false,error:invalid},400,guard);
  if(!shopifyConfigured()) return respond({ok:false,error:'Checkout is unavailable in this store preview.'},503,guard);
+ const budget=await reserveProviderBudget('cart',{limit:Math.min(100000,Math.max(500,Number(process.env.AX_CART_DAILY_LIMIT)||10000))});
+ if(!budget.allowed) return respond({ok:false,error:'Bag updates are temporarily limited. Please try again later.'},429,guard);
  const {action,cartId,merchandiseId,quantity=1,lineId}=body;
  if(!['create','createMany','buyNow'].includes(action) && cartSessionConfigured() && !requestOwnsCart(request,cartId)) return respond({ok:false,code:'CART_OWNERSHIP',error:'This bag belongs to another browser session. Please start a new bag.'},403,guard);
  const batch=['createMany','addMany'].includes(action)?body.lines.map(item=>({merchandiseId:item.merchandiseId,quantity:item.quantity})):null;

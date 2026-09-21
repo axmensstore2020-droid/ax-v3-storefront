@@ -13,6 +13,7 @@ export function imageSrcSet(src,widths=DEFAULT_WIDTHS) {
 }
 
 export default function ProductImage({src,alt,sizes='(max-width:700px) 50vw,25vw',eager=false,widths=DEFAULT_WIDTHS,fallbackWidth=720}) {
- if(!src) return <div className="image-fallback">Image coming soon</div>;
- return <img src={imageUrl(src,fallbackWidth)} srcSet={imageSrcSet(src,widths)} sizes={sizes} alt={alt} width="800" height="1066" loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : 'auto'} decoding="async" className="product-image"/>;
+ if(!src) return <div className="image-fallback" role="img" aria-label={typeof alt==='string'&&alt.trim()?alt:'Product image unavailable'}>Image coming soon</div>;
+ const safeAlt=typeof alt==='string'?alt:'AX product image';
+ return <img src={imageUrl(src,fallbackWidth)} srcSet={imageSrcSet(src,widths)} sizes={sizes} alt={safeAlt} width="800" height="1066" loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : 'auto'} decoding="async" className="product-image"/>;
 }
