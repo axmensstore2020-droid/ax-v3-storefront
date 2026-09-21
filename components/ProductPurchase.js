@@ -19,7 +19,7 @@ import CompleteLook from './CompleteLook';
 
 const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
 
-export default function ProductPurchase({product,initialVariantId,chooseSize=false,restockAlertsEnabled=false,children,completeLookItems=[],afterProductInfo=null}) {
+export default function ProductPurchase({product,initialVariantId,chooseSize=false,restockAlertsEnabled=false,children,colourways=[],completeLookItems=[],afterProductInfo=null}) {
   const [selected,setSelected] = useState(() => initialSelection(product,initialVariantId,chooseSize));
   const galleryRef = useRef(null), trackedView = useRef(''), previousPrimary = useRef('');
   const variant = findVariant(product.variants || [],selected);
@@ -52,7 +52,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
     </div>
     <div className="pdp-info">
       <p className="eyebrow">{product.type || 'AX MENSWEAR'}</p><div className="pdp-title-row"><h1 className="editorial">{product.title}</h1><WishlistButton handle={product.handle} className="pdp-wishlist" showLabel/></div>
-      <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} onSelect={(name,value) => {setSelected(current => ({...current,[name]:value}));trackStoreEvent('select_variant',{productHandle:product.handle,metadata:{option:name,value}});}} afterAddButton={<ShippingEstimator weightGrams={deliveryWeight} productHandle={product.handle} subtotal={deliverySubtotal}/>} restockAlertsEnabled={restockAlertsEnabled}/>
+      <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} colourways={colourways} onSelect={(name,value) => {setSelected(current => ({...current,[name]:value}));trackStoreEvent('select_variant',{productHandle:product.handle,metadata:{option:name,value}});}} afterAddButton={<ShippingEstimator weightGrams={deliveryWeight} productHandle={product.handle} subtotal={deliverySubtotal}/>} restockAlertsEnabled={restockAlertsEnabled}/>
       {children}
       <ProductDataPanel product={product} selectedOptions={selected}/>
       {completeLookItems.length>0 && <div className="pdp-after-product-info"><CompleteLook product={product} mainVariant={variant} mainSelection={selected} items={completeLookItems}/></div>}
