@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {quotePartialCod,partialCodConfigured} from '../../../../lib/partial-cod-server.js';
 import {SHIPPING_GUARD_COOKIE,readLimitedJson,reserveShippingBurst,sameOriginRequest} from '../../../../lib/request-security.js';
+import {cartSessionConfigured,requestOwnsCart} from '../../../../lib/cart-session.js';
 
 const MAX_BODY_BYTES=4096;
 
@@ -25,6 +26,7 @@ export async function POST(request) {
   if(!partialCodConfigured()) return respond({ok:false,error:'Partial COD is not available yet.'},503,guard);
   let body;
   try {body=await readLimitedJson(request,MAX_BODY_BYTES);} catch(error) {return respond({ok:false,error:error.message || 'Invalid request.'},400,guard);}
+  if(cartSessionConfigured() && !requestOwnsCart(request,body?.cartId)) return respond({ok:false,error:'This bag session has expired. Please reopen your bag.'},403,guard);
   try {
     const result=await quotePartialCod(body.cartId,body.pincode);
   const {cart:_cart,...customerResult}=result;

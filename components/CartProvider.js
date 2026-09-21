@@ -19,7 +19,7 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
   if(demo){try{const lines=JSON.parse(read(DEMO_LINES)||'[]');if(Array.isArray(lines)){demoRef.current=lines.filter(line => line.product?.handle && Number.isInteger(line.quantity) && line.quantity>0 && line.quantity<=99);setDemoLines(demoRef.current);}}catch{}return;}
   const id=read(CART_ID);currentCartId.current=id;if(!id)return;
   locked.current=true;setBusy(true);
-  requestCart({action:'get',cartId:id}).then(value => {if(active)setCart(value);}).catch(error => {if(error.code==='CART_NOT_FOUND'){write(CART_ID,null);currentCartId.current=null;}else if(active)setNotice('Your bag could not be loaded. Please try again.');}).finally(() => {if(active){locked.current=false;setBusy(false);}});
+  requestCart({action:'get',cartId:id}).then(value => {if(active)setCart(value);}).catch(error => {if(['CART_NOT_FOUND','CART_OWNERSHIP'].includes(error.code)){write(CART_ID,null);currentCartId.current=null;}else if(active)setNotice('Your bag could not be loaded. Please try again.');}).finally(() => {if(active){locked.current=false;setBusy(false);}});
   return () => {active=false;};
  },[demo]);
  function saveDemo(lines){demoRef.current=lines;setDemoLines(lines);write(DEMO_LINES,JSON.stringify(lines));}
@@ -34,7 +34,7 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
     if(!merchandiseId || product.demo)throw new Error('Please select an available option.');
     const cartId=currentCartId.current;
     try{saveCart(await requestCart({action:cartId?'add':'create',cartId,merchandiseId,quantity:1}));}
-    catch(error){if(error.code==='CART_NOT_FOUND')saveCart(await requestCart({action:'create',merchandiseId,quantity:1}));else throw error;}
+    catch(error){if(['CART_NOT_FOUND','CART_OWNERSHIP'].includes(error.code))saveCart(await requestCart({action:'create',merchandiseId,quantity:1}));else throw error;}
     const marketing=productMarketingData(product,variant,1);
     trackMarketingEvent('AddToCart',marketing);
     trackStoreEvent('add_to_cart',{productHandle:product.handle,value:marketing.value,currency:marketing.currency,metadata:{variantId:variant?.id || ''}});
@@ -58,7 +58,7 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
    }else{
     const cartId=currentCartId.current,lines=safe.map(item=>({merchandiseId:item.merchandiseId,quantity:1}));
     try{saveCart(await requestCart({action:cartId?'addMany':'createMany',cartId,lines}));}
-    catch(error){if(error.code==='CART_NOT_FOUND')saveCart(await requestCart({action:'createMany',lines}));else throw error;}
+    catch(error){if(['CART_NOT_FOUND','CART_OWNERSHIP'].includes(error.code))saveCart(await requestCart({action:'createMany',lines}));else throw error;}
     for(const item of safe) {
       const marketing=productMarketingData(item.product,item.variant,1);
       trackMarketingEvent('AddToCart',marketing);
@@ -72,7 +72,7 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
  async function updateItem(id,quantity){
   if(locked.current)return;locked.current=true;setBusy(true);setNotice('');
   try{if(demo)saveDemo(demoRef.current.map(line => line.key===id?{...line,quantity}:line).filter(line => line.quantity>0));else saveCart(await requestCart({action:quantity===0?'remove':'update',cartId:currentCartId.current,lineId:id,quantity}));}
-  catch(error){setNotice(error.message);}finally{locked.current=false;setBusy(false);}
+  catch(error){if(error.code==='CART_OWNERSHIP'){setCart(null);currentCartId.current=null;write(CART_ID,null);setNotice('Your bag session expired. Please add the item again.');}else setNotice(error.message);}finally{locked.current=false;setBusy(false);}
  }
  const count=demo?demoLines.reduce((sum,line)=>sum+line.quantity,0):(cart?.totalQuantity||0);
  return <Context.Provider value={{cart,demoLines,demo,count,open,setOpen,busy,notice,addItem,addItems,updateItem,clearCart,freeShippingThreshold,partialCodEnabled}}>{children}</Context.Provider>;
