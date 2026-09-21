@@ -27,8 +27,8 @@ test('Partial Payment is filtered on every path',()=>{
 });
 test('cart rejects malformed IDs and fractional or excessive quantities',()=>{
  const merchandiseId='gid://shopify/ProductVariant/123',cartId='gid://shopify/Cart/abc?key=sample',lineId='gid://shopify/CartLine/abc';
- for(const body of [{action:'create',merchandiseId,quantity:1},{action:'get',cartId},{action:'add',cartId,merchandiseId},{action:'update',cartId,lineId,quantity:0},{action:'remove',cartId,lineId}])assert.equal(validateCartInput(body),null);
- for(const quantity of [-1,0,1.5,100,'1',null])assert.ok(validateCartInput({action:'create',merchandiseId,quantity}));
+ for(const body of [{action:'create',merchandiseId,quantity:1},{action:'buyNow',merchandiseId,quantity:1},{action:'get',cartId},{action:'add',cartId,merchandiseId},{action:'update',cartId,lineId,quantity:0},{action:'remove',cartId,lineId}])assert.equal(validateCartInput(body),null);
+ for(const quantity of [-1,0,1.5,100,'1',null]){assert.ok(validateCartInput({action:'create',merchandiseId,quantity}));assert.ok(validateCartInput({action:'buyNow',merchandiseId,quantity}));}
  for(const body of [null,[],{},{action:'add',cartId,merchandiseId:'demo'},{action:'get',cartId:3},{action:'remove',cartId,lineId:'test'}])assert.ok(validateCartInput(body));
 });
 test('variant selection resolves exact combinations and sold-out stock',()=>{
