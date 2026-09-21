@@ -1,4 +1,5 @@
 'use client';
+import {useState} from 'react';
 import {useCart} from './CartProvider';
 import {formatMoney} from '../lib/catalog';
 import {isSizeOption,matchesSelection,optionAvailable,visibleOptions} from '../lib/product-variants';
@@ -6,7 +7,8 @@ import BackInStockAlert from './BackInStockAlert';
 import MeasurementFit from './MeasurementFit';
 
 export default function AddToCart({product,options,selected,variant,onSelect,beforeAddButton=null,afterAddButton=null,restockAlertsEnabled=false}) {
-  const {addItem,busy}=useCart(),variants=product.variants||[],shown=visibleOptions(options);
+  const {addItem,buyNow,busy,setOpen,cart,demoLines,demo,notice}=useCart(),variants=product.variants||[],shown=visibleOptions(options);
+  const [buying,setBuying]=useState(false);
   const missing=shown.find(option=>!selected[option.name]);
   const available=!missing && (product.demo || Boolean(variant?.availableForSale));
   const candidates=variants.filter(item=>matchesSelection(item,selected));
@@ -25,8 +27,21 @@ export default function AddToCart({product,options,selected,variant,onSelect,bef
   const quantity=Number(variant?.quantityAvailable),lowStock=available && Number.isInteger(quantity) && quantity>0 && quantity<=3;
   const soldOutVariant=!product.demo && !missing && Boolean(variant) && variant.availableForSale===false;
   const variantLabel=(variant?.selectedOptions||[]).filter(option=>!(option.name==='Title'&&option.value==='Default Title')).map(option=>option.name+': '+option.value).join(' · ');
-  const buttonText=busy?'UPDATING BAG…':missing?'CHOOSE '+missing.name.toUpperCase():product.demo?'ADD TO PREVIEW BAG':available?'ADD TO BAG':soldOutVariant?'SOLD OUT':'UNAVAILABLE';
-  const add=()=>addItem({merchandiseId:variant?.id,variant,product});
+  const variantKey=variant?.id || (product.demo?product.handle:'');
+  const inBag=available && Boolean(variantKey) && (demo
+    ? demoLines.some(line=>line.key===variantKey)
+    : (cart?.lines?.nodes||[]).some(line=>line.merchandise?.id===variant?.id));
+  const buttonText=busy&&!buying?'UPDATING BAG…':inBag?'VIEW BAG':missing?'CHOOSE '+missing.name.toUpperCase():product.demo?'ADD TO PREVIEW BAG':available?'ADD TO BAG':soldOutVariant?'SOLD OUT':'UNAVAILABLE';
+  async function add(){
+    if(inBag){setOpen(true);return;}
+    await addItem({merchandiseId:variant?.id,variant,product});
+  }
+  async function quickBuy(){
+    if(!available || product.demo || busy)return;
+    setBuying(true);
+    await buyNow({merchandiseId:variant?.id,variant,product});
+    setBuying(false);
+  }
   return <div className="buy-box">
     <div className="pdp-price-row">
       <div className="pdp-price-group">
@@ -47,7 +62,11 @@ export default function AddToCart({product,options,selected,variant,onSelect,bef
     })}
     {sizeOption && sizeFit?.text && <div className="size-recommendation" aria-live="polite"><p><strong>{selectedSize}</strong> · {sizeFit.text}</p><span>AX garment fit note.</span></div>}
     {beforeAddButton}
-    <button type="button" className="add-bag" disabled={!available||busy} onClick={add}>{buttonText}</button>
+    <div className="purchase-actions">
+      <button type="button" className="add-bag" disabled={(!available&&!inBag)||busy} onClick={add}>{buttonText}</button>
+      <button type="button" className="buy-now" disabled={!available||busy||product.demo} onClick={quickBuy}>{buying?'OPENING CHECKOUT…':product.demo?'BUY NOW UNAVAILABLE':'BUY NOW'}</button>
+    </div>
+    {notice&&<p className="cart-note cart-inline-notice" role="alert">{notice}</p>}
     {afterAddButton}
     {soldOutVariant&&restockAlertsEnabled&&<BackInStockAlert productHandle={product.handle} variantId={variant.id} variantLabel={variantLabel}/>}
     {product.demo && <p className="cart-note">Sample catalog. Sizes and availability will appear when the store opens.</p>}
