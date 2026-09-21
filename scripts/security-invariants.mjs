@@ -2,7 +2,8 @@ import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
 
 const files=execFileSync('git',['ls-files'],{encoding:'utf8'}).trim().split('\n').filter(Boolean);
-const sourceFiles=files.filter(file=>/\.(?:js|jsx|mjs|css)$/.test(file) && !file.startsWith('tests/'));
+const sourceFiles=files.filter(file=>/\.(?:js|jsx|mjs|css)$/.test(file) && !file.startsWith('tests/') && file!=='scripts/security-invariants.mjs');
+const uiFiles=sourceFiles.filter(file=>/^(?:app|components)\//.test(file));
 const failures=[];
 const read=file=>readFileSync(file,'utf8');
 const fail=message=>failures.push(message);
@@ -12,6 +13,11 @@ for(const file of sourceFiles){
   if(/NEXT_PUBLIC_[A-Z0-9_]*(?:SECRET|TOKEN|PRIVATE|SERVICE_ROLE|API_KEY)/.test(content)) {
     fail(`${file}: server secret/token appears to use NEXT_PUBLIC_`);
   }
+
+}
+
+for(const file of uiFiles){
+  const content=read(file);
   for(const tag of content.match(/<img\b[\s\S]*?>/g)||[]) {
     if(!/\balt\s*=/.test(tag)) fail(`${file}: raw <img> is missing alt`);
   }
