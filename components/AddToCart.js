@@ -8,7 +8,7 @@ import MeasurementFit from './MeasurementFit';
 import LinkedColourways from './LinkedColourways';
 
 export default function AddToCart({product,options,selected,variant,onSelect,colourways=[],beforeAddButton=null,afterAddButton=null,restockAlertsEnabled=false}) {
-  const {addItem,buyNow,busy,setOpen,cart,demoLines,demo,notice}=useCart(),variants=product.variants||[],shown=visibleOptions(options);
+  const {addItem,buyNow,busy,setOpen,cart,demoLines,demo,notice}=useCart(),variants=product.variants||[],shown=visibleOptions(options).filter(option=>!(colourways.length>1 && /colou?r/i.test(option.name||'') && option.values?.length===1));
   const [buying,setBuying]=useState(false);
   const missing=shown.find(option=>!selected[option.name]);
   const available=!missing && (product.demo || Boolean(variant?.availableForSale));
