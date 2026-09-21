@@ -294,7 +294,7 @@ h1,h2,h3{font-weight:300}
  .product-meta,.product-meta p{font-size:11px}.stock-label{font-size:10px}
  .section-intro h2{font-size:35px;max-width:340px}.section-head h2,.community-section h2{font-size:32px}
  .category-directory>a{font-size:15px;min-height:56px}.style-worlds>a{font-size:14px;line-height:1.5;flex-basis:40%}
- .pdp-info h1{font-size:28px}.related-section h2{font-size:28px}
+ .pdp-info h1{font-size:26px;line-height:1.03}.related-section h2{font-size:28px}
  .compact-filters{gap:4px 12px}.category-select select{font-size:11px;max-width:190px}.compact-filters>a{font-size:11px}
  .footer-main{gap:38px 20px}.footer-main>div:first-child{grid-column:1/-1}.footer nav{font-size:12px}.footer nav .eyebrow{font-size:11px}.footer nav[aria-label="Our stores"]{grid-column:1/-1}
  .footer-email{font-size:13px}.footer-bottom{font-size:10px;line-height:1.7}
