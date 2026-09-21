@@ -19,21 +19,50 @@ function LookItem({product,selection,onChange}){
   </article>;
 }
 
-export default function CompleteLook({product,items=[]}){
-  const {addItems,busy}=useCart();
+export default function CompleteLook({product,mainVariant,mainSelection={},items=[]}){
+  const {addItems,busy,setOpen,cart,demoLines,demo}=useCart();
   const [selections,setSelections]=useState(()=>Object.fromEntries(items.map(item=>[item.handle,initialSelection(item,'',true)])));
   const resolved=useMemo(()=>items.map(item=>({product:item,variant:findVariant(item.variants||[],selections[item.handle]||{})})),[items,selections]);
   if(!items.length)return null;
-  const selected=resolved.filter(item=>item.variant?.availableForSale);
-  const ready=selected.length>0;
+
+  const mainOptions=visibleOptions(productOptions(product));
+  const missingMain=mainOptions.find(option=>!mainSelection[option.name]);
+  const mainAvailable=!missingMain && Boolean(mainVariant) && (product.demo || mainVariant.availableForSale);
+  const selected=resolved.filter(item=>Boolean(item.variant) && (item.product.demo || item.variant.availableForSale));
+  const mainLine=mainAvailable?{merchandiseId:mainVariant.id,variant:mainVariant,product}:null;
+  const linesToAdd=mainLine?[mainLine,...selected.map(item=>({merchandiseId:item.variant.id,variant:item.variant,product:item.product}))]:[];
+  const bagVariantIds=new Set(demo
+    ? demoLines.map(line=>line.variant?.id||line.key).filter(Boolean)
+    : (cart?.lines?.nodes||[]).map(line=>line.merchandise?.id).filter(Boolean));
+  const pending=linesToAdd.filter(item=>!bagVariantIds.has(item.merchandiseId));
+  const ready=mainAvailable && selected.length>0;
+  const allInBag=ready && pending.length===0;
+  const pendingTotal=pending.reduce((sum,item)=>sum+Number(item.variant?.price?.amount||item.product.price||0),0);
+  const bundleTotal=linesToAdd.reduce((sum,item)=>sum+Number(item.variant?.price?.amount||item.product.price||0),0);
+  const currency=mainVariant?.price?.currencyCode || product.currency || selected[0]?.variant?.price?.currencyCode || 'INR';
+
   async function addLook(){
-    if(!ready)return;
-    await addItems(selected.map(item=>({merchandiseId:item.variant.id,variant:item.variant,product:item.product})));
-    trackStoreEvent('add_look',{productHandle:product.handle,metadata:{items:selected.length}});
+    if(allInBag){setOpen(true);return;}
+    if(!ready || !pending.length)return;
+    const added=await addItems(pending);
+    if(added) trackStoreEvent('add_look',{productHandle:product.handle,value:pendingTotal,currency,metadata:{items:pending.length,bundleItems:linesToAdd.length}});
   }
+
+  let buttonText='CHOOSE OPTIONS TO ADD THE LOOK';
+  if(busy) buttonText='UPDATING BAG…';
+  else if(allInBag) buttonText='VIEW BAG';
+  else if(missingMain) buttonText=`SELECT ${missingMain.name.toUpperCase()} ABOVE`;
+  else if(!mainAvailable) buttonText='MAIN ITEM UNAVAILABLE';
+  else if(ready){
+    const amount=pendingTotal||bundleTotal;
+    if(pending.length===2 && linesToAdd.length===2) buttonText=`ADD BOTH TO BAG — ${formatMoney(amount,currency)}`;
+    else if(pending.length===1) buttonText=`ADD PIECE TO BAG — ${formatMoney(amount,currency)}`;
+    else buttonText=`ADD ${pending.length} ITEMS TO BAG — ${formatMoney(amount,currency)}`;
+  }
+
   return <section id="complete-look" className="complete-look section-wrap" aria-labelledby="complete-look-title">
-    <div className="section-head"><div><p className="eyebrow">PAIR WITH THIS PIECE</p><h2 id="complete-look-title" className="editorial">Complete the look.</h2></div><p className="muted small">Choose the size/colour for any pieces you want. Only completed selections are added.</p></div>
+    <div className="section-head"><div><p className="eyebrow">PAIR WITH THIS PIECE</p><h2 id="complete-look-title" className="editorial">Complete the look.</h2></div><p className="muted small">Choose the size/colour for the pieces you want. Your selected main item is included automatically.</p></div>
     <div className="look-grid">{items.map(item=><LookItem key={item.id} product={item} selection={selections[item.handle]||{}} onChange={(name,value)=>setSelections(current=>({...current,[item.handle]:{...(current[item.handle]||{}),[name]:value}}))}/>)}</div>
-    <button className="solid-button add-look-button" type="button" disabled={!ready||busy} onClick={addLook}>{busy?'UPDATING BAG…':ready?`ADD SELECTED LOOK${selected.length>1?` (${selected.length})`:''}`:'CHOOSE OPTIONS TO ADD THE LOOK'}</button>
+    <button className="solid-button add-look-button" type="button" disabled={(!ready&&!allInBag)||busy} onClick={addLook}>{buttonText}</button>
   </section>;
 }
