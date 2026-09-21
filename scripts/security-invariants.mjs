@@ -1,0 +1,57 @@
+import {execFileSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
+
+const files=execFileSync('git',['ls-files'],{encoding:'utf8'}).trim().split('\n').filter(Boolean);
+const sourceFiles=files.filter(file=>/\.(?:js|jsx|mjs|css)$/.test(file) && !file.startsWith('tests/'));
+const failures=[];
+const read=file=>readFileSync(file,'utf8');
+const fail=message=>failures.push(message);
+
+for(const file of sourceFiles){
+  const content=read(file);
+  if(/NEXT_PUBLIC_[A-Z0-9_]*(?:SECRET|TOKEN|PRIVATE|SERVICE_ROLE|API_KEY)/.test(content)) {
+    fail(`${file}: server secret/token appears to use NEXT_PUBLIC_`);
+  }
+  for(const tag of content.match(/<img\b[\s\S]*?>/g)||[]) {
+    if(!/\balt\s*=/.test(tag)) fail(`${file}: raw <img> is missing alt`);
+  }
+  for(const tag of content.match(/<a\b[\s\S]*?target=["']_blank["'][\s\S]*?>/g)||[]) {
+    if(!/rel=["'][^"']*noopener[^"']*["']/.test(tag)) fail(`${file}: target=_blank is missing rel=noopener`);
+  }
+}
+
+const nextConfig=read('next.config.js');
+for(const header of ['Content-Security-Policy','X-Frame-Options','X-Content-Type-Options','Permissions-Policy','Referrer-Policy','Strict-Transport-Security']){
+  if(!nextConfig.includes(header)) fail(`next.config.js: missing ${header}`);
+}
+if(!/poweredByHeader\s*:\s*false/.test(nextConfig)) fail('next.config.js: poweredByHeader must stay disabled');
+
+const css=read('app/globals.css');
+if(!css.includes(':focus-visible')) fail('app/globals.css: visible keyboard focus styles are required');
+if(!css.includes('.skip-link')) fail('app/globals.css: skip-link styles are required');
+
+const whatsapp=read('app/account/actions/whatsapp/route.js');
+if(!whatsapp.includes("form.get('consent')!=='on'")) fail('WhatsApp opt-in must require explicit consent');
+const env=read('.env.example');
+if(!/AX_WHATSAPP_RETENTION_ENABLED=false/.test(env)) fail('WhatsApp retention must default to disabled');
+
+const requestSecurity=read('lib/request-security.js');
+for(const guard of ['reserveCartBurst','reserveShippingBurst','reserveRestockBurst','MAX_BUCKETS']){
+  if(!requestSecurity.includes(guard)) fail(`request-security.js: missing ${guard}`);
+}
+
+for(const file of ['lib/shopify.js','lib/delhivery.js','lib/stylist/openai.js','lib/restock-email.js','lib/whatsapp.js','lib/meta.js']){
+  if(!read(file).includes('AbortSignal.timeout')) fail(`${file}: outbound provider calls need a hard timeout`);
+}
+
+const migration=read('supabase/migrations/20260922_security_hardening.sql');
+for(const token of ['enable row level security','deny_direct_client_access','revoke all','ax_server_budget_reserve']){
+  if(!migration.includes(token)) fail(`security migration: missing ${token}`);
+}
+
+if(failures.length){
+  console.error('Security invariant failures:');
+  for(const item of failures) console.error('- '+item);
+  process.exit(1);
+}
+console.log(`Security invariants OK (${sourceFiles.length} source files checked).`);
