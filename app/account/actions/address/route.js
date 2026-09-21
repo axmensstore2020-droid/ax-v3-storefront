@@ -1,5 +1,6 @@
 import {NextResponse} from 'next/server';
 import {customerAccountConfig,queryCustomerAccount,readAccountSession,sessionExpired} from '../../../../lib/customer-account.js';
+import {sameOriginRequest} from '../../../../lib/request-security.js';
 
 const createMutation=`mutation AXAddressCreate($address: CustomerAddressInput!, $defaultAddress: Boolean) {
   customerAddressCreate(address: $address, defaultAddress: $defaultAddress) {
@@ -27,10 +28,6 @@ function redirect(request,status) {
   return NextResponse.redirect(url,303);
 }
 function safeText(value,max=120) { return String(value || '').trim().slice(0,max); }
-function sameOrigin(request,origin) {
-  const source=request.headers.get('origin');
-  return !source || source===origin;
-}
 function validAddressId(value) { return /^gid:\/\/shopify\/CustomerAddress\/[A-Za-z0-9_-]+$/.test(String(value || '')); }
 function addressInput(form) {
   return {
@@ -50,7 +47,7 @@ function addressInput(form) {
 export async function POST(request) {
   const config=customerAccountConfig();
   if(!config.enabled) return redirect(request,'unavailable');
-  if(!sameOrigin(request,config.siteOrigin)) return new NextResponse('Forbidden',{status:403});
+  if(!sameOriginRequest(request,config.siteOrigin)) return new NextResponse('Forbidden',{status:403});
   const session=readAccountSession(request,config);
   if(!session) return redirect(request,'signin');
   if(sessionExpired(session)) {

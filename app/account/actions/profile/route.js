@@ -1,5 +1,6 @@
 import {NextResponse} from 'next/server';
 import {customerAccountConfig,queryCustomerAccount,readAccountSession,sessionExpired} from '../../../../lib/customer-account.js';
+import {sameOriginRequest} from '../../../../lib/request-security.js';
 
 const mutation=`mutation AXCustomerUpdate($input: CustomerUpdateInput!) {
   customerUpdate(input: $input) {
@@ -15,15 +16,11 @@ function redirect(request,status,hash='profile') {
   return NextResponse.redirect(url,303);
 }
 function safeText(value,max=80) { return String(value || '').trim().slice(0,max); }
-function sameOrigin(request,origin) {
-  const source=request.headers.get('origin');
-  return !source || source===origin;
-}
 
 export async function POST(request) {
   const config=customerAccountConfig();
   if(!config.enabled) return redirect(request,'unavailable');
-  if(!sameOrigin(request,config.siteOrigin)) return new NextResponse('Forbidden',{status:403});
+  if(!sameOriginRequest(request,config.siteOrigin)) return new NextResponse('Forbidden',{status:403});
   const session=readAccountSession(request,config);
   if(!session) return redirect(request,'signin');
   if(sessionExpired(session)) {

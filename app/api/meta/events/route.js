@@ -1,15 +1,9 @@
 import {NextResponse} from 'next/server';
 import {MARKETING_CONSENT_COOKIE,MARKETING_GRANTED} from '../../../../lib/marketing.js';
 import {metaCapiConfigured,normalizeMetaEvent,sendMetaEvent} from '../../../../lib/meta.js';
-import {META_GUARD_COOKIE,readLimitedJson,reserveMetaBurst,sameOriginRequest} from '../../../../lib/request-security.js';
+import {META_GUARD_COOKIE,cookieValue,readLimitedJson,reserveMetaBurst,sameOriginRequest} from '../../../../lib/request-security.js';
 
 export const dynamic='force-dynamic';
-
-function cookieValue(request,name){
- const raw=request.headers.get('cookie') || '';
- const pair=raw.split(';').map(item=>item.trim()).find(item=>item.startsWith(name+'='));
- return pair?decodeURIComponent(pair.slice(name.length+1)):'';
-}
 
 function json(body,status=200,headers={}){
  return NextResponse.json(body,{status,headers:{'Cache-Control':'no-store, private','X-Content-Type-Options':'nosniff',...headers}});

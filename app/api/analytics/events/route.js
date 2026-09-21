@@ -2,7 +2,7 @@ import {createHmac,randomUUID} from 'node:crypto';
 import {NextResponse} from 'next/server';
 import {MARKETING_CONSENT_COOKIE,MARKETING_GRANTED} from '../../../../lib/marketing.js';
 import {createDatabase,databaseConfigured} from '../../../../lib/stylist/database.js';
-import {ANALYTICS_GUARD_COOKIE,readLimitedJson,reserveAnalyticsBurst,sameOriginRequest} from '../../../../lib/request-security.js';
+import {ANALYTICS_GUARD_COOKIE,cookieValue,readLimitedJson,reserveAnalyticsBurst,sameOriginRequest} from '../../../../lib/request-security.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -10,11 +10,6 @@ export const dynamic='force-dynamic';
 const VISITOR_COOKIE='ax_store_visitor';
 const EVENTS=new Set(['product_view','search','filter','select_variant','size_guide','shipping_quote','recommendation_click','add_to_cart','add_look','begin_checkout','web_vital']);
 
-function cookieValue(request,name){
-  const raw=request.headers.get('cookie') || '';
-  const pair=raw.split(';').map(item=>item.trim()).find(item=>item.startsWith(name+'='));
-  return pair?decodeURIComponent(pair.slice(name.length+1)):'';
-}
 function safeText(value,max){return String(value || '').replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,max);}
 function json(body,status=200,headers={}){return NextResponse.json(body,{status,headers:{'Cache-Control':'no-store, private','X-Content-Type-Options':'nosniff',...headers}});}
 function visitor(request,secret){
