@@ -15,10 +15,11 @@ import ShippingEstimator from './ShippingEstimator';
 import ProductProof from './ProductProof';
 import {rememberRecentlyViewed} from '../lib/recently-viewed';
 import WishlistButton from './WishlistButton';
+import CompleteLook from './CompleteLook';
 
 const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
 
-export default function ProductPurchase({product,initialVariantId,chooseSize=false,restockAlertsEnabled=false,children,afterProductInfo=null}) {
+export default function ProductPurchase({product,initialVariantId,chooseSize=false,restockAlertsEnabled=false,children,completeLookItems=[],afterProductInfo=null}) {
   const [selected,setSelected] = useState(() => initialSelection(product,initialVariantId,chooseSize));
   const galleryRef = useRef(null), trackedView = useRef(''), previousPrimary = useRef('');
   const variant = findVariant(product.variants || [],selected);
@@ -54,6 +55,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
       <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} onSelect={(name,value) => {setSelected(current => ({...current,[name]:value}));trackStoreEvent('select_variant',{productHandle:product.handle,metadata:{option:name,value}});}} afterAddButton={<ShippingEstimator weightGrams={deliveryWeight} productHandle={product.handle} subtotal={deliverySubtotal}/>} restockAlertsEnabled={restockAlertsEnabled}/>
       {children}
       <ProductDataPanel product={product} selectedOptions={selected}/>
+      {completeLookItems.length>0 && <div className="pdp-after-product-info"><CompleteLook product={product} mainVariant={variant} mainSelection={selected} items={completeLookItems}/></div>}
       {afterProductInfo && <div className="pdp-after-product-info">{afterProductInfo}</div>}
       <ProductProof product={product}/>
       <StylistButton className="underlined-link pdp-stylist" product={{title:product.title,handle:product.handle,selectedOptions:selected}}>STYLE WITH AX <Icon name="arrow"/></StylistButton>
