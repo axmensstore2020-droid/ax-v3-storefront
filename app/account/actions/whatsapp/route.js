@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {customerAccountConfig,queryCustomerAccount,readAccountSession,sessionExpired} from '../../../../lib/customer-account.js';
 import {sameOriginRequest} from '../../../../lib/request-security.js';
+import {assertAllowedFormKeys,readLimitedForm} from '../../../../lib/request-body.js';
 import {createDatabase,databaseConfigured} from '../../../../lib/stylist/database.js';
 import {normalizeWhatsappPhone} from '../../../../lib/whatsapp.js';
 
@@ -26,7 +27,7 @@ export async function POST(request){
     return NextResponse.redirect(url,303);
   }
   try{
-    const form=await request.formData(),intent=String(form.get('intent') || '');
+    const form=assertAllowedFormKeys(await readLimitedForm(request,4096),['intent','consent','phone']),intent=String(form.get('intent') || '');
     const result=await queryCustomerAccount(config,session,customerIdQuery);
     const customerId=result.data?.customer?.id;
     if(!customerId) return redirect(request,'whatsapp-error');
