@@ -1,4 +1,4 @@
-.ax-play-teaser{position:fixed;right:18px;bottom:calc(104px + env(safe-area-inset-bottom));z-index:58;display:flex;align-items:flex-start;gap:7px;animation:ax-play-rise .42s cubic-bezier(.2,.8,.2,1)}
+.ax-play-teaser{position:fixed;right:18px;bottom:calc(132px + env(safe-area-inset-bottom));z-index:58;display:flex;align-items:flex-start;gap:7px;animation:ax-play-rise .42s cubic-bezier(.2,.8,.2,1)}
 .ax-play-card{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;min-width:238px;border:1px solid #d2d3cc;border-radius:3px;background:#f7f7f4;color:#181916;padding:10px 12px;text-align:left;box-shadow:0 14px 36px #1516121c}
 .ax-play-card strong{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:500}
 .ax-play-card small{display:block;margin-top:3px;font-size:10px;color:#6c6e66;letter-spacing:.02em}
@@ -33,7 +33,7 @@
 @keyframes ax-mark-in{from{opacity:0;transform:scale(.7) rotate(-4deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 @keyframes ax-play-pulse{50%{opacity:.45}}
 @media(max-width:700px){
- .ax-play-teaser{left:14px;right:14px;bottom:calc(88px + env(safe-area-inset-bottom))}
+ .ax-play-teaser{left:14px;right:14px;bottom:calc(124px + env(safe-area-inset-bottom))}
  .ax-play-card{min-width:0;width:100%}
  .ax-play-modal{grid-template-columns:1fr;max-height:88dvh;overflow:auto}
  .ax-play-copy{min-height:170px;padding:28px 22px 20px}
