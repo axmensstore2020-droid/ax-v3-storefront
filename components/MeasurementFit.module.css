@@ -70,3 +70,22 @@
 .measureDetail>div>span{padding:5px 10px;border:1px solid var(--line);border-radius:20px;font-size:12px;white-space:nowrap}
 .measureDetail p{font-size:12px;line-height:1.6;color:var(--muted);margin:10px 0 0}
 .diagramCard svg{max-height:350px}
+
+/* Spacious reference layout: front drawing and lettered measuring instructions. */
+.sheet{width:min(880px,100%)}
+.measureLayout{display:grid;grid-template-columns:minmax(240px,.95fr) minmax(260px,1fr);gap:32px;align-items:start;margin-top:24px}
+.diagramCard{background:#fff;border-radius:0;padding:24px 8px;position:sticky;top:0}
+.diagramCard svg{max-height:none;width:100%;height:auto}
+.diagramCard>p{text-align:center;font-size:11px;margin:14px 0 0}
+.measureList{list-style:none;margin:0;padding:0;display:grid;gap:24px}
+.measureList li{padding-bottom:22px;border-bottom:1px solid var(--line)}
+.measureList button{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0;border:0;background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.letter{display:grid;place-items:center;flex:0 0 30px;height:30px;border-radius:50%;background:#e9e9e6;font-size:14px}
+.measureList button[aria-pressed="true"] .letter{background:var(--ink);color:white}
+.measureList button:focus-visible{outline:2px solid #426fc1;outline-offset:4px}
+.measureList strong{font-size:14px;font-weight:600}
+.factor{margin-left:auto;font-size:11px;color:var(--muted);white-space:nowrap}
+.measureList p{margin:12px 0 6px;font-size:13px;line-height:1.65}
+.measureList small{display:block;font-size:11px;line-height:1.6;color:var(--muted)}
+.emptyChart{padding:28px 0}.emptyChart>p{font-size:13px;line-height:1.7}.emptyChart .stylistButton{margin-top:24px}
+@media(max-width:600px){.measureLayout{grid-template-columns:1fr;gap:28px}.diagramCard{position:static;padding:12px 20px}.diagramCard svg{max-height:390px}.measureList{gap:22px}.measureList p{font-size:14px}.measureList small{font-size:12px}.sheetBody{padding-bottom:max(32px,env(safe-area-inset-bottom))}}

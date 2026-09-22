@@ -54,3 +54,9 @@ test('only circumference widths double; shoulder, length and rise never double',
  assert.equal(measurementCategory({title:'Full Sleeve Linen Shirt'}),'shirt');
  assert.equal(measurementCategory({title:'Brushed Cotton Sweatpants'}),'bottom');
 });
+
+test('live Bootcut chart retains every supplied column and ambiguous arrays',()=>{
+ const result=normalizeMeasurementRows({'28':{waist_cm:74,length_cm:105,thighs_cm:[43,42],knee_cm:[60,40],crotch_cm:56,leg_opening_cm:46}},{unit:'cm',basis:'Garment measurements',category:'bottom'});
+ assert.deepEqual(result.rows['28'],{waist:74,outseam:105,thigh:[43,42],knee:[60,40],crotch:56,leg_opening:46});
+ assert.equal(result.standardized,false);
+});

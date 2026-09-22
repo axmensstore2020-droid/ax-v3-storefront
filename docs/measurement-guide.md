@@ -40,3 +40,21 @@ state the measurement basis in Shopify. Never infer the basis from a large numbe
 The guide uses the fields actually present in a chart. Products with no chart show
 category guidance only, with a notice that measurements have not been supplied.
 No Shopify measurements or weights are changed by this UI update.
+
+## Front-view reference redesign (2026-09-22)
+
+The guide uses front-only technical drawings, lettered arrows and a separate instruction list. On narrow phones, instructions sit below the drawing; on wider screens they sit alongside it. Selecting a row highlights its arrow. Unknown fields remain visible as instructions without a fabricated measuring path. Back-rise guidance is textual only; no back illustration is displayed.
+
+The Size chart tab stays visible even if measurements are unavailable, with an explicit empty state. Records labelled body measurements are identified as such and must not be compared directly with flat garment widths.
+
+### Catalogue audit
+
+Read-only Shopify audit: all 36 active products checked; 30 garments have `ax_data.measurements`. Six chains have no measurements. Black Armani Bootcut has measurements for 28/30/32 using legacy `_cm` keys. The current live PDP receives this data. Existing alias normalization preserves waist, outseam, thigh, knee, crotch and leg opening, including ambiguous arrays.
+
+Merchant verification still needed:
+- Five Premium Linen Button-Down colour products are labelled `Body measurements` although their rows also contain shoulder and length. Confirm the intended basis.
+- Several tops list shoulder values around 100–134 cm. Re-measure seam to seam; shoulder is never doubled. Do not automatically halve these records.
+- Bootcut thigh and knee contain pairs of values; their meaning is unconfirmed. `crotch` must not be renamed to front rise without confirmation.
+- `Garment measurements` alone does not specify whether widths are flat or full circumference. The guide asks for confirmation instead of inferring ×2.
+
+No Shopify measurement values were modified. Figma file creation and library inspection succeeded, but the Starter plan tool limit blocked canvas design operations. Production vectors were implemented and rendered directly instead.
