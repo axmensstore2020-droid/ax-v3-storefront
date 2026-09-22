@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {customerAccountConfig,queryCustomerAccount,readAccountSession,sessionExpired} from '../../../../lib/customer-account.js';
 import {sameOriginRequest} from '../../../../lib/request-security.js';
+import {assertAllowedFormKeys,readLimitedForm} from '../../../../lib/request-body.js';
 
 const createMutation=`mutation AXAddressCreate($address: CustomerAddressInput!, $defaultAddress: Boolean) {
   customerAddressCreate(address: $address, defaultAddress: $defaultAddress) {
@@ -13,6 +14,9 @@ const updateMutation=`mutation AXAddressUpdate($addressId: ID!, $address: Custom
     customerAddress { id formatted(withName: true, withCompany: true) }
     userErrors { field message }
   }
+}`;
+const addressOwnershipQuery=`query AXAddressOwnership {
+  customer { addresses(first: 100) { nodes { id } } }
 }`;
 const deleteMutation=`mutation AXAddressDelete($addressId: ID!) {
   customerAddressDelete(addressId: $addressId) {
@@ -29,6 +33,10 @@ function redirect(request,status) {
 }
 function safeText(value,max=120) { return String(value || '').trim().slice(0,max); }
 function validAddressId(value) { return /^gid:\/\/shopify\/CustomerAddress\/[A-Za-z0-9_-]+$/.test(String(value || '')); }
+async function ownsAddress(config,session,addressId) {
+  const result=await queryCustomerAccount(config,session,addressOwnershipQuery);
+  return Boolean(result.data?.customer?.addresses?.nodes?.some(address=>address?.id===addressId));
+}
 function addressInput(form) {
   return {
     firstName:safeText(form.get('firstName'),80),
@@ -56,11 +64,18 @@ export async function POST(request) {
     return NextResponse.redirect(url,303);
   }
 
-  const form=await request.formData(),intent=String(form.get('intent') || '');
+  let form;
+  try{
+    form=assertAllowedFormKeys(await readLimitedForm(request,12288),[
+      'intent','addressId','firstName','lastName','company','address1','address2',
+      'city','zoneCode','territoryCode','zip','phoneNumber','defaultAddress'
+    ]);
+  }catch{return redirect(request,'address-error');}
+  const intent=String(form.get('intent') || '');
   try {
     if(intent==='delete') {
       const addressId=String(form.get('addressId') || '');
-      if(!validAddressId(addressId)) return redirect(request,'address-error');
+      if(!validAddressId(addressId) || !(await ownsAddress(config,session,addressId))) return redirect(request,'address-error');
       const result=await queryCustomerAccount(config,session,deleteMutation,{addressId});
       const payload=result.data?.customerAddressDelete;
       if(!payload || payload.userErrors?.length) return redirect(request,'address-error');
@@ -77,7 +92,7 @@ export async function POST(request) {
     }
     if(intent==='update') {
       const addressId=String(form.get('addressId') || '');
-      if(!validAddressId(addressId)) return redirect(request,'address-error');
+      if(!validAddressId(addressId) || !(await ownsAddress(config,session,addressId))) return redirect(request,'address-error');
       const result=await queryCustomerAccount(config,session,updateMutation,{addressId,address,defaultAddress:makeDefault ? true : null});
       const payload=result.data?.customerAddressUpdate;
       if(!payload || payload.userErrors?.length) return redirect(request,'address-error');
