@@ -87,8 +87,10 @@ export default async function Home() {
    <Link className="editorial-hero-visual" href={heroCampaign.ctaLink} aria-label={heroCampaign.ctaLabel}>
     <EditorialImage src={heroCampaign.imageSrc} mobileSrc={heroCampaign.mobileImageSrc} alt={heroCampaign.imageAlt || 'AX editorial campaign'} sizes="(max-width:700px) 100vw, 62vw" eager/>
     <HeroVideo
-     mobileSrc="https://d2ol7oe51mr4n9.cloudfront.net/user_3JHmA5rA3F2ZOEAYLj6xipUiqFY/c97b0b2a-49f6-470d-b72f-c48b562a33c3.mp4"
-     desktopSrc="https://d2ol7oe51mr4n9.cloudfront.net/user_3JHmA5rA3F2ZOEAYLj6xipUiqFY/bb44e5e9-95de-42eb-ace5-7078d0e149c5.mp4"
+     mobileSrc="https://cdn.shopify.com/s/files/1/0859/5216/8176/files/ax-home-hero-mobile_0c454cdc-ec4c-44be-a893-27b5e4d1130f.mp4?v=1790080870"
+     desktopSrc="https://cdn.shopify.com/s/files/1/0859/5216/8176/files/ax-home-hero-desktop_1a865eca-9565-4113-b89f-75e8cde4213b.mp4?v=1790080870"
+     mobileFallbackSrc="https://d2ol7oe51mr4n9.cloudfront.net/user_3JHmA5rA3F2ZOEAYLj6xipUiqFY/c97b0b2a-49f6-470d-b72f-c48b562a33c3.mp4"
+     desktopFallbackSrc="https://d2ol7oe51mr4n9.cloudfront.net/user_3JHmA5rA3F2ZOEAYLj6xipUiqFY/bb44e5e9-95de-42eb-ace5-7078d0e149c5.mp4"
     />
     <span className="editorial-image-caption">{heroCampaign.ctaLabel} <Icon name="arrow" size={17}/></span>
    </Link>

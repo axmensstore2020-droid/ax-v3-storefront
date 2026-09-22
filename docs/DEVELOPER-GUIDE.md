@@ -68,6 +68,7 @@ Important boundaries:
 | Navigation island | components/AXIsland.js | app/refinements.css, app/globals.css |
 | Playroom | components/AXPlayroom.js | app/playroom.css |
 | Opening logo animation | components/OpeningIntro.js | app/layout.js, motion CSS |
+| Homepage hero video missing/stalled | components/HeroVideo.js, app/page.js | Shopify Files/CDN primary source, backup source, underlying hero image |
 | Search/filter | components/ProductGridClient.js | lib/navigation.js |
 | Meta Pixel/CAPI | components/MetaMarketing.js, lib/meta.js | consent + production env |
 | SEO/canonical/robots | lib/seo.js, app/robots.js, app/layout.js | AX_PUBLIC_SITE_URL, AX_ALLOW_INDEXING |
