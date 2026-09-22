@@ -79,6 +79,9 @@ for(const file of ['app/account/actions/profile/route.js','app/account/actions/a
 const cartSession=read('lib/cart-session.js');
 if(/secret\.length<32\)return true/.test(cartSession)) fail('cart-session.js: cart ownership must fail closed');
 
+const shippingCallback=read('app/api/shipping/rates/route.js');
+if(shippingCallback.includes('SHOPIFY_CARRIER_CALLBACK_KEY_SHA256')) fail('shipping rates: hard-coded callback credential fallback is forbidden');
+
 const stylistSecurity=read('lib/stylist/security.js');
 for(const token of ['MAX_IMAGE_DIMENSION','MAX_IMAGE_PIXELS','imageDimensions']){
   if(!stylistSecurity.includes(token)) fail(`stylist/security.js: missing upload guard ${token}`);
