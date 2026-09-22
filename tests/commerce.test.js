@@ -56,5 +56,7 @@ test('cart batch actions allow a small set of valid Shopify variants only',()=>{
  assert.equal(validateCartInput({action:'addMany',cartId,lines}),null);
  assert.ok(validateCartInput({action:'createMany',lines:[]}));
  assert.ok(validateCartInput({action:'createMany',lines:[{merchandiseId:'demo',quantity:1}]}));
+ assert.ok(validateCartInput({action:'create',merchandiseId:'gid://shopify/ProductVariant/123',quantity:1,price:1}));
+ assert.ok(validateCartInput({action:'createMany',lines:[{merchandiseId:'gid://shopify/ProductVariant/123',quantity:1,price:1}]}));
  assert.ok(validateCartInput({action:'createMany',lines:Array.from({length:11},(_,i)=>({merchandiseId:'gid://shopify/ProductVariant/'+(100+i),quantity:1}))}));
 });
