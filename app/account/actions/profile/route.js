@@ -16,7 +16,7 @@ function redirect(request,status,hash='profile') {
   url.hash=hash;
   return NextResponse.redirect(url,303);
 }
-function safeText(value,max=80) { return String(value || '').trim().slice(0,max); }
+function safeText(value,max=80) { return String(value || '').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,max); }
 
 export async function POST(request) {
   const config=customerAccountConfig();
