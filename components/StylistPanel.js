@@ -3,19 +3,16 @@ import Link from 'next/link';
 import {useEffect,useRef,useState} from 'react';
 import Dialog from './Dialog';
 import Icon from './Icon';
+import Brand from './Brand';
 import ProductImage from './ProductImage';
-import MeasurementIllustration from './MeasurementIllustrations';
 import {useNavigation} from './NavigationProvider';
 import {formatMoney} from '../lib/catalog';
 import {CONSENT_VERSION,normalizeProfile} from '../lib/stylist/validation';
 import './stylist.css';
 
 const blankProfile = {unit:'cm',chest:'',waist:'',hip:'',height:'',inseam:'',weight:'',fit:'regular',build:'',topFit:'',bottomFit:'',styles:'',colors:'',avoid:'',usualSize:''};
-const bodyFields = [
-  ['height','Height'],['weight','Weight'],['chest','Chest'],['waist','Waist'],['hip','Hips'],['inseam','Inseam']
-];
-const categoryGuides = [
-  ['tee','T-shirts'],['long_sleeve','Long sleeves'],['shirt','Shirts'],['jacket','Jackets'],['jeans','Jeans'],['bottom','Trousers']
+const precisionFields = [
+  ['chest','Chest'],['waist','Waist'],['hip','Hips'],['inseam','Inseam']
 ];
 const needsCustomerFitData = fit => fit?.status === 'needs_data' && ((Array.isArray(fit.missing) && fit.missing.length > 0) || /(?:choose the unit|add your body)/i.test(fit.message || ''));
 async function prepareImage(file) {
@@ -132,16 +129,17 @@ export default function StylistPanel({request,onClose}) {
       {tab === 'fit' ? <div className="ax-fit-form">
         <section className="ax-fit-hero" aria-labelledby="ax-fit-title">
           <p className="ax-fit-kicker">AX FIT PROFILE</p>
-          <h3 id="ax-fit-title">Find your size without guessing.</h3>
-          <p>Enter body measurements you know, choose how you like clothes to sit, then ask AX to compare them with each product’s approved size guide.</p>
+          <h3 id="ax-fit-title">My fit &amp; style</h3>
+          <p>Help AX give you better size and style recommendations.</p>
         </section>
-        <div className="ax-fit-steps" aria-label="Fit recommendation flow">
-          <span><b>1</b> Body</span><span><b>2</b> Preference</span><span><b>3</b> AX size check</span>
-        </div>
-        <div className="ax-fit-card">
-          <div><p className="ax-section-label">Your body</p><p>Use a tape around the body. Do not enter flat garment widths here.</p></div>
-          <label>Unit<select value={profile.unit} onChange={e=>changeUnit(e.target.value)}><option value="cm">Centimetres (cm)</option><option value="inches">Inches</option></select></label>
-          <div className="ax-fit-grid">{bodyFields.map(([key,label]) => <label key={key}>{label} ({key==='weight' ? (profile.unit==='cm'?'kg':'lb') : profile.unit})<input type="number" inputMode="decimal" min="0" step="0.01" value={profile[key] ?? ''} onChange={e=>changeProfile(key,e.target.value)}/></label>)}</div>
+        <div className="ax-fit-card ax-fit-basics">
+          <p className="ax-section-label">Fit basics</p>
+          <div className="ax-fit-grid">
+            <label>Usual size (optional)<input value={profile.usualSize} maxLength={40} onChange={e=>changeProfile('usualSize',e.target.value)} placeholder="Tops M, trousers 32…"/></label>
+            <label>Unit<select value={profile.unit} onChange={e=>changeUnit(e.target.value)}><option value="cm">Centimetres (cm)</option><option value="inches">Inches</option></select></label>
+            <label>Height ({profile.unit})<input type="number" inputMode="decimal" min="0" step="0.01" value={profile.height ?? ''} onChange={e=>changeProfile('height',e.target.value)}/></label>
+            <label>Weight ({profile.unit==='cm'?'kg':'lb'})<input type="number" inputMode="decimal" min="0" step="0.01" value={profile.weight ?? ''} onChange={e=>changeProfile('weight',e.target.value)}/></label>
+          </div>
         </div>
         <div className="ax-fit-card">
           <p className="ax-section-label">Build and fit preference</p>
@@ -150,12 +148,15 @@ export default function StylistPanel({request,onClose}) {
           <label>T-shirt / shirt feel<select value={profile.topFit || ''} onChange={e=>changeProfile('topFit',e.target.value)}><option value="">Choose when useful</option><option value="close">Closer</option><option value="regular">Regular</option><option value="relaxed">Relaxed</option><option value="oversized">Oversized</option></select></label>
           <label>Jeans / trouser feel<select value={profile.bottomFit || ''} onChange={e=>changeProfile('bottomFit',e.target.value)}><option value="">Choose when useful</option><option value="straight">Straight</option><option value="relaxed">Relaxed</option><option value="baggy">Baggy</option></select></label>
         </div>
-        <div className="ax-fit-card">
-          <p className="ax-section-label">How AX measures garments</p>
-          <p>Product size charts are garment measurements. Compare them with a similar piece you already own.</p>
-          <div className="ax-guide-strip" aria-label="Measurement guide categories">{categoryGuides.map(([category,label])=><figure key={category}><MeasurementIllustration category={category}/><figcaption>{label}</figcaption></figure>)}</div>
-        </div>
-        <label>Usual size (optional)<input value={profile.usualSize} maxLength={40} onChange={e=>changeProfile('usualSize',e.target.value)} placeholder="Tops M, trousers 32…"/></label>
+        <details className="ax-precision-measurements">
+          <summary>
+            <span><strong>More accurate measurements (optional)</strong><small>Add chest, waist, hips and inseam for more precise recommendations.</small></span>
+          </summary>
+          <div className="ax-precision-body">
+            <p>Use a tape around your body. Do not enter flat garment widths here.</p>
+            <div className="ax-fit-grid">{precisionFields.map(([key,label]) => <label key={key}>{label} ({profile.unit})<input type="number" inputMode="decimal" min="0" step="0.01" value={profile[key] ?? ''} onChange={e=>changeProfile(key,e.target.value)}/></label>)}</div>
+          </div>
+        </details>
         <label>Styles you like<input value={profile.styles} maxLength={180} onChange={e=>changeProfile('styles',e.target.value)} placeholder="Minimal, Korean fits, streetwear…"/></label>
         <label>Colours you like<input value={profile.colors} maxLength={180} onChange={e=>changeProfile('colors',e.target.value)} placeholder="Black, sage, cream…"/></label>
         <label>Anything to avoid?<input value={profile.avoid} maxLength={180} onChange={e=>changeProfile('avoid',e.target.value)} placeholder="Large prints, tight sleeves…"/></label>
@@ -167,7 +168,7 @@ export default function StylistPanel({request,onClose}) {
       </div> : <>
         <div className="ax-transcript" ref={transcript} role="log" aria-label="Stylist conversation" aria-live="polite" aria-relevant="additions">
           {!messages.length && status?.available && <div className="ax-stylist-start">
-            <div className="ax-stylist-orb" aria-hidden="true"><span/><span/><span/></div>
+            <div className="ax-stylist-orb" aria-hidden="true"><span className="ax-stylist-fluid ax-stylist-fluid-a"/><span className="ax-stylist-fluid ax-stylist-fluid-b"/><span className="ax-stylist-fluid ax-stylist-fluid-c"/><Brand/></div>
             <p className="ax-fit-kicker">AX STYLIST</p>
             <h3>What are we building today?</h3>
             <p>Search the store, style a piece, check fit, or add a photo for colour and outfit advice.</p>
