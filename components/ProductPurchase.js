@@ -17,6 +17,10 @@ import {rememberRecentlyViewed} from '../lib/recently-viewed';
 import WishlistButton from './WishlistButton';
 import CompleteLook from './CompleteLook';
 
+// PDP VARIANT STATE OWNER
+// Keep size/colour selection centralized here so the gallery, price, shipping,
+// Add to Bag, Complete the Look and Stylist all observe the same Shopify variant.
+// If a variant bug appears, start here and in lib/product-variants.js.
 const PDP_WIDTHS=[320,480,600,720,800,960,1100,1200];
 
 export default function ProductPurchase({product,initialVariantId,chooseSize=false,restockAlertsEnabled=false,children,colourways=[],completeLookItems=[],afterProductInfo=null}) {
