@@ -15,15 +15,20 @@
 .ax-transcript{overflow-y:auto;overscroll-behavior:contain;flex:1;min-height:90px;padding:16px 18px 34px;scrollbar-width:thin;scrollbar-color:#b9bab3 transparent}
 .ax-status-line{font-size:10px;color:#777970;margin:2px 0}
 .ax-stylist-start{animation:ax-rise .34s cubic-bezier(.2,.8,.2,1);padding:1px 0 6px}
-.ax-stylist-start h3,.ax-fit-hero h3{font-size:24px;line-height:1.04;font-weight:400;letter-spacing:-.03em;margin:6px 0 9px;max-width:11ch}
+.ax-stylist-start h3,.ax-fit-hero h3{font-size:24px;line-height:1.04;font-weight:400;letter-spacing:-.03em;margin:6px 0 9px;max-width:11ch}.ax-fit-hero h3{max-width:none}
 .ax-stylist-start>p:not(.ax-fit-kicker),.ax-fit-hero p:last-child{font-size:11.5px;line-height:1.55;color:#5f6158;margin:0 0 15px;max-width:38ch}
 .ax-fit-kicker,.ax-section-label{font-size:7.5px!important;letter-spacing:.16em!important;text-transform:uppercase!important;color:#777970!important;margin:0!important}
-.ax-stylist-orb{position:relative;width:58px;height:58px;margin:0 0 14px;border:1px solid #cfd0c9;border-radius:50%;display:grid;place-items:center;background:#fbfbf8;overflow:hidden}
-.ax-stylist-orb:before{content:'AX';position:relative;z-index:2;font-size:12px;font-weight:600;letter-spacing:-.05em}
-.ax-stylist-orb span{position:absolute;border-radius:50%;background:#dfe5dc;animation:ax-orbit 5.6s ease-in-out infinite}
-.ax-stylist-orb span:nth-child(1){width:36px;height:36px;left:-10px;top:7px}.ax-stylist-orb span:nth-child(2){width:28px;height:28px;right:-6px;bottom:6px;animation-delay:-1.8s}.ax-stylist-orb span:nth-child(3){width:16px;height:16px;left:25px;bottom:-3px;animation-delay:-3.2s}
+.ax-stylist-orb{position:relative;width:66px;height:62px;margin:0 0 14px;border:1px solid #d2d3cc;border-radius:46% 54% 60% 40%/44% 38% 62% 56%;display:grid;place-items:center;background:linear-gradient(145deg,#fff 0%,#f4f4ef 54%,#fbfbf8 100%);box-shadow:inset 8px 8px 20px #ffffffd9,inset -7px -8px 18px #d9dbd240,0 7px 18px #18191610;overflow:hidden;isolation:isolate;animation:ax-blob-morph 7.4s ease-in-out infinite}
+.ax-stylist-orb:after{content:'';position:absolute;inset:5px 13px auto 8px;height:18px;border-radius:50%;background:linear-gradient(180deg,#ffffffd9,#ffffff12);filter:blur(.3px);z-index:1;pointer-events:none}
+.ax-stylist-orb .brand-mark{position:relative;z-index:4;width:32px;overflow:visible}
+.ax-stylist-orb .brand-mark img{filter:none;opacity:.96}
+.ax-stylist-fluid{position:absolute;border-radius:50%;background:#dfe3dc;filter:blur(.2px);opacity:.7;animation:ax-orbit 5.8s ease-in-out infinite}
+.ax-stylist-fluid-a{width:39px;height:34px;left:-10px;top:9px}
+.ax-stylist-fluid-b{width:31px;height:29px;right:-7px;bottom:7px;animation-delay:-1.9s}
+.ax-stylist-fluid-c{width:20px;height:18px;left:25px;bottom:-5px;animation-delay:-3.4s}
 @keyframes ax-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes ax-orbit{0%,100%{transform:translate3d(0,0,0) scale(1);opacity:.75}50%{transform:translate3d(9px,-6px,0) scale(1.12);opacity:.45}}
+@keyframes ax-blob-morph{0%,100%{border-radius:46% 54% 60% 40%/44% 38% 62% 56%;transform:rotate(-1deg)}50%{border-radius:58% 42% 45% 55%/38% 58% 42% 62%;transform:rotate(1.5deg) scale(1.015)}}
+@keyframes ax-orbit{0%,100%{transform:translate3d(0,0,0) scale(1);opacity:.72}50%{transform:translate3d(8px,-5px,0) scale(1.16);opacity:.42}}
 .ax-quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:410px}
 .ax-quick-actions button{min-height:66px;border:1px solid #d4d5ce;border-radius:3px;background:#fbfbf8;display:grid;grid-template-columns:30px 1fr;align-items:center;gap:10px;padding:10px 11px;text-align:left;font-size:10px;letter-spacing:.015em;color:#3e4039;transition:border-color .18s ease,background .18s ease,transform .18s ease}
 .ax-quick-actions button:hover,.ax-quick-actions button:focus-visible{border-color:#181916;background:#fff;transform:translateY(-1px)}
@@ -80,8 +85,17 @@
 .ax-guide-strip figure{margin:0;border:1px solid #d5d6cf;background:#f7f7f4;padding:5px;min-width:0}
 .ax-guide-strip svg{display:block;width:100%;height:auto;max-height:90px;color:#181916}
 .ax-guide-strip figcaption{text-align:center;font-size:7px;letter-spacing:.09em;text-transform:uppercase;color:#777970;margin-top:3px}
+.ax-precision-measurements{border:1px solid #d5d6cf;background:#fbfbf8;margin:0 0 14px;animation:ax-rise .28s ease both}
+.ax-precision-measurements summary{position:relative;display:flex;align-items:center;min-height:62px;padding:12px 42px 12px 13px;cursor:pointer;list-style:none}
+.ax-precision-measurements summary::-webkit-details-marker{display:none}
+.ax-precision-measurements summary:after{content:'+';position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:20px;font-weight:300;line-height:1}
+.ax-precision-measurements[open] summary:after{content:'−'}
+.ax-precision-measurements summary strong{display:block;font-size:10px;font-weight:500;letter-spacing:.015em;text-transform:none;color:#181916}
+.ax-precision-measurements summary small{display:block;margin-top:4px;font-size:8.5px;line-height:1.45;letter-spacing:0;text-transform:none;color:#777970}
+.ax-precision-body{border-top:1px solid #d5d6cf;padding:12px 12px 0}
+.ax-precision-body>p{font-size:9px!important;line-height:1.45;color:#777970;margin:0 0 12px}
 .ax-profile-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ax-profile-actions button{padding:10px 12px;min-height:42px;border:1px solid #cfd0c9;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase}.ax-profile-actions button:first-child:not(:disabled){background:#181916;color:#f7f7f4;border-color:#181916}
 .ax-fit-form .solid-button{margin-top:16px;font-size:8.5px;letter-spacing:.09em;width:100%;border-radius:1px}
 @media(max-width:700px){.ax-chat-dialog{width:100%;height:72dvh;max-height:72dvh;margin:auto auto 0;border:0;border-top:1px solid #c9cac3;border-radius:12px 12px 0 0;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -14px 44px #10110e22}.ax-chat-dialog::backdrop{background:#15161232;backdrop-filter:blur(2px)}.ax-chat-dialog .dialog-heading{min-height:50px;padding-left:15px}.ax-chat-dialog .dialog-heading:before{font-size:8px}.ax-chat-dialog .dialog-heading h2{font-size:9px}.ax-chat-dialog .dialog-heading .icon-button{width:44px;height:44px}.ax-chat-context{padding:7px 15px}.ax-chat-tabs{padding-left:15px}.ax-chat-tabs button{min-height:39px;margin-right:11px;padding-right:11px;font-size:8px}.ax-chat-tabs button:after{right:11px}.ax-chat-tabs .ax-clear-chat{font-size:7.5px}.ax-transcript{padding:14px 15px 30px}.ax-stylist-start h3,.ax-fit-hero h3{font-size:22px}.ax-quick-actions{gap:7px}.ax-quick-actions button{min-height:61px;padding:8px 9px;grid-template-columns:28px 1fr;gap:9px;font-size:9px}.ax-quick-icon{width:28px;height:28px}.ax-message{padding:11px 0}.ax-message p{font-size:12px;line-height:1.55}.ax-message-user{margin-left:34px}.ax-chat-product .product-image,.ax-chat-product .image-fallback{height:76px;width:58px;flex-basis:58px}.ax-composer{padding:8px 15px 9px}.ax-message-input textarea{font-size:16px}.ax-message-input button{width:44px;height:44px}.ax-chat-footer{display:none}.ax-fit-form{padding:16px 15px 28px}.ax-fit-form input:not([type=checkbox]),.ax-fit-form select{font-size:16px}.ax-chat-dialog .ax-small{font-size:8px}.ax-fit-form .ax-small{font-size:9px}.ax-checkbox{font-size:8px!important}.ax-guide-strip svg{max-height:78px}}
 @media(max-width:390px){.ax-chat-dialog{height:76dvh;max-height:76dvh}.ax-fit-grid,.ax-profile-actions{grid-template-columns:1fr}.ax-fit-steps,.ax-choice-row{grid-template-columns:1fr}.ax-guide-strip{grid-template-columns:repeat(2,1fr)}.ax-chat-tabs .ax-clear-chat{padding-right:3px}.ax-chat-tabs button{font-size:7.5px}.ax-quick-actions button{font-size:8.5px;min-height:58px}}
-@media(prefers-reduced-motion:reduce){.ax-working:before,.ax-stylist-orb span{animation:none}.ax-stylist-start,.ax-fit-card{animation:none}.ax-quick-actions button,.ax-message-input button{transition:none}}
+@media(prefers-reduced-motion:reduce){.ax-working:before,.ax-stylist-orb,.ax-stylist-fluid{animation:none}.ax-stylist-start,.ax-fit-card,.ax-precision-measurements{animation:none}.ax-quick-actions button,.ax-message-input button{transition:none}}
