@@ -31,7 +31,7 @@ function redirect(request,status) {
   url.hash='addresses';
   return NextResponse.redirect(url,303);
 }
-function safeText(value,max=120) { return String(value || '').trim().slice(0,max); }
+function safeText(value,max=120) { return String(value || '').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,max); }
 function validAddressId(value) { return /^gid:\/\/shopify\/CustomerAddress\/[A-Za-z0-9_-]+$/.test(String(value || '')); }
 async function ownsAddress(config,session,addressId) {
   const result=await queryCustomerAccount(config,session,addressOwnershipQuery);
