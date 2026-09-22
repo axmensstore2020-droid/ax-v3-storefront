@@ -240,3 +240,135 @@ html[data-ax-intro="play"] .ax-site-shell{
     transform:none!important;
   }
 }
+
+
+/* Shared AX particle loading language.
+   Built from lightweight DOM/CSS so route transitions do not need a video or WebGL runtime. */
+.ax-particle-loader{
+  --ax-loader-size:84px;
+  --ax-loader-dot:4px;
+  --ax-loader-radius:30px;
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  color:var(--ink,#181916);
+}
+.ax-particle-sphere{
+  position:relative;
+  width:var(--ax-loader-size);
+  height:var(--ax-loader-size);
+  perspective:360px;
+  transform-style:preserve-3d;
+  animation:ax-particle-sphere-drift 5.4s linear infinite;
+}
+.ax-particle-ring{
+  position:absolute;
+  inset:50%;
+  width:0;
+  height:0;
+  transform-style:preserve-3d;
+}
+.ax-particle-ring i{
+  position:absolute;
+  width:var(--ax-loader-dot);
+  height:var(--ax-loader-dot);
+  margin:calc(var(--ax-loader-dot) / -2);
+  border-radius:999px;
+  background:currentColor;
+  box-shadow:0 0 8px color-mix(in srgb,currentColor 16%,transparent);
+  opacity:.88;
+  transform:
+    rotate(calc(360deg / var(--ax-dot-count) * var(--ax-dot-index)))
+    translateY(calc(var(--ax-loader-radius) * -1))
+    translateZ(0);
+}
+.ax-particle-ring-a{transform:rotateX(70deg) rotateZ(8deg);animation:ax-particle-ring-a 2.7s linear infinite}
+.ax-particle-ring-b{transform:rotateY(68deg) rotateZ(-18deg);animation:ax-particle-ring-b 3.25s linear infinite reverse}
+.ax-particle-ring-c{transform:rotateX(42deg) rotateY(48deg);animation:ax-particle-ring-c 3.9s linear infinite}
+.ax-particle-ring-d{transform:rotateX(88deg) rotateY(18deg);animation:ax-particle-ring-d 2.35s linear infinite reverse}
+.ax-particle-axis{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:currentColor;
+  transform:translate(-50%,-50%);
+  opacity:.22;
+  box-shadow:0 0 16px currentColor;
+}
+.ax-particle-label{
+  font-size:10px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:color-mix(in srgb,currentColor 62%,transparent);
+}
+.ax-particle-loader-stylist{
+  --ax-loader-size:62px;
+  --ax-loader-dot:3px;
+  --ax-loader-radius:22px;
+  flex-direction:row;
+  gap:11px;
+}
+.ax-particle-loader-stylist .ax-particle-label{
+  font-size:9px;
+  letter-spacing:.08em;
+  text-transform:none;
+}
+.ax-route-loading{
+  min-height:clamp(360px,62dvh,720px);
+  display:grid;
+  place-items:center;
+  padding:80px var(--gutter);
+  opacity:0;
+  animation:ax-route-loader-reveal 220ms ease 160ms forwards;
+}
+.ax-route-loading .ax-particle-loader{
+  --ax-loader-size:96px;
+  --ax-loader-dot:4px;
+  --ax-loader-radius:35px;
+}
+@keyframes ax-particle-sphere-drift{
+  0%{transform:rotateZ(0deg) rotateY(0deg)}
+  50%{transform:rotateZ(6deg) rotateY(12deg)}
+  100%{transform:rotateZ(0deg) rotateY(360deg)}
+}
+@keyframes ax-particle-ring-a{
+  to{transform:rotateX(70deg) rotateZ(368deg)}
+}
+@keyframes ax-particle-ring-b{
+  to{transform:rotateY(68deg) rotateZ(342deg)}
+}
+@keyframes ax-particle-ring-c{
+  to{transform:rotateX(402deg) rotateY(48deg)}
+}
+@keyframes ax-particle-ring-d{
+  to{transform:rotateX(88deg) rotateY(378deg)}
+}
+@keyframes ax-route-loader-reveal{
+  from{opacity:0;transform:translate3d(0,2px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@media(max-width:700px){
+  .ax-route-loading{
+    min-height:56dvh;
+    padding:56px 20px 120px;
+  }
+  .ax-route-loading .ax-particle-loader{
+    --ax-loader-size:84px;
+    --ax-loader-radius:30px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .ax-particle-sphere,
+  .ax-particle-ring{
+    animation:none!important;
+  }
+  .ax-route-loading{
+    opacity:1;
+    animation:none!important;
+  }
+}
