@@ -7,6 +7,10 @@ import BackInStockAlert from './BackInStockAlert';
 import MeasurementFit from './MeasurementFit';
 import LinkedColourways from './LinkedColourways';
 
+// PURCHASE GATE
+// This component does not invent a variant. It receives ProductPurchase's selected
+// options and enables Add to Bag only when they resolve to a real available Shopify
+// variant. For option-matching bugs, inspect lib/product-variants.js before changing UI logic.
 export default function AddToCart({product,options,selected,variant,onSelect,colourways=[],beforeAddButton=null,afterAddButton=null,restockAlertsEnabled=false}) {
   const {addItem,busy,setOpen,cart,demoLines,demo,notice}=useCart(),variants=product.variants||[],shown=visibleOptions(options).filter(option=>!(colourways.length>1 && /colou?r/i.test(option.name||'') && option.values?.length===1));
   const [buying,setBuying]=useState(false);
