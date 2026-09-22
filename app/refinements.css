@@ -193,10 +193,10 @@ h1,h2,h3{font-weight:300}
 }
 .ax-island-bulge{
  position:absolute;
- left:4px;
- top:0;
- width:68px;
- height:72px;
+ left:-5px;
+ top:2px;
+ width:86px;
+ height:66px;
  display:grid;
  place-items:start center;
  overflow:visible;
@@ -204,7 +204,7 @@ h1,h2,h3{font-weight:300}
  padding-top:15px;
  border:1px solid rgba(255,255,255,.52);
  border-bottom-color:rgba(255,255,255,.08);
- border-radius:27px 27px 20px 20px / 30px 30px 16px 16px;
+ border-radius:32px 32px 20px 20px / 27px 27px 16px 16px;
  background:
   radial-gradient(78% 72% at 31% 12%,rgba(255,255,255,.82),rgba(255,255,255,.18) 36%,transparent 67%),
   linear-gradient(180deg,rgba(255,255,255,.21),rgba(255,255,255,.07) 56%,rgba(213,218,210,.08)),
@@ -251,9 +251,9 @@ h1,h2,h3{font-weight:300}
 .ax-island-bulge-highlight{
  position:absolute;
  z-index:1;
- width:49px;
- height:22px;
- left:7px;
+ width:58px;
+ height:20px;
+ left:10px;
  top:4px;
  border-radius:50%;
  background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(255,255,255,.03));
