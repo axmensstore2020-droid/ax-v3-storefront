@@ -10,7 +10,6 @@ import {useStylist} from './StylistProvider';
 import {AX_ISLAND_SLOT_COUNT,islandSlotX,nearestIslandIndex} from '../lib/island-navigation.js';
 
 const BEAD_WIDTH=72;
-const SLOT_LABELS=['Home','Explore','AX Stylist','Search','Profile'];
 const SLOT_ICONS=['home','explore',null,'search','profile'];
 
 function reducedMotion(){
