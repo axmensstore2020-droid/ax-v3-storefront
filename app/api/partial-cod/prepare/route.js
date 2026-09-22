@@ -9,7 +9,8 @@ export async function POST(request) {
   if(input.response)return input.response;
   const {body,guard}=input;
   if(!partialCodConfigured()) return shippingJson({ok:false,error:'Partial COD is not available yet.'},503,guard);
-  if(cartSessionConfigured() && !requestOwnsCart(request,body?.cartId)) return shippingJson({ok:false,error:'This bag session has expired. Please reopen your bag.'},403,guard);
+  if(!cartSessionConfigured()) return shippingJson({ok:false,error:'Bag security is temporarily unavailable.'},503,guard);
+  if(!requestOwnsCart(request,body?.cartId)) return shippingJson({ok:false,error:'This bag session has expired. Please reopen your bag.'},403,guard);
   try {
     const result=await preparePartialCod(body);
     return shippingJson({ok:true,...result},200,guard);
