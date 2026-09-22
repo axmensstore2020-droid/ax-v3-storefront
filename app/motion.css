@@ -318,15 +318,19 @@ html[data-ax-intro="play"] .ax-site-shell{
   letter-spacing:.08em;
   text-transform:none;
 }
-.ax-route-loading{
-  min-height:clamp(360px,62dvh,720px);
+.ax-route-transition-loader{
+  position:fixed;
+  inset:0;
+  z-index:900;
   display:grid;
   place-items:center;
   padding:80px var(--gutter);
+  background:color-mix(in srgb,var(--paper,#f7f7f4) 94%,transparent);
+  backdrop-filter:blur(3px);
   opacity:0;
-  animation:ax-route-loader-reveal 220ms ease 160ms forwards;
+  animation:ax-route-loader-reveal 180ms ease forwards;
 }
-.ax-route-loading .ax-particle-loader{
+.ax-route-transition-loader .ax-particle-loader{
   --ax-loader-size:96px;
   --ax-loader-dot:4px;
   --ax-loader-radius:35px;
@@ -353,11 +357,10 @@ html[data-ax-intro="play"] .ax-site-shell{
   to{opacity:1;transform:translate3d(0,0,0)}
 }
 @media(max-width:700px){
-  .ax-route-loading{
-    min-height:56dvh;
+  .ax-route-transition-loader{
     padding:56px 20px 120px;
   }
-  .ax-route-loading .ax-particle-loader{
+  .ax-route-transition-loader .ax-particle-loader{
     --ax-loader-size:84px;
     --ax-loader-radius:30px;
   }
@@ -367,7 +370,7 @@ html[data-ax-intro="play"] .ax-site-shell{
   .ax-particle-ring{
     animation:none!important;
   }
-  .ax-route-loading{
+  .ax-route-transition-loader{
     opacity:1;
     animation:none!important;
   }

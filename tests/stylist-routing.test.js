@@ -18,6 +18,12 @@ test('routine requests including photos and followups stay on Luna',()=>{
   }
   for(const message of ['What color is this?','What AX pants match this shirt?','Would black or beige work better?','What garment is this?']) assert.equal(routeAXStylistRequest({message,image:'photo'},config).tier,'luna',message);
 });
+test('catalog requests without a PDP product force live product search first',async()=>{
+  const f=fixture('Jacket',[final({message:'No jackets found.'})]);
+  await runStylist(f);
+  assert.deepEqual(f.inputs[0].tool_choice,{type:'function',name:'search_products'});
+  assert.equal(f.routes[0].intent,'catalog');
+});
 test('genuinely complex styling escalates, with medium reserved for compound complexity',()=>{
   for(const context of [{message:'Build an entire outfit using AX pieces'},{message:'Analyze my overall outfit',image:'photo'},{message:'Recommend sizing between M and L for chest 94 waist 78 hip 96'},{message:'Compare five shirts for the office, avoid navy'},{message:'Style an office outfit under 3000 for humid weather, avoid prints'}]) assert.equal(routeAXStylistRequest(context,config).tier,'terra',context.message);
   assert.equal(routeAXStylistRequest({message:'Build an entire outfit'},config).reasoningEffort,'low');

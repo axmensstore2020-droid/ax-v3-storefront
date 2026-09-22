@@ -1,8 +1,9 @@
 'use client';
-import {useEffect,useRef} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {usePathname} from 'next/navigation';
 import {animate} from 'motion';
 import {AX_MOTION} from '../lib/motion';
+import AXParticleLoader from './AXParticleLoader';
 
 const RETURN_KEY='ax_motion_return_v1';
 const MAX_RETURN_AGE=30*60*1000;
@@ -30,7 +31,8 @@ function restoreListingScroll(){
 
 export default function RouteMotion(){
   const pathname=usePathname();
-  const initial=useRef(true),historyTraversal=useRef(false),active=useRef(new Set());
+  const [routeLoading,setRouteLoading]=useState(false);
+  const initial=useRef(true),historyTraversal=useRef(false),active=useRef(new Set()),loaderTimer=useRef(null),loaderSafety=useRef(null);
 
   useEffect(()=>{
     function track(controls){
@@ -47,6 +49,15 @@ export default function RouteMotion(){
       let url;
       try{url=new URL(anchor.href,window.location.href);}catch{return;}
       if(url.origin!==window.location.origin) return;
+
+      if(url.pathname!==window.location.pathname){
+        clearTimeout(loaderTimer.current);
+        clearTimeout(loaderSafety.current);
+        loaderTimer.current=setTimeout(()=>{
+          setRouteLoading(true);
+          loaderSafety.current=setTimeout(()=>setRouteLoading(false),6000);
+        },160);
+      }
 
       const card=anchor.closest('.product-card');
       if(!card || !/^\/products\/[^/]+\/?$/.test(url.pathname)) return;
@@ -92,12 +103,17 @@ export default function RouteMotion(){
     return()=>{
       document.removeEventListener('click',onClick,true);
       window.removeEventListener('popstate',onPopState);
+      clearTimeout(loaderTimer.current);
+      clearTimeout(loaderSafety.current);
       for(const controls of active.current) controls.stop?.();
       active.current.clear();
     };
   },[]);
 
   useEffect(()=>{
+    clearTimeout(loaderTimer.current);
+    clearTimeout(loaderSafety.current);
+    setRouteLoading(false);
     if(initial.current){
       initial.current=false;
       return;
@@ -129,5 +145,5 @@ export default function RouteMotion(){
     return()=>cancelAnimationFrame(frame);
   },[pathname]);
 
-  return null;
+  return routeLoading ? <div className="ax-route-transition-loader" aria-busy="true"><AXParticleLoader variant="route" label="Loading AX" /></div> : null;
 }
