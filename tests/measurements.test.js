@@ -43,3 +43,14 @@ test('shirt length is retained in the size chart schema',()=>{
  assert.equal(result.rows.S.length,68);
  assert.equal(result.rows.M.length,70);
 });
+
+test('legacy centimetre fields survive normalization without guessing crotch meaning',()=>{
+ const result=normalizeMeasurementRows({M:{waist_cm:80,length_cm:105,knee_cm:44,crotch_cm:62,thighs_cm:[40,54]}},{unit:'cm',basis:'circumference',category:'jeans'});
+ assert.deepEqual(result.rows.M,{waist:80,outseam:105,knee:44,crotch:62,thigh:[40,54]});
+});
+test('only circumference widths double; shoulder, length and rise never double',()=>{
+ const result=normalizeMeasurementRows({M:{waist:40,knee:22,front_rise:30,outseam:105}},{unit:'cm',basis:'flat',category:'bottom'});
+ assert.deepEqual(result.rows.M,{waist:80,knee:44,front_rise:30,outseam:105});
+ assert.equal(measurementCategory({title:'Full Sleeve Linen Shirt'}),'shirt');
+ assert.equal(measurementCategory({title:'Brushed Cotton Sweatpants'}),'bottom');
+});

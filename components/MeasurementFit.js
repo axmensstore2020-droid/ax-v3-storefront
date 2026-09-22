@@ -4,24 +4,18 @@ import {createPortal} from 'react-dom';
 import {StylistButton} from './StylistProvider';
 import Icon from './Icon';
 import MeasurementIllustration from './MeasurementIllustrations';
+import {GUIDE_KINDS,measurementGuideKind,measurementInstruction} from '../lib/measurement-guide';
 import styles from './MeasurementFit.module.css';
 import {trackStoreEvent} from '../lib/store-analytics';
 import {canonicalMeasurementField,convertMeasurementValue,formatMeasurementDisplay,measurementCategory,measurementFieldsForProduct,measurementLabel,normalizeMeasurementRows} from '../lib/measurements';
 
-const GUIDE_COPY={
- tee:{title:'Measure a T-shirt you already own',sub:'Lay it flat · Measure in cm · Do not stretch',note:'Chest is entered as full garment circumference: pit-to-pit ×2. Other measurements are entered as measured.'},
- shirt:{title:'Measure a shirt you already own',sub:'Lay it flat · Measure in cm · Do not stretch',note:'Chest is entered as full garment circumference: pit-to-pit ×2. Other measurements are entered as measured.'},
- hoodie:{title:'Measure a hoodie you already own',sub:'Lay it flat · Measure in cm · Do not stretch',note:'Chest is entered as full garment circumference: pit-to-pit ×2. Other measurements are entered as measured.'},
- jacket:{title:'Measure a jacket you already own',sub:'Close it naturally · Lay flat · Measure in cm',note:'Chest is entered as full garment circumference: pit-to-pit ×2. Other measurements are entered as measured.'},
- bottom:{title:'Measure trousers / jeans / cargo',sub:'Lay flat · Waist relaxed · Measure in cm',note:'Waist, hip, thigh and leg opening are entered as full garment circumference: flat width ×2. Rise, inseam and outseam are entered as measured.'},
- shorts:{title:'Measure shorts you already own',sub:'Lay flat · Waist relaxed · Measure in cm',note:'Waist, hip, thigh and leg opening are entered as full garment circumference: flat width ×2. Rise, inseam and outseam are entered as measured.'}
-};
 
 function sizeOrder(product,measurements,fits){const optionValues=product.options?.find(option=>/size/i.test(option.name))?.values||[];return [...new Set([...optionValues,...Object.keys(measurements||{}),...Object.keys(fits||{})])];}
 function observedColumns(measurements){const columns=[];Object.values(measurements||{}).forEach(row=>{if(!row||typeof row!=='object'||Array.isArray(row))return;Object.keys(row).forEach(raw=>{const key=canonicalMeasurementField(raw);if(!columns.includes(key))columns.push(key);});});return columns;}
 function hasValue(value){return value!==undefined&&value!==null&&value!=='';}
 
 export default function MeasurementFit({product,selectedOptions={},inline=false}){
+ const [activeField,setActiveField]=useState('');
  const [unit,setUnit]=useState('cm');
  const [open,setOpen]=useState(false);
  const [tab,setTab]=useState('chart');
@@ -31,15 +25,19 @@ export default function MeasurementFit({product,selectedOptions={},inline=false}
  const measurements=normalized.rows||{};
  const sizes=sizeOrder(product,measurements,product.sizeFits||{});
  const preferred=measurementFieldsForProduct(product),observed=observedColumns(measurements);
- const columns=(preferred.length?preferred:observed).filter(field=>sizes.some(size=>hasValue(measurements[size]?.[field])));
+ const columns=[...new Set([...preferred,...observed])].filter(field=>sizes.some(size=>hasValue(measurements[size]?.[field])));
  const hasMeasurements=columns.length>0&&sizes.some(size=>measurements[size]&&typeof measurements[size]==='object');
  const hasNotes=sizes.some(size=>product.sizeFits?.[size]?.text);
  const hasFitContent=Boolean(product.fit||hasNotes||product.modelHeight||product.modelSize);
- const canMeasure=Boolean(category&&GUIDE_COPY[category]);
+ const kind=measurementGuideKind(product),guide=GUIDE_KINDS[kind];
+ const canMeasure=Boolean(guide);
+ const fields=columns.length?columns:(guide?.fields||[]);
+ const field=fields.includes(activeField)?activeField:fields[0];
+ const instruction=measurementInstruction(field,normalized.basis);
  const canConvert=normalized.unit==='cm',displayUnit=canConvert?unit:normalized.unit||product.measurementUnit||'';
  const fullCircumference=normalized.basis==='circumference';
  const scrollTable=columns.length>4;
- const guide=GUIDE_COPY[category];
+
 
  useEffect(()=>setMounted(true),[]);
  useEffect(()=>{
@@ -82,7 +80,7 @@ export default function MeasurementFit({product,selectedOptions={},inline=false}
        <tbody>{sizes.filter(size=>measurements[size]&&typeof measurements[size]==='object').map(size=><tr key={size}><th scope="row">{size}</th>{columns.map(field=><td key={field}>{formatMeasurementDisplay(canConvert?convertMeasurementValue(measurements[size]?.[field],unit):measurements[size]?.[field])}</td>)}</tr>)}</tbody>
       </table>
      </div>
-     <p className={styles.measurementNote}>{fullCircumference?'Chest, waist, hip, thigh and leg opening are shown as full garment circumference where applicable.':'Compare the chart with a similar garment you own before choosing a size.'}</p>
+     <p className={styles.measurementNote}>{fullCircumference?'Chest, waist, hip, thigh, knee and leg opening are full garment circumferences where present. These chart values are already doubled; never double them again.':normalized.basis==='flat'?'Widths are flat measurements. Do not double them.':'Measurement basis is unconfirmed. Ask AX before converting widths to circumferences.'}</p>
      <StylistButton className={styles.stylistButton} mode="size" product={{title:product.title,handle:product.handle,selectedOptions}}><span>Find my size with AX</span><Icon name="arrow"/></StylistButton>
     </div>}
     {tab==='fit'&&hasFitContent&&<div className={styles.fitPanel}>
@@ -95,9 +93,18 @@ export default function MeasurementFit({product,selectedOptions={},inline=false}
       <StylistButton className={styles.stylistButton} mode="size" product={{title:product.title,handle:product.handle,selectedOptions}}><span>Find my size with AX</span><Icon name="arrow"/></StylistButton>
     </div>}
     {tab==='measure'&&canMeasure&&<div className={styles.measurePanel}>
-     <div className={styles.measureHeading}><p className={styles.measureTitle}>{guide.title}</p><p>{guide.sub}</p></div>
-     <div className={styles.diagramCard}><MeasurementIllustration category={category}/><p>{guide.note}</p></div>
-     <div className={styles.steps} aria-label="Measurement steps"><span><b>1</b>Lay garment flat</span><span><b>2</b>Do not stretch</span><span><b>3</b>Use cm</span></div>
+     <div className={styles.measureHeading}><p className={styles.measureTitle}>{guide.name} · How to measure</p><p>Compare a similar item you own. Lay it flat without stretching.</p></div>
+     <div className={styles.measureChoices} role="group" aria-label="Choose a measurement">
+      {fields.map(item=><button type="button" key={item} aria-pressed={field===item} onClick={()=>setActiveField(item)}>{measurementInstruction(item,normalized.basis).label}</button>)}
+     </div>
+     <div className={styles.diagramCard}>
+      <MeasurementIllustration category={kind} field={field} label={guide.name}/>
+      <div className={styles.measureDetail} aria-live="polite"><div><strong>{instruction.label}</strong><span>{instruction.factor}</span></div><p>{instruction.text}</p><p>{instruction.note}</p>
+       {Object.values(measurements).some(row=>Array.isArray(row?.[field]))&&<p>Multiple values are stored for this measurement. Confirm with AX whether they describe a range or separate measuring positions.</p>}
+      </div>
+     </div>
+     <p className={styles.measurementNote}>{hasMeasurements?'Only fields present in this product’s size chart are shown.':'This is a measuring guide. Product measurements have not been supplied yet.'} Measure in {displayUnit||'the unit specified by AX'}; use the same unit as the chart. These are item measurements, not body measurements.</p>
+
     </div>}
    </div>
   </section>
