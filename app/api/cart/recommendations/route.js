@@ -9,7 +9,6 @@ const HANDLE_RE=/^[a-z0-9][a-z0-9-]{0,127}$/;
 
 function safeProduct(product){
   return {
-    id:product.id,
     handle:product.handle,
     title:product.title,
     image:product.image,
