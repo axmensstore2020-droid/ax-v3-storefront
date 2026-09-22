@@ -38,7 +38,8 @@ export async function POST(request) {
  const budget=await reserveProviderBudget('cart',{limit:Math.min(100000,Math.max(500,Number(process.env.AX_CART_DAILY_LIMIT)||10000))});
  if(!budget.allowed) return respond({ok:false,error:'Bag updates are temporarily limited. Please try again later.'},429,guard);
  const {action,cartId,merchandiseId,quantity=1,lineId}=body;
- if(!['create','createMany'].includes(action) && cartSessionConfigured() && !requestOwnsCart(request,cartId)) return respond({ok:false,code:'CART_OWNERSHIP',error:'This bag belongs to another browser session. Please start a new bag.'},403,guard);
+ if(!['create','createMany'].includes(action) && !cartSessionConfigured()) return respond({ok:false,code:'CART_PROTECTION_UNAVAILABLE',error:'Bag security is temporarily unavailable. Please start a new bag later.'},503,guard);
+ if(!['create','createMany'].includes(action) && !requestOwnsCart(request,cartId)) return respond({ok:false,code:'CART_OWNERSHIP',error:'This bag belongs to another browser session. Please start a new bag.'},403,guard);
  const batch=['createMany','addMany'].includes(action)?body.lines.map(item=>({merchandiseId:item.merchandiseId,quantity:item.quantity})):null;
  const variables=action==='get'?{id:cartId}:action==='remove'?{cartId,lineIds:[lineId]}:action==='update'?{cartId,lines:[{id:lineId,quantity}]}:batch?{...(action==='addMany'?{cartId}:{}),lines:batch}:{...(action==='add'?{cartId}:{}),lines:[{merchandiseId,quantity}]};
  // Enable only a header overwritten by the trusted hosting proxy.

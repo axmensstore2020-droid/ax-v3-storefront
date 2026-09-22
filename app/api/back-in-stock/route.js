@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server';
 import {createDatabase,databaseConfigured} from '../../../lib/stylist/database.js';
 import {getProduct} from '../../../lib/shopify.js';
 import {readLimitedJson,reserveRestockBurst,RESTOCK_GUARD_COOKIE,sameOriginRequest} from '../../../lib/request-security.js';
+import {assertAllowedKeys} from '../../../lib/request-body.js';
 import {normalizeRestockEmail,normalizeRestockHandle,normalizeRestockVariantId,restockVariantLabel,soldOutVariantForProduct} from '../../../lib/restock-alerts.js';
 import {restockAlertSignupConfigured,restockSecret} from '../../../lib/restock-config.js';
 import {createRestockVerification} from '../../../lib/restock-verification.js';
@@ -24,6 +25,7 @@ export async function POST(request){
 
   try{
     const body=await readLimitedJson(request,2048);
+    assertAllowedKeys(body,['email','productHandle','variantId'],'restock');
     const email=normalizeRestockEmail(body?.email);
     const productHandle=normalizeRestockHandle(body?.productHandle);
     const variantId=normalizeRestockVariantId(body?.variantId);

@@ -29,8 +29,10 @@ test('photo inputs reject arbitrary URLs, SVGs, MIME spoofing and excessive payl
   assert.throws(()=>validateImage('data:image/svg+xml;base64,PHN2Zz4='));
   assert.throws(()=>validateImage('data:image/png;base64,'+Buffer.from('not a real image').toString('base64')));
   assert.throws(()=>validateImage('data:image/png;base64,'+Buffer.alloc(1500001).toString('base64')));
-  const png=Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),Buffer.alloc(12)]);
+  const png=Buffer.alloc(24);Buffer.from([137,80,78,71,13,10,26,10]).copy(png);png.write('IHDR',12,'ascii');png.writeUInt32BE(1024,16);png.writeUInt32BE(1024,20);
   assert.ok(validateImage('data:image/png;base64,'+png.toString('base64')));
+  const giant=Buffer.from(png);giant.writeUInt32BE(10000,16);giant.writeUInt32BE(10000,20);
+  assert.throws(()=>validateImage('data:image/png;base64,'+giant.toString('base64')),/dimensions/);
 });
 test('catalog search quotes customer words instead of accepting search operators',()=>{
   assert.equal(searchExpression('linen',2000),'available_for_sale:true AND ("linen") AND variants.price:<=2000');

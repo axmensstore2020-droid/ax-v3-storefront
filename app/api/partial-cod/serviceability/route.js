@@ -1,6 +1,7 @@
 import {checkDelhiveryPincode,normalizePincode} from '../../../../lib/delhivery.js';
 import {partialCodConfigured} from '../../../../lib/partial-cod-server.js';
 import {readShippingPost,shippingJson} from '../../../../lib/shipping-route.js';
+import {assertAllowedKeys} from '../../../../lib/request-body.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -9,6 +10,7 @@ export async function POST(request) {
   const input=await readShippingPost(request,{maxBytes:1024,limit:18,rateError:'Too many COD checks. Please try again shortly.'});
   if(input.response)return input.response;
   const {body,guard}=input;
+  try{assertAllowedKeys(body,['pincode'],'serviceability');}catch(error){return shippingJson({ok:false,error:error.message},400,guard);}
   if(!partialCodConfigured()) return shippingJson({ok:false,error:'Partial COD is not available yet.'},503,guard);
   const pincode=normalizePincode(body?.pincode);
   if(!pincode) return shippingJson({ok:false,error:'Enter a valid 6-digit pincode.'},400,guard);

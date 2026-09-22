@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {readLimitedJson,reserveCartBurst,sameOriginRequest,CART_GUARD_COOKIE} from '../lib/request-security.js';
+import {reserveAccountBurst,reserveCartBurst,reserveCatalogBurst,sameOriginRequest,CART_GUARD_COOKIE,CATALOG_GUARD_COOKIE} from '../lib/request-security.js';
+import {assertAllowedFormKeys,assertAllowedKeys,readLimitedForm,readLimitedJson} from '../lib/request-body.js';
 
 test('same-origin guard accepts AX and rejects cross-site requests',()=>{
  const good=new Request('https://axstore.in/api/cart',{method:'POST',headers:{origin:'https://axstore.in','sec-fetch-site':'same-origin'}});
@@ -27,4 +28,35 @@ test('cart burst limiter blocks repeated requests in a window',()=>{
  const blocked=reserveCartBurst(request,{limit:10,windowMs:60_000,now:2000});
  assert.equal(blocked.allowed,false);
  assert.ok(blocked.retryAfter>0);
+});
+
+test('server form parser enforces encoding, size and an explicit field allowlist',async()=>{
+ const form=new URLSearchParams({firstName:'AX',lastName:'Store'});
+ const request=new Request('https://axstore.in/account/actions/profile',{method:'POST',body:form});
+ const parsed=await readLimitedForm(request,100);
+ assert.equal(parsed.get('firstName'),'AX');
+ assert.doesNotThrow(()=>assertAllowedFormKeys(parsed,['firstName','lastName']));
+ parsed.set('role','admin');
+ assert.throws(()=>assertAllowedFormKeys(parsed,['firstName','lastName']),/Unsupported/);
+ const multipart=new Request('https://axstore.in/account/actions/profile',{method:'POST',headers:{'content-type':'multipart/form-data; boundary=x'},body:'--x--'});
+ await assert.rejects(()=>readLimitedForm(multipart,100),/form data/);
+});
+
+test('JSON allowlists reject mass-assignment fields',()=>{
+ assert.doesNotThrow(()=>assertAllowedKeys({message:'shirt',consent:true},['message','consent'],'Stylist'));
+ assert.throws(()=>assertAllowedKeys({message:'shirt',consent:true,role:'admin'},['message','consent'],'Stylist'),/Unsupported Stylist field/);
+});
+
+test('catalog burst limiter blocks repeated public catalog reads',()=>{
+ const token=randomUUID();
+ const request=new Request('https://axstore.in/api/wishlist',{headers:{cookie:`${CATALOG_GUARD_COOKIE}=${token}`}});
+ for(let i=0;i<10;i++) assert.equal(reserveCatalogBurst(request,{limit:10,windowMs:60_000,now:2000+i}).allowed,true);
+ assert.equal(reserveCatalogBurst(request,{limit:10,windowMs:60_000,now:3000}).allowed,false);
+});
+
+test('account mutation limiter is bound to the signed-in session cookie',()=>{
+ const request=new Request('https://axstore.in/account/actions/profile',{headers:{cookie:'ax_customer_account_session=opaque-session-token'}});
+ for(let i=0;i<5;i++) assert.equal(reserveAccountBurst(request,{limit:5,windowMs:60_000,now:4000+i}).allowed,true);
+ assert.equal(reserveAccountBurst(request,{limit:5,windowMs:60_000,now:5000}).allowed,false);
+ assert.equal(reserveAccountBurst(new Request('https://axstore.in/account/actions/profile'),{limit:5,now:5000}).allowed,false);
 });

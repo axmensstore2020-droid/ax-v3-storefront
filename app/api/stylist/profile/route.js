@@ -2,7 +2,7 @@ import {json,stylistConfigured,reserveRequest} from '../../../../lib/stylist/htt
 import {getSession,sameOrigin} from '../../../../lib/stylist/security.js';
 import {createDatabase,databaseConfigured} from '../../../../lib/stylist/database.js';
 import {normalizeProfile,CONSENT_VERSION} from '../../../../lib/stylist/validation.js';
-import {readLimitedJson} from '../../../../lib/request-body.js';
+import {assertAllowedKeys,readLimitedJson} from '../../../../lib/request-body.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,6 +21,7 @@ export async function POST(request) {
   let profile;
   try {
     const body = await readLimitedJson(request,5000);
+    assertAllowedKeys(body,['profile','consent','consentVersion'],'profile');
     if (body?.consent !== true || body?.consentVersion !== CONSENT_VERSION) throw new Error('Please agree to save your measurements and preferences.');
     profile = normalizeProfile(body.profile);
   } catch (error) { return json({ok:false,error:error.message},400); }

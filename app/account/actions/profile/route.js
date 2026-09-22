@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {customerAccountConfig,queryCustomerAccount,readAccountSession,sessionExpired} from '../../../../lib/customer-account.js';
-import {sameOriginRequest} from '../../../../lib/request-security.js';
+import {reserveAccountBurst,sameOriginRequest} from '../../../../lib/request-security.js';
+import {assertAllowedFormKeys,readLimitedForm} from '../../../../lib/request-body.js';
 
 const mutation=`mutation AXCustomerUpdate($input: CustomerUpdateInput!) {
   customerUpdate(input: $input) {
@@ -15,7 +16,7 @@ function redirect(request,status,hash='profile') {
   url.hash=hash;
   return NextResponse.redirect(url,303);
 }
-function safeText(value,max=80) { return String(value || '').trim().slice(0,max); }
+function safeText(value,max=80) { return String(value || '').replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,max); }
 
 export async function POST(request) {
   const config=customerAccountConfig();
@@ -28,7 +29,12 @@ export async function POST(request) {
     url.searchParams.set('returnTo','/account#profile');
     return NextResponse.redirect(url,303);
   }
-  const form=await request.formData();
+  const burst=reserveAccountBurst(request);
+  if(!burst.allowed) return new NextResponse('Too many account changes. Please try again shortly.',{status:429,headers:{'Retry-After':String(burst.retryAfter)}});
+  let form;
+  try{
+    form=assertAllowedFormKeys(await readLimitedForm(request,4096),['firstName','lastName']);
+  }catch{return redirect(request,'profile-error');}
   const input={firstName:safeText(form.get('firstName')),lastName:safeText(form.get('lastName'))};
   try {
     const result=await queryCustomerAccount(config,session,mutation,{input});

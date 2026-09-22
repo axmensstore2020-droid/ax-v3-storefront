@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {reportServerError} from '../../../../lib/error-monitoring.js';
 import {ERROR_GUARD_COOKIE,readLimitedJson,reserveErrorBurst,sameOriginRequest} from '../../../../lib/request-security.js';
+import {assertAllowedKeys} from '../../../../lib/request-body.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -18,7 +19,7 @@ export async function POST(request){
   const guard=reserveErrorBurst(request,{limit:12,windowMs:60_000});
   if(!guard.allowed) return json({ok:false},429,guard);
   let body;
-  try{body=await readLimitedJson(request,16000);}catch{return json({ok:false},400,guard);}
+  try{body=await readLimitedJson(request,16000);assertAllowedKeys(body,['message','name','stack','path','digest'],'error report');}catch{return json({ok:false},400,guard);}
   const error=new Error(safe(body?.message,1000) || 'Client application error');
   error.name=safe(body?.name,120) || 'ClientError';
   const stack=safe(body?.stack,12000);

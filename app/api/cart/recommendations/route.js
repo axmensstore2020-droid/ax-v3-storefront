@@ -1,6 +1,6 @@
-import {NextResponse} from 'next/server';
 import {getProducts} from '../../../../lib/shopify.js';
 import {complementaryProducts} from '../../../../lib/merchandising.js';
+import {catalogJson,guardCatalogRead} from '../../../../lib/catalog-route.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -9,7 +9,6 @@ const HANDLE_RE=/^[a-z0-9][a-z0-9-]{0,127}$/;
 
 function safeProduct(product){
   return {
-    id:product.id,
     handle:product.handle,
     title:product.title,
     image:product.image,
@@ -22,13 +21,14 @@ function safeProduct(product){
 }
 
 export async function GET(request){
-  const url=new URL(request.url);
+  const access=await guardCatalogRead(request,{limit:60});if(access.response)return access.response;
+  const {guard}=access,url=new URL(request.url);
   const handles=(url.searchParams.get('handles')||'')
     .split(',')
     .map(value=>value.trim().toLowerCase())
     .filter(value=>HANDLE_RE.test(value))
     .slice(0,5);
-  if(!handles.length) return NextResponse.json({items:[]},{headers:{'Cache-Control':'no-store, private'}});
+  if(!handles.length) return catalogJson({items:[]},200,guard);
 
   try{
     const catalog=await getProducts(100);
@@ -55,8 +55,8 @@ export async function GET(request){
       }
     }
 
-    return NextResponse.json({items:picked},{headers:{'Cache-Control':'no-store, private'}});
+    return catalogJson({items:picked},200,guard);
   }catch{
-    return NextResponse.json({items:[]},{headers:{'Cache-Control':'no-store, private'}});
+    return catalogJson({items:[]},200,guard);
   }
 }

@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {confirmPartialCod,partialCodConfigured} from '../../../../lib/partial-cod-server.js';
 import {SHIPPING_GUARD_COOKIE,readLimitedJson,reserveShippingBurst,sameOriginRequest} from '../../../../lib/request-security.js';
+import {assertAllowedKeys} from '../../../../lib/request-body.js';
 
 const MAX_BODY_BYTES=32768;
 
@@ -24,7 +25,7 @@ export async function POST(request) {
   if(!guard.allowed) return respond({ok:false,error:'Too many checkout attempts. Please wait a moment and try again.'},429,guard);
   if(!partialCodConfigured()) return respond({ok:false,error:'Partial COD is not available yet.'},503,guard);
   let body;
-  try {body=await readLimitedJson(request,MAX_BODY_BYTES);} catch(error) {return respond({ok:false,error:error.message || 'Invalid request.'},400,guard);}
+  try {body=await readLimitedJson(request,MAX_BODY_BYTES);assertAllowedKeys(body,['sessionToken','razorpayOrderId','razorpayPaymentId','razorpaySignature'],'payment confirmation');} catch(error) {return respond({ok:false,error:error.message || 'Invalid request.'},400,guard);}
   try {
     const result=await confirmPartialCod(body);
   return respond({ok:true,...result},200,guard);

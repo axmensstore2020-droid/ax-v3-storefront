@@ -3,6 +3,7 @@ import {NextResponse} from 'next/server';
 import {MARKETING_CONSENT_COOKIE,MARKETING_GRANTED} from '../../../../lib/marketing.js';
 import {createDatabase,databaseConfigured} from '../../../../lib/stylist/database.js';
 import {ANALYTICS_GUARD_COOKIE,cookieValue,readLimitedJson,reserveAnalyticsBurst,sameOriginRequest} from '../../../../lib/request-security.js';
+import {assertAllowedKeys} from '../../../../lib/request-body.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -39,6 +40,7 @@ export async function POST(request){
   if(!burst.allowed) return json({ok:false,error:'Too many requests.'},429,{...headers,'Retry-After':String(burst.retryAfter)});
   try{
     const body=await readLimitedJson(request,4096);
+    assertAllowedKeys(body,['eventName','path','productHandle','value','currency','metadata'],'analytics');
     const eventName=safeText(body?.eventName,40);
     if(!EVENTS.has(eventName)) return json({ok:false,error:'Unsupported event.'},400,headers);
     const path=safeText(body?.path,512);

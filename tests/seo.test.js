@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {cleanDescription,collectionJsonLd,pageMetadata,productGroupJsonLd,productJsonLd,websiteJsonLd} from '../lib/seo.js';
+import {cleanDescription,collectionJsonLd,jsonLd,pageMetadata,productGroupJsonLd,productJsonLd,websiteJsonLd} from '../lib/seo.js';
 
 test('SEO descriptions are plain text and bounded',()=>{
  const value=cleanDescription('<p>Premium <strong>linen</strong> shirt</p> '.repeat(20));
@@ -76,4 +76,10 @@ test('aggregate review schema appears only with genuine rating and count data',(
  assert.deepEqual(rated.aggregateRating,{'@type':'AggregateRating',ratingValue:'4.7',reviewCount:'18',bestRating:'5',worstRating:'1'});
  const unrated=productJsonLd({handle:'new-shirt',title:'New Shirt',price:999,currency:'INR',availableForSale:true});
  assert.equal('aggregateRating' in unrated,false);
+});
+
+test('JSON-LD serialization cannot break out of its script element',()=>{
+ const serialized=jsonLd({name:'</script><script>alert(1)</script>'});
+ assert.equal(serialized.includes('</script>'),false);
+ assert.match(serialized,/\\u003c\/script>/);
 });

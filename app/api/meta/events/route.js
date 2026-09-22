@@ -2,6 +2,7 @@ import {NextResponse} from 'next/server';
 import {MARKETING_CONSENT_COOKIE,MARKETING_GRANTED} from '../../../../lib/marketing.js';
 import {metaCapiConfigured,normalizeMetaEvent,sendMetaEvent} from '../../../../lib/meta.js';
 import {META_GUARD_COOKIE,cookieValue,readLimitedJson,reserveMetaBurst,sameOriginRequest} from '../../../../lib/request-security.js';
+import {assertAllowedKeys} from '../../../../lib/request-body.js';
 
 export const dynamic='force-dynamic';
 
@@ -18,6 +19,7 @@ export async function POST(request){
  if(!burst.allowed) return json({ok:false,error:'Too many requests.'},429,{...headers,'Retry-After':String(burst.retryAfter)});
  try{
   const body=await readLimitedJson(request,8192);
+  assertAllowedKeys(body,['eventName','eventId','eventSourceUrl','customData'],'marketing');
   const event=normalizeMetaEvent(body);
   await sendMetaEvent(request,event);
   return json({ok:true},200,headers);
