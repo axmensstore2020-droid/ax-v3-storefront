@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server';
 import {customerAccountConfig,queryCustomerAccount,readAccountSession,sessionExpired} from '../../../../lib/customer-account.js';
-import {sameOriginRequest} from '../../../../lib/request-security.js';
+import {reserveAccountBurst,sameOriginRequest} from '../../../../lib/request-security.js';
 import {assertAllowedFormKeys,readLimitedForm} from '../../../../lib/request-body.js';
 
 const createMutation=`mutation AXAddressCreate($address: CustomerAddressInput!, $defaultAddress: Boolean) {
@@ -63,6 +63,8 @@ export async function POST(request) {
     url.searchParams.set('returnTo','/account#addresses');
     return NextResponse.redirect(url,303);
   }
+  const burst=reserveAccountBurst(request);
+  if(!burst.allowed) return new NextResponse('Too many account changes. Please try again shortly.',{status:429,headers:{'Retry-After':String(burst.retryAfter)}});
 
   let form;
   try{
