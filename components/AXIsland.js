@@ -9,7 +9,7 @@ import Dialog from './Dialog';
 import {useStylist} from './StylistProvider';
 import {AX_ISLAND_SLOT_COUNT,islandSlotX,nearestIslandIndex} from '../lib/island-navigation.js';
 
-const BEAD_WIDTH=72;
+const BEAD_WIDTH=76;
 const SLOT_ICONS=['home','explore',null,'search','profile'];
 
 function reducedMotion(){
@@ -223,9 +223,8 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
    onPointerCancel={cancelBeadDrag}
    aria-hidden="true"
   >
-   <span className="ax-island-bead-neck" aria-hidden="true"/>
-   <span className="ax-island-bead-sphere" aria-hidden="true">
-    <span className="ax-island-bead-shine"/>
+   <span className="ax-island-bulge" aria-hidden="true">
+    <span className="ax-island-bulge-highlight"/>
     <span className="ax-island-bead-icon">{visualIndex===2?<Brand/>:<Icon name={beadIcon} size={23}/>}</span>
    </span>
   </span>
