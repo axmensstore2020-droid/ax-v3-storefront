@@ -65,6 +65,10 @@ The storefront reports unhandled Next.js request failures and React error-bounda
 
 Set `SENTRY_DSN`, `AX_ERROR_ENVIRONMENT` and optionally `AX_ERROR_RELEASE` in Hostinger. Create alert rules in Sentry for new production issues and error-volume spikes.
 
+## Developer handoff
+
+When handing the project to a developer for a bug or maintenance task, start with [docs/DEVELOPER-GUIDE.md](docs/DEVELOPER-GUIDE.md). It maps common symptoms to owning files, explains the Shopify/data/provider boundaries, lists high-risk code paths, and gives the required debugging/regression workflow. A reusable GitHub bug-report template is also included under `.github/ISSUE_TEMPLATE/bug_report.md`.
+
 ## Handoff / repository controls
 
 The repository has a real Git history and all production changes should continue through pull requests. In GitHub repository settings, protect `main` by requiring the `Security & Build` status check and at least one approving review before merge; prevent force pushes and direct deletion of the branch. Hostinger production should deploy only from `main`.
