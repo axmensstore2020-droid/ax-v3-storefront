@@ -1,5 +1,6 @@
 import {estimateDelhiveryDelivery,normalizePincode} from '../../../../lib/delhivery.js';
 import {readShippingPost,shippingJson} from '../../../../lib/shipping-route.js';
+import {assertAllowedKeys} from '../../../../lib/request-body.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -8,6 +9,7 @@ export async function POST(request) {
   const input=await readShippingPost(request,{maxBytes:2048,limit:18,rateError:'Too many delivery checks. Please try again shortly.'});
   if(input.response)return input.response;
   const {body,guard}=input;
+  try{assertAllowedKeys(body,['pincode','weightGrams','subtotal','productHandle'],'shipping');}catch(error){return shippingJson({ok:false,error:error.message},400,guard);}
   const pincode=normalizePincode(body?.pincode);
   if(!pincode) return shippingJson({ok:false,error:'Enter a valid 6-digit pincode.'},400,guard);
   const suppliedWeight=body?.weightGrams;
