@@ -55,7 +55,7 @@ export default function StylistPanel({request,onClose}) {
   const [messages,setMessages] = useState([]), [draft,setDraft] = useState(''), [conversation,setConversation] = useState('');
   const [photo,setPhoto] = useState(''), [busy,setBusy] = useState(false), [profileBusy,setProfileBusy] = useState(false), [photoBusy,setPhotoBusy] = useState(false);
   const [error,setError] = useState(''), [profileNotice,setProfileNotice] = useState('');
-  const abort = useRef(null), transcript = useRef(null), latestReply = useRef(null), lastMessageCount = useRef(0), sending = useRef(false), mounted = useRef(true);
+  const abort = useRef(null), transcript = useRef(null), latestReply = useRef(null), lastMessageCount = useRef(0), sending = useRef(false), mounted = useRef(true), fitFlow = useRef(null);
   const quickActions = [
     {label:'White shirts',icon:'search',message:'Show me white shirts.'},
     {label:'Raw denim',icon:'explore',message:'Show me raw denim.'},
@@ -83,6 +83,14 @@ export default function StylistPanel({request,onClose}) {
     });
     return () => cancelAnimationFrame(frame);
   },[messages]);
+  useEffect(() => {
+    if (tab !== 'fit') return;
+    const frame = requestAnimationFrame(() => {
+      fitFlow.current?.scrollTo?.({top:0,behavior:'instant'});
+      fitFlow.current?.querySelector?.('.ax-fit-stage')?.scrollTo?.({top:0,behavior:'instant'});
+    });
+    return () => cancelAnimationFrame(frame);
+  },[fitStep,tab]);
   function changeProfile(key,value) {setProfile(current => ({...current,[key]:value}));setProfileNotice('Changes are not saved yet.');}
   function changeUnit(value) {
     const lengthFactor = value === 'inches' ? 1/2.54 : 2.54;
@@ -156,7 +164,7 @@ export default function StylistPanel({request,onClose}) {
       {messages.length > 0 && <button className="ax-clear-chat" onClick={resetChat}>Clear chat</button>}
     </div>
     <div className="ax-chat-body" id={'ax-panel-'+tab} role="tabpanel" aria-labelledby={'ax-tab-'+tab}>
-      {tab === 'fit' ? <div className="ax-fit-form ax-fit-experience">
+      {tab === 'fit' ? <div ref={fitFlow} className="ax-fit-form ax-fit-experience">
         <div className="ax-fit-progress" aria-label={`Fit profile step ${fitStep+1} of ${FIT_STEPS.length}`}>
           <span>{String(fitStep+1).padStart(2,'0')}</span>
           <div>{FIT_STEPS.map((label,index)=><i key={label} className={index<=fitStep?'active':''}/>)}</div>
