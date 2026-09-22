@@ -1,204 +1,236 @@
 'use client';
 import Link from 'next/link';
 import {useEffect,useRef,useState} from 'react';
-import {usePathname} from 'next/navigation';
+import {usePathname,useRouter} from 'next/navigation';
+import {animate} from 'motion';
 import Brand from './Brand';
 import Icon from './Icon';
 import Dialog from './Dialog';
 import {useStylist} from './StylistProvider';
+import {AX_ISLAND_SLOT_COUNT,islandSlotX,nearestIslandIndex} from '../lib/island-navigation.js';
 
-const POSITION_KEY='ax:island-position:v1';
-const HOLD_MS=240;
-const EDGE_GAP=14;
-const EXPANDED_HEIGHT=342;
+const BEAD_WIDTH=72;
+const SLOT_LABELS=['Home','Explore','AX Stylist','Search','Profile'];
+const SLOT_ICONS=['home','explore',null,'search','profile'];
 
-function clamp(value,min,max){
- return Math.min(Math.max(value,min),max);
+function reducedMotion(){
+ return typeof window!=='undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
-
-function setDragVars(node,{x,y}){
- node?.style.setProperty('--ax-drag-x',`${x}px`);
- node?.style.setProperty('--ax-drag-y',`${y}px`);
-}
-
-function safeDesktopPosition(node,position){
- if(!node || typeof window==='undefined') return position;
- const style=window.getComputedStyle(node);
- const baseLeft=Number.parseFloat(style.left)||0;
- const width=node.offsetWidth||72;
- const maxX=Math.max(EDGE_GAP-baseLeft,window.innerWidth-EDGE_GAP-width-baseLeft);
- const minX=EDGE_GAP-baseLeft;
-
- const halfExpanded=EXPANDED_HEIGHT/2;
- const baseCenterY=window.innerHeight/2;
- let minY=EDGE_GAP+halfExpanded-baseCenterY;
- let maxY=window.innerHeight-EDGE_GAP-halfExpanded-baseCenterY;
- if(minY>maxY) minY=maxY=0;
-
- return {
-  x:clamp(Number.isFinite(position.x)?position.x:0,minX,maxX),
-  y:clamp(Number.isFinite(position.y)?position.y:0,minY,maxY)
- };
+function renderedX(node,fallback=0){
+ if(!node || typeof window==='undefined') return fallback;
+ try{
+  const matrix=new DOMMatrixReadOnly(window.getComputedStyle(node).transform);
+  return Number.isFinite(matrix.m41)?matrix.m41:fallback;
+ }catch{return fallback;}
 }
 
 export default function AXIsland({accountUrl,accountEnabled=false}) {
- const path=usePathname(),[profile,setProfile]=useState(false),[accountState,setAccountState]=useState(accountEnabled?'unknown':'disabled'),{openStylist}=useStylist();
- const islandRef=useRef(null);
- const holdTimerRef=useRef(0);
- const suppressClickRef=useRef(false);
- const positionRef=useRef({x:0,y:0});
- const pointerRef=useRef(null);
+ const path=usePathname(),router=useRouter();
+ const [profile,setProfile]=useState(false);
+ const [accountState,setAccountState]=useState(accountEnabled?'unknown':'disabled');
+ const [searchActive,setSearchActive]=useState(false);
+ const [visualIndex,setVisualIndex]=useState(0);
+ const {openStylist,stylistOpen=false}=useStylist();
+
+ const islandRef=useRef(null),beadRef=useRef(null),animationRef=useRef(null),pointerRef=useRef(null);
+ const beadXRef=useRef(0),visualIndexRef=useRef(0),initialSnapRef=useRef(true),suppressClickRef=useRef(false);
  const productMatch=path.match(/^\/products\/([^/]+)\/?$/),currentProduct=productMatch?{handle:productMatch[1]}:null;
+
+ const pageIndex=path==='/'?0:path.startsWith('/products')||path.startsWith('/collections')?1:path.startsWith('/account')?4:0;
+ const activeIndex=profile?4:stylistOpen?2:searchActive?3:pageIndex;
+ visualIndexRef.current=visualIndex;
+
+ function targetX(index){
+  return islandSlotX(islandRef.current?.clientWidth||0,index,BEAD_WIDTH,AX_ISLAND_SLOT_COUNT);
+ }
+ function setBeadX(value){
+  const bead=beadRef.current;
+  if(!bead)return;
+  animationRef.current?.stop?.();
+  bead.style.transform=`translateX(${value}px)`;
+  beadXRef.current=value;
+ }
+ function snapBead(index,{immediate=false}={}){
+  const bead=beadRef.current,island=islandRef.current;
+  if(!bead || !island)return;
+  const target=targetX(index);
+  animationRef.current?.stop?.();
+  if(immediate || reducedMotion()){
+   bead.style.transform=`translateX(${target}px)`;
+   beadXRef.current=target;
+   return;
+  }
+  const from=renderedX(bead,beadXRef.current);
+  beadXRef.current=from;
+  const controls=animate(bead,{x:target},{type:'spring',stiffness:520,damping:34,mass:.62,velocity:0});
+  animationRef.current=controls;
+  controls.then?.(()=>{
+   if(animationRef.current===controls) animationRef.current=null;
+   beadXRef.current=target;
+  });
+ }
+ function previewIndex(index){
+  setVisualIndex(index);
+  if(index!==3)setSearchActive(false);
+  requestAnimationFrame(()=>snapBead(index));
+ }
+ function commitIndex(index){
+  previewIndex(index);
+  if(index===0){router.push('/');return;}
+  if(index===1){router.push('/products');return;}
+  if(index===2){openStylist('style',currentProduct);return;}
+  if(index===3){setSearchActive(true);router.push('/products?search=1');return;}
+  openProfile();
+ }
+
+ useEffect(()=>{
+  if(typeof window==='undefined')return;
+  const params=new URLSearchParams(window.location.search);
+  setSearchActive(path.startsWith('/products') && params.get('search')==='1');
+ },[path]);
+
+ useEffect(()=>{
+  setVisualIndex(activeIndex);
+  const frame=requestAnimationFrame(()=>{
+   snapBead(activeIndex,{immediate:initialSnapRef.current});
+   initialSnapRef.current=false;
+  });
+  return()=>cancelAnimationFrame(frame);
+ },[activeIndex]);
 
  useEffect(()=>{
   const island=islandRef.current;
-  if(!island || typeof window==='undefined') return;
-  const media=window.matchMedia('(min-width:1100px)');
-
-  function persist(position){
-   try { window.localStorage.setItem(POSITION_KEY,JSON.stringify(position)); } catch {}
-  }
-
-  function restore(){
-   if(!media.matches){
-    setDragVars(island,{x:0,y:0});
-    return;
-   }
-   let saved={x:0,y:0};
-   try {
-    const parsed=JSON.parse(window.localStorage.getItem(POSITION_KEY)||'null');
-    if(parsed && Number.isFinite(parsed.x) && Number.isFinite(parsed.y)) saved=parsed;
-   } catch {}
-   const safe=safeDesktopPosition(island,saved);
-   positionRef.current=safe;
-   setDragVars(island,safe);
-   if(safe.x!==saved.x || safe.y!==saved.y) persist(safe);
-  }
-
-  function keepVisible(){
-   if(!media.matches) return;
-   const safe=safeDesktopPosition(island,positionRef.current);
-   positionRef.current=safe;
-   setDragVars(island,safe);
-   persist(safe);
-  }
-
-  restore();
-  media.addEventListener?.('change',restore);
-  window.addEventListener('resize',keepVisible);
+  if(!island || typeof ResizeObserver==='undefined')return;
+  const observer=new ResizeObserver(()=>{
+   requestAnimationFrame(()=>snapBead(visualIndexRef.current,{immediate:true}));
+  });
+  observer.observe(island);
   return()=>{
-   media.removeEventListener?.('change',restore);
-   window.removeEventListener('resize',keepVisible);
-   window.clearTimeout(holdTimerRef.current);
-   document.documentElement.classList.remove('ax-island-dragging');
+   observer.disconnect();
+   animationRef.current?.stop?.();
   };
  },[]);
 
- function beginHold(event){
-  if(typeof window==='undefined' || !window.matchMedia('(min-width:1100px)').matches || event.button!==0) return;
-  window.clearTimeout(holdTimerRef.current);
+ function beginBeadDrag(event){
+  if(event.button!==0)return;
+  animationRef.current?.stop?.();
+  const bead=beadRef.current;
+  if(!bead)return;
   event.currentTarget.setPointerCapture?.(event.pointerId);
-  pointerRef.current={
-   pointerId:event.pointerId,
-   startClientX:event.clientX,
-   startClientY:event.clientY,
-   startX:positionRef.current.x,
-   startY:positionRef.current.y,
-   dragging:false
-  };
-  holdTimerRef.current=window.setTimeout(()=>{
-   if(!pointerRef.current || pointerRef.current.pointerId!==event.pointerId) return;
-   pointerRef.current.dragging=true;
-   islandRef.current?.classList.add('is-dragging');
-   document.documentElement.classList.add('ax-island-dragging');
-  },HOLD_MS);
+  const startX=renderedX(bead,beadXRef.current);
+  beadXRef.current=startX;
+  pointerRef.current={pointerId:event.pointerId,startClientX:event.clientX,startX,moved:false};
  }
-
- function moveHeld(event){
-  const pointer=pointerRef.current;
-  const island=islandRef.current;
-  if(!pointer || pointer.pointerId!==event.pointerId || !pointer.dragging || !island) return;
-  event.preventDefault();
-  const next=safeDesktopPosition(island,{
-   x:pointer.startX+(event.clientX-pointer.startClientX),
-   y:pointer.startY+(event.clientY-pointer.startClientY)
-  });
-  positionRef.current=next;
-  setDragVars(island,next);
- }
-
- function endHold(event){
-  const pointer=pointerRef.current;
-  if(!pointer || pointer.pointerId!==event.pointerId) return;
-  window.clearTimeout(holdTimerRef.current);
-  event.currentTarget.releasePointerCapture?.(event.pointerId);
-  if(pointer.dragging){
-   suppressClickRef.current=true;
-   try { window.localStorage.setItem(POSITION_KEY,JSON.stringify(positionRef.current)); } catch {}
-   islandRef.current?.classList.remove('is-dragging');
-   document.documentElement.classList.remove('ax-island-dragging');
-   window.setTimeout(()=>{suppressClickRef.current=false;},80);
+ function moveBead(event){
+  const pointer=pointerRef.current,island=islandRef.current;
+  if(!pointer || pointer.pointerId!==event.pointerId || !island)return;
+  const dx=event.clientX-pointer.startClientX;
+  if(!pointer.moved && Math.abs(dx)>4){
+   pointer.moved=true;
+   island.classList.add('is-bead-dragging');
   }
-  pointerRef.current=null;
+  if(!pointer.moved)return;
+  event.preventDefault();
+  const min=targetX(0),max=targetX(AX_ISLAND_SLOT_COUNT-1);
+  const x=Math.min(max,Math.max(min,pointer.startX+dx));
+  setBeadX(x);
+  const nearest=nearestIslandIndex(island.clientWidth,x,BEAD_WIDTH,AX_ISLAND_SLOT_COUNT);
+  if(nearest!==visualIndexRef.current){
+   visualIndexRef.current=nearest;
+   setVisualIndex(nearest);
+  }
  }
-
- function cancelHold(event){
+ function endBeadDrag(event){
   const pointer=pointerRef.current;
-  if(!pointer || pointer.pointerId!==event.pointerId) return;
-  window.clearTimeout(holdTimerRef.current);
-  islandRef.current?.classList.remove('is-dragging');
-  document.documentElement.classList.remove('ax-island-dragging');
+  if(!pointer || pointer.pointerId!==event.pointerId)return;
+  event.currentTarget.releasePointerCapture?.(event.pointerId);
   pointerRef.current=null;
+  islandRef.current?.classList.remove('is-bead-dragging');
+  if(!pointer.moved)return;
+  const index=nearestIslandIndex(islandRef.current?.clientWidth||0,renderedX(beadRef.current,beadXRef.current),BEAD_WIDTH,AX_ISLAND_SLOT_COUNT);
+  suppressClickRef.current=true;
+  commitIndex(index);
+  window.setTimeout(()=>{suppressClickRef.current=false;},90);
  }
-
- function activateStylist(event){
+ function cancelBeadDrag(event){
+  const pointer=pointerRef.current;
+  if(!pointer || pointer.pointerId!==event.pointerId)return;
+  pointerRef.current=null;
+  islandRef.current?.classList.remove('is-bead-dragging');
+  setVisualIndex(activeIndex);
+  snapBead(activeIndex);
+ }
+ function activateBead(event){
   if(suppressClickRef.current){
    event.preventDefault();
-   event.stopPropagation();
    suppressClickRef.current=false;
    return;
   }
-  openStylist('style',currentProduct);
+  commitIndex(visualIndexRef.current);
  }
 
- async function openProfile() {
+ async function openProfile(){
   setProfile(true);
-  if(!accountEnabled) return;
+  setSearchActive(false);
+  if(!accountEnabled)return;
   setAccountState('loading');
-  try {
+  try{
    const response=await fetch('/account/status',{cache:'no-store',credentials:'same-origin'});
-   const data=response.ok ? await response.json() : null;
+   const data=response.ok?await response.json():null;
    setAccountState(data?.signedIn?'signed-in':'signed-out');
-  } catch { setAccountState('unknown'); }
+  }catch{setAccountState('unknown');}
  }
 
  const signedIn=accountState==='signed-in',checking=accountState==='loading';
- const primaryHref=accountEnabled && accountState==='signed-out'?'/account/login?returnTo=%2Faccount':accountUrl;
- const primaryLabel=signedIn?'VIEW AX ACCOUNT':accountEnabled && accountState==='signed-out'?'SIGN IN / CREATE ACCOUNT':accountEnabled?'OPEN AX ACCOUNT':'OPEN MY ACCOUNT';
+ const primaryHref=accountEnabled&&accountState==='signed-out'?'/account/login?returnTo=%2Faccount':accountUrl;
+ const primaryLabel=signedIn?'VIEW AX ACCOUNT':accountEnabled&&accountState==='signed-out'?'SIGN IN / CREATE ACCOUNT':accountEnabled?'OPEN AX ACCOUNT':'OPEN MY ACCOUNT';
+ const beadIcon=SLOT_ICONS[visualIndex];
 
- return <><nav ref={islandRef} id="ax-island-navigation" className="ax-island" aria-label="AX navigation">
-  <svg className="island-surface" viewBox="0 0 420 94" preserveAspectRatio="none" aria-hidden="true"><path d="M36 24H157C176 24 180 3 210 3S244 24 263 24H384A33 33 0 0 1 417 57V58A33 33 0 0 1 384 91H36A33 33 0 0 1 3 58V57A33 33 0 0 1 36 24Z"/></svg>
-  <Link href="/" className="island-item island-home" aria-current={path === '/' ? 'page' : undefined}><Icon name="home"/><span>Home</span></Link>
-  <Link href="/products" className="island-item island-explore" aria-current={path.startsWith('/products') || path.startsWith('/collections') ? 'page' : undefined}><Icon name="explore"/><span>Explore</span></Link>
-  <button
-   className="island-stylist"
-   onClick={activateStylist}
-   onPointerDown={beginHold}
-   onPointerMove={moveHeld}
-   onPointerUp={endHold}
-   onPointerCancel={cancelHold}
-   aria-label="Open AX Stylist. Press and hold to move."
-  >
-   <span className="ax-island-blob" aria-hidden="true">
-    <span className="ax-island-fluid ax-island-fluid-a"/>
-    <span className="ax-island-fluid ax-island-fluid-b"/>
-    <span className="ax-island-fluid ax-island-fluid-c"/>
-    <Brand/>
-   </span>
-   <span className="island-stylist-label">Stylist</span>
+ return <><nav ref={islandRef} id="ax-island-navigation" className="ax-island ax-liquid-island" aria-label="AX navigation">
+  <svg className="ax-island-filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
+   <defs>
+    <filter id="ax-island-refraction" x="-20%" y="-40%" width="140%" height="180%" colorInterpolationFilters="sRGB">
+     <feTurbulence type="fractalNoise" baseFrequency="0.018 0.11" numOctaves="2" seed="11" result="noise"/>
+     <feGaussianBlur in="noise" stdDeviation=".35" result="softNoise"/>
+     <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="11" xChannelSelector="R" yChannelSelector="B"/>
+    </filter>
+   </defs>
+  </svg>
+  <span className="ax-island-glass" aria-hidden="true"><span className="ax-island-refraction"/></span>
+
+  <Link href="/" className={`ax-island-slot island-home${visualIndex===0?' is-active':''}`} aria-current={path==='/'?'page':undefined} onClick={()=>previewIndex(0)}>
+   <span className="ax-island-slot-icon" aria-hidden="true"><Icon name="home"/></span><span className="ax-island-slot-label">Home</span>
+  </Link>
+  <Link href="/products" className={`ax-island-slot island-explore${visualIndex===1?' is-active':''}`} aria-current={!searchActive&&(path.startsWith('/products')||path.startsWith('/collections'))?'page':undefined} onClick={()=>previewIndex(1)}>
+   <span className="ax-island-slot-icon" aria-hidden="true"><Icon name="explore"/></span><span className="ax-island-slot-label">Explore</span>
+  </Link>
+  <button className={`ax-island-slot island-stylist${visualIndex===2?' is-active':''}`} type="button" onClick={()=>{previewIndex(2);openStylist('style',currentProduct);}} aria-pressed={stylistOpen} aria-label="Open AX Stylist">
+   <span className="ax-island-slot-icon ax-island-slot-brand" aria-hidden="true"><Brand/></span><span className="ax-island-slot-label">AX</span>
   </button>
-  <Link href="/products?search=1" className="island-item island-search"><Icon name="search"/><span>Search</span></Link>
-  <button className="island-item island-profile" onClick={openProfile}><Icon name="profile"/><span>Profile</span></button>
+  <Link href="/products?search=1" className={`ax-island-slot island-search${visualIndex===3?' is-active':''}`} aria-current={searchActive?'page':undefined} onClick={()=>{setSearchActive(true);previewIndex(3);}}>
+   <span className="ax-island-slot-icon" aria-hidden="true"><Icon name="search"/></span><span className="ax-island-slot-label">Search</span>
+  </Link>
+  <button className={`ax-island-slot island-profile${visualIndex===4?' is-active':''}`} type="button" onClick={()=>{previewIndex(4);openProfile();}} aria-expanded={profile}>
+   <span className="ax-island-slot-icon" aria-hidden="true"><Icon name="profile"/></span><span className="ax-island-slot-label">Profile</span>
+  </button>
+
+  <button
+   ref={beadRef}
+   className={`ax-island-bead${visualIndex===2?' is-ax':''}`}
+   type="button"
+   onClick={activateBead}
+   onPointerDown={beginBeadDrag}
+   onPointerMove={moveBead}
+   onPointerUp={endBeadDrag}
+   onPointerCancel={cancelBeadDrag}
+   aria-label={`${SLOT_LABELS[visualIndex]} selected. Drag to another navigation item.`}
+  >
+   <span className="ax-island-bead-neck" aria-hidden="true"/>
+   <span className="ax-island-bead-sphere" aria-hidden="true">
+    <span className="ax-island-bead-shine"/>
+    <span className="ax-island-bead-icon">{visualIndex===2?<Brand/>:<Icon name={beadIcon} size={23}/>}</span>
+   </span>
+  </button>
  </nav>
- {profile && <Dialog title="Your AX" className="stylist-dialog" onClose={() => setProfile(false)}><h3 className="editorial sheet-title">Make yourself at home.</h3><p>{!accountEnabled?'Access your orders through your store account.':checking?'Checking your AX account…':signedIn?'Your AX account is connected. Orders, tracking and saved details are ready here.':accountState==='signed-out'?'Sign in or create an account to keep orders and account details within AX.':'Open your AX account to continue.'}</p>{primaryHref && !checking ? <a className="solid-button" href={primaryHref}>{primaryLabel} <Icon name="arrow"/></a> : checking ? <p className="small muted">Checking sign-in status…</p> : <p className="muted">Account sign-in will be available when the store opens.</p>}{signedIn && <form action="/account/logout" method="post"><button className="underlined-link" type="submit">SIGN OUT <span aria-hidden="true">→</span></button></form>}<p className="small muted">Manage optional measurements and preferences in AX Stylist → My fit & style.</p></Dialog>}</>;
+ {profile && <Dialog title="Your AX" className="stylist-dialog" onClose={()=>setProfile(false)}><h3 className="editorial sheet-title">Make yourself at home.</h3><p>{!accountEnabled?'Access your orders through your store account.':checking?'Checking your AX account…':signedIn?'Your AX account is connected. Orders, tracking and saved details are ready here.':accountState==='signed-out'?'Sign in or create an account to keep orders and account details within AX.':'Open your AX account to continue.'}</p>{primaryHref&&!checking?<a className="solid-button" href={primaryHref}>{primaryLabel} <Icon name="arrow"/></a>:checking?<p className="small muted">Checking sign-in status…</p>:<p className="muted">Account sign-in will be available when the store opens.</p>}{signedIn&&<form action="/account/logout" method="post"><button className="underlined-link" type="submit">SIGN OUT <span aria-hidden="true">→</span></button></form>}<p className="small muted">Manage optional measurements and preferences in AX Stylist → My fit & style.</p></Dialog>}</>;
 }
