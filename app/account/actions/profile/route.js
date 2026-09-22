@@ -1,6 +1,7 @@
 import {NextResponse} from 'next/server';
 import {customerAccountConfig,queryCustomerAccount,readAccountSession,sessionExpired} from '../../../../lib/customer-account.js';
 import {sameOriginRequest} from '../../../../lib/request-security.js';
+import {assertAllowedFormKeys,readLimitedForm} from '../../../../lib/request-body.js';
 
 const mutation=`mutation AXCustomerUpdate($input: CustomerUpdateInput!) {
   customerUpdate(input: $input) {
@@ -28,7 +29,10 @@ export async function POST(request) {
     url.searchParams.set('returnTo','/account#profile');
     return NextResponse.redirect(url,303);
   }
-  const form=await request.formData();
+  let form;
+  try{
+    form=assertAllowedFormKeys(await readLimitedForm(request,4096),['firstName','lastName']);
+  }catch{return redirect(request,'profile-error');}
   const input={firstName:safeText(form.get('firstName')),lastName:safeText(form.get('lastName'))};
   try {
     const result=await queryCustomerAccount(config,session,mutation,{input});
