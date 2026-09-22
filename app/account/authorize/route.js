@@ -23,7 +23,10 @@ export async function GET(request) {
     response.cookies.set(CUSTOMER_ACCOUNT_SESSION_COOKIE,sealAccount({...session,exp:Date.now()+CUSTOMER_ACCOUNT_SESSION_MAX_AGE*1000},config.sessionSecret),cookieOptions(CUSTOMER_ACCOUNT_SESSION_MAX_AGE));
     response.cookies.set(CUSTOMER_ACCOUNT_OAUTH_COOKIE,'',clearCookieOptions());
     return response;
-  } catch {
+  } catch (error) {
+    // Keep shopper messaging generic, but retain a safe diagnostic in Hostinger's
+    // server logs. OAuth codes, tokens and client secrets are never logged.
+    console.error('[AX customer account] OAuth token exchange failed.',{status:Number.isInteger(error?.status)?error.status:undefined,code:typeof error?.code==='string'?error.code:'unknown'});
     const response=failure(request,config,'error');response.cookies.set(CUSTOMER_ACCOUNT_OAUTH_COOKIE,'',clearCookieOptions());return response;
   }
 }

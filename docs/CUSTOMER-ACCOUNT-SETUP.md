@@ -75,6 +75,7 @@ If a Customer Account API permission is enabled after a customer already signed 
 
 ## Flow
 
+- There is no separate password-style AX registration form. With Shopify customer accounts, **Sign in or create account** opens Shopify's secure account flow; a new customer follows the email verification steps there and then returns to AX.
 - `/account/login` starts OAuth with state and PKCE.
 - Shopify sends the browser to `/account/authorize` after sign-in.
 - The server exchanges the code, sends the client ID plus confidential client credentials, encrypts the short-lived token session in an HttpOnly secure cookie and returns to `/account`.
