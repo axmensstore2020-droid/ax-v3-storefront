@@ -19,3 +19,8 @@ test('cart ownership expires and request checks use the signed HttpOnly cookie v
   assert.equal(requestOwnsCart(request,cart,{AX_CART_SESSION_SECRET:secret}),true);
   assert.ok(cartOwnerCookie(cart,{AX_CART_SESSION_SECRET:secret}));
 });
+
+test('cart ownership fails closed when the server secret is missing',()=>{
+  const request=new Request('https://axstore.in/api/cart');
+  assert.equal(requestOwnsCart(request,cart,{}),false);
+});
