@@ -52,8 +52,7 @@
 .ax-fit-action{width:100%;min-height:42px;margin:10px 0 2px;padding:8px 10px;border:1px solid #d5d6cf;border-radius:2px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:9px;text-align:left;font-size:9px;letter-spacing:.05em;text-transform:uppercase;background:#fbfbf8;color:#4a4c45}
 .ax-fit-action:hover,.ax-fit-action:focus-visible{border-color:#181916}
 .ax-source-link{display:inline-block;font-size:9px;letter-spacing:.04em;text-transform:uppercase;margin:8px 16px 0 0;text-decoration:underline;text-underline-offset:4px;min-height:28px}
-.ax-working{font-size:10px!important;letter-spacing:.04em;color:#66685f;padding:11px 0}.ax-working:before{content:'●';margin-right:7px;font-size:6px;animation:ax-pulse 1.1s ease-in-out infinite}
-@keyframes ax-pulse{0%,100%{opacity:.25}50%{opacity:1}}
+.ax-working{display:flex;align-items:center;justify-content:flex-start;min-height:78px;padding:10px 0 12px}
 .ax-composer{flex-shrink:0;border-top:1px solid #cfd0c9;padding:9px 18px 10px;background:#f7f7f4;box-shadow:0 -8px 20px #f7f7f4f0}
 .ax-message-input{display:flex;gap:7px;border:1px solid #9ea097;border-radius:2px;align-items:center;padding:3px 5px 3px 9px;background:#fbfbf8;transition:border-color .18s ease}
 .ax-message-input:focus-within{border-color:#181916}

@@ -5,6 +5,7 @@ import Dialog from './Dialog';
 import Icon from './Icon';
 import Brand from './Brand';
 import ProductImage from './ProductImage';
+import AXParticleLoader from './AXParticleLoader';
 import {useNavigation} from './NavigationProvider';
 import {formatMoney} from '../lib/catalog';
 import {CONSENT_VERSION,normalizeProfile} from '../lib/stylist/validation';
@@ -292,7 +293,7 @@ export default function StylistPanel({request,onClose}) {
             {item.products?.length > 0 && <div className="ax-chat-products">{item.products.map(product=><Link href={product.href} onClick={onClose} className="ax-chat-product" key={product.handle}><ProductImage src={product.image} alt={product.title} sizes="80px"/><div><span>{product.title}</span>{product.price && <strong>{!product.variantId && 'From '}{formatMoney(Number(product.price.amount),product.price.currencyCode)}</strong>}<small>{product.requiresSize ? 'Choose size' : 'View product'} →</small></div></Link>)}</div>}
             {item.links?.map(link=><Link className="ax-source-link" key={link.href} href={link.href} onClick={onClose}>{link.label} →</Link>)}
           </article>)}
-          {busy && <p className="ax-working" role="status">AX is checking…</p>}
+          {busy && <div className="ax-working"><AXParticleLoader variant="stylist" label="AX is thinking…" /></div>}
         </div>
         <form id="ax-chat-form" className="ax-composer" onSubmit={send}>
           {photo && <div className="ax-photo-preview"><img src={photo} width="52" height="52" alt="Your selected clothing photo"/><span>Photo ready</span><button type="button" onClick={()=>setPhoto('')} aria-label="Remove photo"><Icon name="close" size={18}/></button></div>}
