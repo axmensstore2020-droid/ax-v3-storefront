@@ -189,8 +189,12 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
    onPointerCancel={cancelHold}
    aria-label="Open AX Stylist. Press and hold to move."
   >
-   <span className="ax-marble-field" aria-hidden="true"><i/><i/><i/></span>
-   <span className="ax-orb"><Brand inverse/></span>
+   <span className="ax-island-blob" aria-hidden="true">
+    <span className="ax-island-fluid ax-island-fluid-a"/>
+    <span className="ax-island-fluid ax-island-fluid-b"/>
+    <span className="ax-island-fluid ax-island-fluid-c"/>
+    <Brand/>
+   </span>
    <span className="island-stylist-label">Stylist</span>
   </button>
   <Link href="/products?search=1" className="island-item island-search"><Icon name="search"/><span>Search</span></Link>
