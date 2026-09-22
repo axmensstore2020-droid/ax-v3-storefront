@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {reserveCartBurst,reserveCatalogBurst,sameOriginRequest,CART_GUARD_COOKIE,CATALOG_GUARD_COOKIE} from '../lib/request-security.js';
+import {reserveAccountBurst,reserveCartBurst,reserveCatalogBurst,sameOriginRequest,CART_GUARD_COOKIE,CATALOG_GUARD_COOKIE} from '../lib/request-security.js';
 import {assertAllowedFormKeys,assertAllowedKeys,readLimitedForm,readLimitedJson} from '../lib/request-body.js';
 
 test('same-origin guard accepts AX and rejects cross-site requests',()=>{
@@ -52,4 +52,11 @@ test('catalog burst limiter blocks repeated public catalog reads',()=>{
  const request=new Request('https://axstore.in/api/wishlist',{headers:{cookie:`${CATALOG_GUARD_COOKIE}=${token}`}});
  for(let i=0;i<10;i++) assert.equal(reserveCatalogBurst(request,{limit:10,windowMs:60_000,now:2000+i}).allowed,true);
  assert.equal(reserveCatalogBurst(request,{limit:10,windowMs:60_000,now:3000}).allowed,false);
+});
+
+test('account mutation limiter is bound to the signed-in session cookie',()=>{
+ const request=new Request('https://axstore.in/account/actions/profile',{headers:{cookie:'ax_customer_account_session=opaque-session-token'}});
+ for(let i=0;i<5;i++) assert.equal(reserveAccountBurst(request,{limit:5,windowMs:60_000,now:4000+i}).allowed,true);
+ assert.equal(reserveAccountBurst(request,{limit:5,windowMs:60_000,now:5000}).allowed,false);
+ assert.equal(reserveAccountBurst(new Request('https://axstore.in/account/actions/profile'),{limit:5,now:5000}).allowed,false);
 });
