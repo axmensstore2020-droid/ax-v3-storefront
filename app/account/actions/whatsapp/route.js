@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server';
 import {customerAccountConfig,queryCustomerAccount,readAccountSession,sessionExpired} from '../../../../lib/customer-account.js';
-import {sameOriginRequest} from '../../../../lib/request-security.js';
+import {reserveAccountBurst,sameOriginRequest} from '../../../../lib/request-security.js';
 import {assertAllowedFormKeys,readLimitedForm} from '../../../../lib/request-body.js';
 import {createDatabase,databaseConfigured} from '../../../../lib/stylist/database.js';
 import {normalizeWhatsappPhone} from '../../../../lib/whatsapp.js';
@@ -26,6 +26,8 @@ export async function POST(request){
     url.searchParams.set('returnTo','/account#whatsapp');
     return NextResponse.redirect(url,303);
   }
+  const burst=reserveAccountBurst(request);
+  if(!burst.allowed) return new NextResponse('Too many account changes. Please try again shortly.',{status:429,headers:{'Retry-After':String(burst.retryAfter)}});
   try{
     const form=assertAllowedFormKeys(await readLimitedForm(request,4096),['intent','consent','phone']),intent=String(form.get('intent') || '');
     const result=await queryCustomerAccount(config,session,customerIdQuery);
