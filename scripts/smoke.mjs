@@ -2,7 +2,7 @@ import {spawn} from 'node:child_process';
 import assert from 'node:assert/strict';
 import {navigation,styleWorlds,seasonalCollections} from '../lib/navigation.js';
 import {setTimeout as delay} from 'node:timers/promises';
-const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p','3008','-H','127.0.0.1'],{stdio:['ignore','pipe','pipe'],env:{...process.env,SHOPIFY_STOREFRONT_PRIVATE_TOKEN:'',SHOPIFY_STOREFRONT_ACCESS_TOKEN:'',AX_ALLOW_INDEXING:'false'}});
+const server=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p','3008','-H','127.0.0.1'],{stdio:['ignore','pipe','pipe'],env:{...process.env,SHOPIFY_STOREFRONT_PRIVATE_TOKEN:'',SHOPIFY_STOREFRONT_ACCESS_TOKEN:'',AX_ALLOW_INDEXING:'false',AX_SITE_ORIGIN:'https://example.com',AX_STYLIST_ENABLED:'false',AX_STYLIST_IMAGES_ENABLED:'false'}});
 let logs='';server.stdout.on('data',data=>logs+=data);server.stderr.on('data',data=>logs+=data);
 try{
  let ready=false;
@@ -16,8 +16,8 @@ try{
  }
  assert.equal((await fetch('http://127.0.0.1:3008/products/not-a-real-product')).status,404);
  for(const [body,status] of [['{',400],[JSON.stringify({action:'create',merchandiseId:'gid://shopify/ProductVariant/123'}),503],[JSON.stringify({action:'add',cartId:'invalid'}),400]]){
-  const response=await fetch('http://127.0.0.1:3008/api/cart',{method:'POST',headers:{'Content-Type':'application/json'},body});
-  assert.equal(response.status,status);assert.equal(response.headers.get('cache-control'),'no-store');
+  const response=await fetch('http://127.0.0.1:3008/api/cart',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://example.com'},body});
+  assert.equal(response.status,status);assert.ok(response.headers.get('cache-control').includes('no-store'));
  }
  console.log('PASS missing product and malformed/unconnected cart requests');
  const stylist=await fetch('http://127.0.0.1:3008/api/stylist');
@@ -28,7 +28,7 @@ try{
  const profile=await fetch('http://127.0.0.1:3008/api/stylist/profile');
  assert.equal((await profile.json()).profile,null);
  const info=await (await fetch('http://127.0.0.1:3008/ax-stylist')).text();
- assert.match(info,/not a promise|does not mean zero retention/);
+ assert.match(info,/Some service providers may retain limited data/);
  assert.match(info,/Delete saved profile/);
  console.log('PASS disabled Stylist, cross-site rejection, anonymous profile and privacy disclosures');
 }finally{server.kill('SIGTERM');}
