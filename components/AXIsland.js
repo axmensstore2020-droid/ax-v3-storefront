@@ -214,23 +214,22 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
    <span className="ax-island-slot-icon" aria-hidden="true"><Icon name="profile"/></span><span className="ax-island-slot-label">Profile</span>
   </button>
 
-  <button
+  <span
    ref={beadRef}
    className={`ax-island-bead${visualIndex===2?' is-ax':''}`}
-   type="button"
    onClick={activateBead}
    onPointerDown={beginBeadDrag}
    onPointerMove={moveBead}
    onPointerUp={endBeadDrag}
    onPointerCancel={cancelBeadDrag}
-   aria-label={`${SLOT_LABELS[visualIndex]} selected. Drag to another navigation item.`}
+   aria-hidden="true"
   >
    <span className="ax-island-bead-neck" aria-hidden="true"/>
    <span className="ax-island-bead-sphere" aria-hidden="true">
     <span className="ax-island-bead-shine"/>
     <span className="ax-island-bead-icon">{visualIndex===2?<Brand/>:<Icon name={beadIcon} size={23}/>}</span>
    </span>
-  </button>
+  </span>
  </nav>
  {profile && <Dialog title="Your AX" className="stylist-dialog" onClose={()=>setProfile(false)}><h3 className="editorial sheet-title">Make yourself at home.</h3><p>{!accountEnabled?'Access your orders through your store account.':checking?'Checking your AX account…':signedIn?'Your AX account is connected. Orders, tracking and saved details are ready here.':accountState==='signed-out'?'Sign in or create an account to keep orders and account details within AX.':'Open your AX account to continue.'}</p>{primaryHref&&!checking?<a className="solid-button" href={primaryHref}>{primaryLabel} <Icon name="arrow"/></a>:checking?<p className="small muted">Checking sign-in status…</p>:<p className="muted">Account sign-in will be available when the store opens.</p>}{signedIn&&<form action="/account/logout" method="post"><button className="underlined-link" type="submit">SIGN OUT <span aria-hidden="true">→</span></button></form>}<p className="small muted">Manage optional measurements and preferences in AX Stylist → My fit & style.</p></Dialog>}</>;
 }
