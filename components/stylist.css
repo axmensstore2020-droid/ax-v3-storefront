@@ -190,3 +190,203 @@
  .ax-fit-summary>div{grid-template-columns:78px 1fr}
 }
 @media(prefers-reduced-motion:reduce){.ax-working:before,.ax-stylist-orb,.ax-stylist-fluid{animation:none}.ax-stylist-start,.ax-fit-card,.ax-precision-measurements,.ax-fit-stage{animation:none}.ax-quick-actions button,.ax-message-input button,.ax-fit-progress i,.ax-fit-figure svg{transition:none}}
+
+
+/* Keep each My Fit & Style step contained inside the Stylist card. */
+.ax-fit-experience{
+  height:100%;
+  min-height:0;
+  overflow:hidden;
+  padding:12px 18px 12px;
+}
+.ax-fit-progress{
+  flex:0 0 auto;
+  margin-bottom:10px;
+}
+.ax-fit-stage{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:none;
+  padding-bottom:4px;
+}
+.ax-fit-stage::-webkit-scrollbar{display:none}
+.ax-fit-stage h3{
+  margin:5px 0 7px;
+  font-size:25px;
+  line-height:1;
+}
+.ax-fit-stage>p:not(.ax-fit-kicker){
+  margin-bottom:12px;
+  font-size:10px;
+  line-height:1.45;
+}
+.ax-fit-visual-card{
+  flex:1 1 auto;
+  min-height:150px;
+  max-height:190px;
+  margin-bottom:8px;
+  gap:7px;
+}
+.ax-fit-figure{
+  width:128px;
+  height:136px;
+}
+.ax-fit-figure svg{
+  width:100px;
+  height:128px;
+}
+.ax-fit-segments button{
+  min-height:38px;
+  padding:6px 4px;
+}
+.ax-fit-flow-nav{
+  position:static;
+  flex:0 0 auto;
+  margin:8px 0 0;
+  padding:0;
+  background:none;
+}
+.ax-fit-flow-nav button{
+  min-height:44px;
+}
+.ax-unit-toggle{
+  margin-bottom:9px;
+}
+.ax-unit-toggle button{
+  min-height:34px;
+}
+.ax-fit-metric-grid{
+  margin-bottom:10px;
+}
+.ax-fit-metric{
+  min-height:112px;
+  padding:10px;
+}
+.ax-fit-metric>div:first-child{
+  margin-bottom:13px;
+}
+.ax-fit-subchoice{
+  padding-top:9px;
+}
+.ax-size-pills button{
+  min-height:34px;
+}
+.ax-fit-choice-block{
+  margin-bottom:12px;
+}
+.ax-fit-chip-grid{
+  gap:5px;
+}
+.ax-fit-chip-grid button{
+  min-height:32px;
+  padding:6px 9px;
+  font-size:8px;
+}
+.ax-colour-picks{
+  gap:5px;
+}
+.ax-colour-picks button{
+  min-height:50px;
+  padding:5px;
+  gap:4px;
+}
+.ax-colour-picks i{
+  width:19px;
+  height:19px;
+}
+.ax-fit-summary{
+  margin:3px 0 9px;
+}
+.ax-fit-summary>div{
+  padding:6px 0;
+}
+.ax-precision-measurements{
+  margin-bottom:9px;
+}
+.ax-precision-measurements summary{
+  min-height:48px;
+  padding:9px 38px 9px 11px;
+}
+.ax-profile-actions button{
+  min-height:36px;
+  padding:8px 10px;
+}
+.ax-fit-review .solid-button{
+  min-height:38px;
+  margin-top:9px;
+}
+.ax-fit-review .ax-checkbox{
+  margin-top:5px;
+}
+
+@media(max-width:700px){
+  .ax-fit-experience{
+    padding:9px 15px 10px;
+  }
+  .ax-fit-progress{
+    margin-bottom:7px;
+  }
+  .ax-fit-stage{
+    padding-bottom:2px;
+  }
+  .ax-fit-stage h3{
+    font-size:23px;
+    margin:3px 0 6px;
+  }
+  .ax-fit-stage>p:not(.ax-fit-kicker){
+    font-size:9.5px;
+    line-height:1.4;
+    margin-bottom:9px;
+  }
+  .ax-fit-visual-card{
+    min-height:132px;
+    max-height:165px;
+  }
+  .ax-fit-figure{
+    width:108px;
+    height:116px;
+  }
+  .ax-fit-figure svg{
+    width:88px;
+    height:108px;
+  }
+  .ax-fit-metric{
+    min-height:104px;
+    padding:9px 10px;
+  }
+  .ax-fit-metric>div:first-child{
+    margin-bottom:10px;
+  }
+  .ax-range-labels{
+    font-size:6.5px;
+  }
+  .ax-fit-flow-nav{
+    margin-top:7px;
+  }
+  .ax-fit-flow-nav button{
+    min-height:43px;
+  }
+  .ax-fit-choice-block>span,.ax-fit-subchoice>span{
+    margin-bottom:6px;
+  }
+  .ax-colour-picks button{
+    min-height:46px;
+  }
+  .ax-fit-summary>div{
+    padding:5px 0;
+  }
+  .ax-precision-measurements summary{
+    min-height:44px;
+  }
+}
+
+@media(max-width:390px){
+  .ax-fit-stage h3{font-size:22px}
+  .ax-fit-metric-grid{grid-template-columns:1fr 1fr}
+  .ax-fit-metric{min-height:98px}
+  .ax-size-pills{grid-template-columns:repeat(6,1fr)}
+  .ax-size-pills button{min-height:32px;font-size:9px}
+  .ax-colour-picks{grid-template-columns:repeat(4,1fr)}
+}
