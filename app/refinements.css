@@ -67,6 +67,49 @@ h1,h2,h3{font-weight:300}
 .island-stylist>span:last-child{font-size:11px}
 .ax-marble-field{display:none}
 
+.ax-island-blob{
+ position:relative;
+ width:60px;
+ height:56px;
+ margin-top:-12px;
+ flex-shrink:0;
+ display:grid;
+ place-items:center;
+ overflow:hidden;
+ isolation:isolate;
+ border:1px solid #d2d3cc;
+ border-radius:46% 54% 60% 40%/44% 38% 62% 56%;
+ background:linear-gradient(145deg,#fff 0%,#f4f4ef 54%,#fbfbf8 100%);
+ box-shadow:inset 8px 8px 18px #ffffffd9,inset -7px -8px 16px #d9dbd245,0 5px 14px #18191612;
+ animation:ax-island-blob-morph 7.2s ease-in-out infinite;
+ transition:transform 240ms cubic-bezier(.2,.72,.2,1),box-shadow 240ms ease;
+}
+.ax-island-blob:after{
+ content:'';
+ position:absolute;
+ inset:5px 12px auto 8px;
+ height:17px;
+ border-radius:50%;
+ background:linear-gradient(180deg,#ffffffdc,#ffffff18);
+ z-index:2;
+ pointer-events:none;
+}
+.ax-island-blob .brand-mark{position:relative;z-index:4;width:32px;overflow:visible}
+.ax-island-blob .brand-mark img{filter:none!important;opacity:.97;pointer-events:none;-webkit-user-drag:none}
+.ax-island-fluid{
+ position:absolute;
+ display:block;
+ border-radius:50%;
+ background:#dfe3dc;
+ opacity:.7;
+ filter:blur(.2px);
+ animation:ax-island-fluid-drift 5.8s ease-in-out infinite;
+}
+.ax-island-fluid-a{width:38px;height:33px;left:-9px;top:8px}
+.ax-island-fluid-b{width:30px;height:27px;right:-6px;bottom:6px;animation-delay:-1.9s}
+.ax-island-fluid-c{width:19px;height:17px;left:24px;bottom:-4px;animation-delay:-3.3s}
+.island-stylist:active .ax-island-blob{transform:scale(.965)}
+
 /* Desktop: AX Stylist rests as an orb; navigation blooms on hover/focus. */
 @media(min-width:1100px){
  .ax-island{
@@ -180,6 +223,14 @@ h1,h2,h3{font-weight:300}
    box-shadow 240ms ease;
  }
  .ax-island .ax-orb .brand-mark{width:32px}
+ .ax-island .ax-island-blob{
+  position:relative;
+  z-index:2;
+  width:58px;
+  height:55px;
+  margin:0;
+  box-shadow:inset 8px 8px 18px #ffffffdf,inset -7px -8px 16px #d9dbd248,0 8px 24px #00000018;
+ }
  .ax-island .ax-orb .brand-mark img{
   pointer-events:none;
   -webkit-user-drag:none;
@@ -217,6 +268,11 @@ h1,h2,h3{font-weight:300}
    0 9px 26px #0000002e,
    0 0 18px #2d8cff24;
  }
+ .ax-island:hover .ax-island-blob,
+ .ax-island:focus-within .ax-island-blob{
+  transform:scale(1.035);
+  box-shadow:inset 8px 8px 18px #ffffffef,inset -7px -8px 16px #d9dbd250,0 10px 28px #0000001d;
+ }
 
  .ax-island.is-dragging{
   height:72px;
@@ -239,6 +295,10 @@ h1,h2,h3{font-weight:300}
    0 10px 28px #00000030,
    0 0 0 1px #65b9ff50,
    0 0 22px #247cff38;
+ }
+ .ax-island.is-dragging .ax-island-blob{
+  transform:scale(1.055);
+  box-shadow:inset 8px 8px 18px #ffffffef,inset -7px -8px 16px #d9dbd250,0 10px 28px #00000022;
  }
 
  .ax-marble-field{
@@ -278,6 +338,15 @@ h1,h2,h3{font-weight:300}
 @keyframes ax-marble-orbit{
  from{rotate:0deg}
  to{rotate:360deg}
+}
+
+@keyframes ax-island-blob-morph{
+ 0%,100%{border-radius:46% 54% 60% 40%/44% 38% 62% 56%;rotate:-1deg}
+ 50%{border-radius:58% 42% 45% 55%/38% 58% 42% 62%;rotate:1.4deg}
+}
+@keyframes ax-island-fluid-drift{
+ 0%,100%{transform:translate3d(0,0,0) scale(1);opacity:.72}
+ 50%{transform:translate3d(7px,-5px,0) scale(1.15);opacity:.42}
 }
 
 @keyframes ax-logo-glow{
