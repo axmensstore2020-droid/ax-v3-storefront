@@ -38,17 +38,16 @@ export async function POST(request) {
  const budget=await reserveProviderBudget('cart',{limit:Math.min(100000,Math.max(500,Number(process.env.AX_CART_DAILY_LIMIT)||10000))});
  if(!budget.allowed) return respond({ok:false,error:'Bag updates are temporarily limited. Please try again later.'},429,guard);
  const {action,cartId,merchandiseId,quantity=1,lineId}=body;
- if(!['create','createMany','buyNow'].includes(action) && cartSessionConfigured() && !requestOwnsCart(request,cartId)) return respond({ok:false,code:'CART_OWNERSHIP',error:'This bag belongs to another browser session. Please start a new bag.'},403,guard);
+ if(!['create','createMany'].includes(action) && cartSessionConfigured() && !requestOwnsCart(request,cartId)) return respond({ok:false,code:'CART_OWNERSHIP',error:'This bag belongs to another browser session. Please start a new bag.'},403,guard);
  const batch=['createMany','addMany'].includes(action)?body.lines.map(item=>({merchandiseId:item.merchandiseId,quantity:item.quantity})):null;
  const variables=action==='get'?{id:cartId}:action==='remove'?{cartId,lineIds:[lineId]}:action==='update'?{cartId,lines:[{id:lineId,quantity}]}:batch?{...(action==='addMany'?{cartId}:{}),lines:batch}:{...(action==='add'?{cartId}:{}),lines:[{merchandiseId,quantity}]};
  // Enable only a header overwritten by the trusted hosting proxy.
  const ipHeader=process.env.SHOPIFY_BUYER_IP_HEADER,rawIp=ipHeader?request.headers.get(ipHeader)?.trim():'';
  try{
-  const operation=action==='buyNow'?'create':action;
-  const data=await storefront(cartOperations[operation],variables,{revalidate:0,buyerIp:rawIp && isIP(rawIp)?rawIp:undefined});
-  const keys={create:'cartCreate',createMany:'cartCreate',buyNow:'cartCreate',add:'cartLinesAdd',addMany:'cartLinesAdd',update:'cartLinesUpdate',remove:'cartLinesRemove'},result=action==='get'?{cart:data.cart}:data[keys[action]];
+  const data=await storefront(cartOperations[action],variables,{revalidate:0,buyerIp:rawIp && isIP(rawIp)?rawIp:undefined});
+  const keys={create:'cartCreate',createMany:'cartCreate',add:'cartLinesAdd',addMany:'cartLinesAdd',update:'cartLinesUpdate',remove:'cartLinesRemove'},result=action==='get'?{cart:data.cart}:data[keys[action]];
   if(result.userErrors?.length) return respond({ok:false,error:result.userErrors.map(e => e.message).join(' ')},400,guard);
   if(!result.cart) return respond({ok:false,code:'CART_NOT_FOUND',error:'This bag has expired. Please add your items again.'},404,guard);
-  return respond({ok:true,cart:result.cart},200,guard,{},action==='buyNow'?'':result.cart.id);
+  return respond({ok:true,cart:result.cart},200,guard,{},result.cart.id);
  }catch{return respond({ok:false,error:'We couldn’t update your bag. Please try again.'},502,guard);}
 }

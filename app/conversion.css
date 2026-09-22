@@ -39,7 +39,7 @@
 @media(max-width:700px){
  .header-saved{min-width:40px;justify-content:center}.header-saved>span{display:none}
  .product-card-wishlist{right:7px;top:7px;min-width:36px;min-height:36px;padding:7px}
- .pdp-title-row{align-items:flex-start}.pdp-title-row h1{font-size:38px}.pdp-wishlist{min-height:40px;padding:8px}.pdp-wishlist>span{display:none}
+ .pdp-title-row{align-items:flex-start}.pdp-info .pdp-title-row h1.editorial{font-size:26px;line-height:1.08}.pdp-wishlist{min-height:40px;padding:8px}.pdp-wishlist>span{display:none}
  .wishlist-page{padding:36px var(--gutter) 70px}.wishlist-hero{align-items:flex-start;flex-direction:column;gap:6px;margin-bottom:24px}.wishlist-hero h1{font-size:52px}.wishlist-hero>span{padding-bottom:0}.wishlist-empty{min-height:50vh}.wishlist-empty h2{font-size:38px}
 }
 

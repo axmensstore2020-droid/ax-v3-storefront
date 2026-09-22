@@ -43,7 +43,7 @@ h1,h2,h3{font-weight:300}
 .section-head h2,.community-section h2{font-size:clamp(30px,3.7vw,50px)}
 .style-worlds>a{font-size:16px;text-transform:uppercase;padding:24px 0}
 .pdp-info{top:108px}
-.pdp-info h1{font-size:clamp(24px,2.7vw,36px);line-height:1.2}
+.pdp-info .pdp-title-row h1.editorial{font-size:26px;line-height:1.08}
 .compact-filters{display:flex;justify-content:space-between;flex-wrap:wrap;overflow:visible;padding:12px 0 28px;gap:8px 20px}
 .compact-filters>a,.compact-filters button{font-size:12px;text-transform:uppercase}
 .category-select{display:flex;position:relative;align-items:center;margin-left:auto;max-width:100%}

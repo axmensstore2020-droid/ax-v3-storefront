@@ -8,7 +8,7 @@ import MeasurementFit from './MeasurementFit';
 import LinkedColourways from './LinkedColourways';
 
 export default function AddToCart({product,options,selected,variant,onSelect,colourways=[],beforeAddButton=null,afterAddButton=null,restockAlertsEnabled=false}) {
-  const {addItem,buyNow,busy,setOpen,cart,demoLines,demo,notice}=useCart(),variants=product.variants||[],shown=visibleOptions(options).filter(option=>!(colourways.length>1 && /colou?r/i.test(option.name||'') && option.values?.length===1));
+  const {addItem,busy,setOpen,cart,demoLines,demo,notice}=useCart(),variants=product.variants||[],shown=visibleOptions(options).filter(option=>!(colourways.length>1 && /colou?r/i.test(option.name||'') && option.values?.length===1));
   const [buying,setBuying]=useState(false);
   const missing=shown.find(option=>!selected[option.name]);
   const available=!missing && (product.demo || Boolean(variant?.availableForSale));
@@ -40,7 +40,8 @@ export default function AddToCart({product,options,selected,variant,onSelect,col
   async function quickBuy(){
     if(!available || product.demo || busy)return;
     setBuying(true);
-    await buyNow({merchandiseId:variant?.id,variant,product});
+    const added=inBag || await addItem({merchandiseId:variant?.id,variant,product});
+    if(added)setOpen(true);
     setBuying(false);
   }
   return <div className="buy-box">
@@ -66,7 +67,7 @@ export default function AddToCart({product,options,selected,variant,onSelect,col
     {beforeAddButton}
     <div className="purchase-actions">
       <button type="button" className="add-bag" disabled={(!available&&!inBag)||busy} onClick={add}>{buttonText}</button>
-      <button type="button" className="buy-now" disabled={!available||busy||product.demo} onClick={quickBuy}>{buying?'OPENING CHECKOUT…':product.demo?'BUY NOW UNAVAILABLE':'BUY NOW'}</button>
+      <button type="button" className="buy-now" disabled={!available||busy||product.demo} onClick={quickBuy}>{buying?'OPENING BAG…':product.demo?'BUY NOW UNAVAILABLE':'BUY NOW'}</button>
     </div>
     {notice&&<p className="cart-note cart-inline-notice" role="alert">{notice}</p>}
     {afterAddButton}

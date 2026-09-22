@@ -13,6 +13,10 @@ test('shirts and tees stay separate, and accessories use whole words',()=>{
 test('all wardrobe categories match their own products',()=>{
  for(const [category,title] of [['trousers','Wide leg trousers'],['denim','Relaxed jeans'],['outerwear','PU jacket'],['formal','Tailored shirt'],['accessories','Black cap']])assert.equal(matchesCategory({title},category),true);
 });
+test('new-in collection aliases open the catalog fallback',()=>{
+ assert.equal(matchesCategory({title:'Black premium linen shirt'},'new-in'),true);
+ assert.equal(matchesCategory({title:'Black premium linen shirt'},'new-arrivals'),true);
+});
 test('empty style edits do not invent stock',()=>{
  assert.equal(fallbackProducts.filter(p=>matchesStyle(p,'linen')).length,0);
  assert.ok(fallbackProducts.filter(p=>matchesStyle(p,'old-school')).length>0);
@@ -27,9 +31,9 @@ test('Partial Payment is filtered on every path',()=>{
 });
 test('cart rejects malformed IDs and fractional or excessive quantities',()=>{
  const merchandiseId='gid://shopify/ProductVariant/123',cartId='gid://shopify/Cart/abc?key=sample',lineId='gid://shopify/CartLine/abc';
- for(const body of [{action:'create',merchandiseId,quantity:1},{action:'buyNow',merchandiseId,quantity:1},{action:'get',cartId},{action:'add',cartId,merchandiseId},{action:'update',cartId,lineId,quantity:0},{action:'remove',cartId,lineId}])assert.equal(validateCartInput(body),null);
- for(const quantity of [-1,0,1.5,100,'1',null]){assert.ok(validateCartInput({action:'create',merchandiseId,quantity}));assert.ok(validateCartInput({action:'buyNow',merchandiseId,quantity}));}
- for(const body of [null,[],{},{action:'add',cartId,merchandiseId:'demo'},{action:'get',cartId:3},{action:'remove',cartId,lineId:'test'}])assert.ok(validateCartInput(body));
+ for(const body of [{action:'create',merchandiseId,quantity:1},{action:'get',cartId},{action:'add',cartId,merchandiseId},{action:'update',cartId,lineId,quantity:0},{action:'remove',cartId,lineId}])assert.equal(validateCartInput(body),null);
+ for(const quantity of [-1,0,1.5,100,'1',null])assert.ok(validateCartInput({action:'create',merchandiseId,quantity}));
+ for(const body of [null,[],{},{action:'buyNow',merchandiseId,quantity:1},{action:'add',cartId,merchandiseId:'demo'},{action:'get',cartId:3},{action:'remove',cartId,lineId:'test'}])assert.ok(validateCartInput(body));
 });
 test('variant selection resolves exact combinations and sold-out stock',()=>{
  const variants=[{id:'black-m',availableForSale:true,selectedOptions:[{name:'Color',value:'Black'},{name:'Size',value:'M'}]},{id:'black-l',availableForSale:false,selectedOptions:[{name:'Color',value:'Black'},{name:'Size',value:'L'}]}];
