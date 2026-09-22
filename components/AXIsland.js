@@ -9,7 +9,7 @@ import Dialog from './Dialog';
 import {useStylist} from './StylistProvider';
 import {AX_ISLAND_SLOT_COUNT,islandSlotX,nearestIslandIndex} from '../lib/island-navigation.js';
 
-const BEAD_WIDTH=76;
+const BEAD_WIDTH=48;
 const SLOT_ICONS=['home','explore',null,'search','profile'];
 
 function reducedMotion(){
@@ -84,8 +84,13 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
 
  useEffect(()=>{
   if(typeof window==='undefined')return;
-  const params=new URLSearchParams(window.location.search);
-  setSearchActive(path.startsWith('/products') && params.get('search')==='1');
+  const syncSearch=()=>{
+   const params=new URLSearchParams(window.location.search);
+   setSearchActive(window.location.pathname.startsWith('/products') && params.get('search')==='1');
+  };
+  syncSearch();
+  window.addEventListener('popstate',syncSearch);
+  return()=>window.removeEventListener('popstate',syncSearch);
  },[path]);
 
  useEffect(()=>{
@@ -185,17 +190,8 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
  const primaryLabel=signedIn?'VIEW AX ACCOUNT':accountEnabled&&accountState==='signed-out'?'SIGN IN / CREATE ACCOUNT':accountEnabled?'OPEN AX ACCOUNT':'OPEN MY ACCOUNT';
  const beadIcon=SLOT_ICONS[visualIndex];
 
- return <><nav ref={islandRef} id="ax-island-navigation" className="ax-island ax-liquid-island" aria-label="AX navigation">
-  <svg className="ax-island-filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
-   <defs>
-    <filter id="ax-island-refraction" x="-20%" y="-40%" width="140%" height="180%" colorInterpolationFilters="sRGB">
-     <feTurbulence type="fractalNoise" baseFrequency="0.018 0.11" numOctaves="2" seed="11" result="noise"/>
-     <feGaussianBlur in="noise" stdDeviation=".35" result="softNoise"/>
-     <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="11" xChannelSelector="R" yChannelSelector="B"/>
-    </filter>
-   </defs>
-  </svg>
-  <span className="ax-island-glass" aria-hidden="true"><span className="ax-island-refraction"/></span>
+ return <><nav ref={islandRef} id="ax-island-navigation" className="ax-island" aria-label="AX navigation">
+  <span className="ax-island-glass" aria-hidden="true"/>
 
   <Link href="/" className={`ax-island-slot island-home${visualIndex===0?' is-active':''}`} aria-current={path==='/'?'page':undefined} onClick={()=>previewIndex(0)}>
    <span className="ax-island-slot-icon" aria-hidden="true"><Icon name="home"/></span><span className="ax-island-slot-label">Home</span>
@@ -204,7 +200,7 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
    <span className="ax-island-slot-icon" aria-hidden="true"><Icon name="explore"/></span><span className="ax-island-slot-label">Explore</span>
   </Link>
   <button className={`ax-island-slot island-stylist${visualIndex===2?' is-active':''}`} type="button" onClick={()=>{previewIndex(2);openStylist('style',currentProduct);}} aria-pressed={stylistOpen} aria-label="Open AX Stylist">
-   <span className="ax-island-slot-icon ax-island-slot-brand" aria-hidden="true"><Brand/></span><span className="ax-island-slot-label">AX</span>
+   <span className="ax-island-slot-icon ax-island-slot-brand" aria-hidden="true"><Brand inverse/></span><span className="ax-island-slot-label">Stylist</span>
   </button>
   <Link href="/products?search=1" className={`ax-island-slot island-search${visualIndex===3?' is-active':''}`} aria-current={searchActive?'page':undefined} onClick={()=>{setSearchActive(true);previewIndex(3);}}>
    <span className="ax-island-slot-icon" aria-hidden="true"><Icon name="search"/></span><span className="ax-island-slot-label">Search</span>
@@ -224,10 +220,10 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
    aria-hidden="true"
   >
    <span className="ax-island-bulge" aria-hidden="true">
-    <span className="ax-island-bulge-highlight"/>
     <span className="ax-island-bead-icon">{visualIndex===2?<Brand/>:<Icon name={beadIcon} size={23}/>}</span>
    </span>
   </span>
  </nav>
  {profile && <Dialog title="Your AX" className="stylist-dialog" onClose={()=>setProfile(false)}><h3 className="editorial sheet-title">Make yourself at home.</h3><p>{!accountEnabled?'Access your orders through your store account.':checking?'Checking your AX account…':signedIn?'Your AX account is connected. Orders, tracking and saved details are ready here.':accountState==='signed-out'?'Sign in or create an account to keep orders and account details within AX.':'Open your AX account to continue.'}</p>{primaryHref&&!checking?<a className="solid-button" href={primaryHref}>{primaryLabel} <Icon name="arrow"/></a>:checking?<p className="small muted">Checking sign-in status…</p>:<p className="muted">Account sign-in will be available when the store opens.</p>}{signedIn&&<form action="/account/logout" method="post"><button className="underlined-link" type="submit">SIGN OUT <span aria-hidden="true">→</span></button></form>}<p className="small muted">Manage optional measurements and preferences in AX Stylist → My fit & style.</p></Dialog>}</>;
 }
+
