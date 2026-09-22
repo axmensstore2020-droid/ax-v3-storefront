@@ -189,13 +189,6 @@ h1,h2,h3{font-weight:300}
  will-change:transform;
  -webkit-tap-highlight-color:transparent;
 }
-.ax-island-bead:focus-visible{outline:none}
-.ax-island-bead:focus-visible .ax-island-bead-sphere{
- box-shadow:
-  0 0 0 2px var(--paper,#f7f7f4),
-  0 0 0 3px color-mix(in srgb,var(--ink,#181916) 52%,transparent),
-  0 13px 30px rgba(10,12,10,.18);
-}
 .ax-island-bead-neck{
  position:absolute;
  left:9px;
