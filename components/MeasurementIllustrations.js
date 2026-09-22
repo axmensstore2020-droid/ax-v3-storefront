@@ -12,20 +12,29 @@ function Label({x,y,children,anchor='middle',size=10}){return <text x={x} y={y} 
 function Footer({children='Lay flat · measure in cm · do not stretch'}){return <text x="167" y="253" textAnchor="middle" fontSize="9" fontFamily="Arial, Helvetica, sans-serif" fill="currentColor" opacity=".58">{children}</text>;}
 
 export function TeeMeasurementSvg(){return <Base label="T-shirt">
- <path d="M87 50 126 30 150 45 167 57 184 45 208 30 247 50 276 76 252 108 220 88 220 232 114 232 114 88 82 108 58 76Z" {...outline}/>
- <path d="M150 45q17 21 34 0" {...seam}/>
- <line x1="126" y1="32" x2="208" y2="32" {...guide}/><line x1="114" y1="116" x2="220" y2="116" {...guide}/><line x1="126" y1="50" x2="126" y2="232" {...guide}/><line x1="208" y1="50" x2="252" y2="91" {...guide}/>
- <Dot x={126} y={50}/><Dot x={208} y={50}/><Dot x={114} y={116}/><Dot x={220} y={116}/><Dot x={126} y={232}/><Dot x={252} y={91}/>
- <Label x={167} y={18}>SHOULDER</Label><Label x={20} y={119} anchor="start">CHEST ×2</Label><Label x={226} y={176} anchor="start">LENGTH</Label><Label x={264} y={65} anchor="start">SLEEVE</Label><Footer/>
+ <path d="M86 55c13-8 27-15 41-21 9 11 23 17 40 17s31-6 40-17c14 6 28 13 41 21 12 8 23 17 31 28l-28 32c-11-8-22-15-34-21v138H117V94c-12 6-23 13-34 21L55 83c8-11 19-20 31-28Z" {...outline}/>
+ <path d="M140 41c5 18 18 28 27 28s22-10 27-28M122 213h90" {...seam}/>
+ <line x1="127" y1="34" x2="207" y2="34" {...guide}/><line x1="117" y1="118" x2="217" y2="118" {...guide}/><line x1="127" y1="55" x2="127" y2="232" {...guide}/><line x1="207" y1="55" x2="253" y2="98" {...guide}/>
+ <Dot x={127} y={55}/><Dot x={207} y={55}/><Dot x={117} y={118}/><Dot x={217} y={118}/><Dot x={127} y={232}/><Dot x={253} y={98}/>
+ <Label x={167} y={20}>SHOULDER</Label><Label x={20} y={121} anchor="start">CHEST ×2</Label><Label x={226} y={176} anchor="start">LENGTH</Label><Label x={262} y={70} anchor="start">SLEEVE</Label><Footer/>
+ </Base>;}
+
+export function LongSleeveMeasurementSvg(){return <Base label="Long sleeve T-shirt">
+ <path d="M89 50 126 30 150 45 167 57 184 45 208 30 245 50 268 70 286 190 253 196 224 87 220 232 114 232 110 87 81 196 48 190 66 70Z" {...outline}/>
+ <path d="M150 45q17 21 34 0M116 210h102" {...seam}/>
+ <line x1="126" y1="32" x2="208" y2="32" {...guide}/><line x1="114" y1="116" x2="220" y2="116" {...guide}/><line x1="126" y1="50" x2="126" y2="232" {...guide}/><line x1="208" y1="50" x2="268" y2="190" {...guide}/>
+ <Dot x={126} y={50}/><Dot x={208} y={50}/><Dot x={114} y={116}/><Dot x={220} y={116}/><Dot x={126} y={232}/><Dot x={268} y={190}/>
+ <Label x={167} y={18}>SHOULDER</Label><Label x={20} y={119} anchor="start">CHEST ×2</Label><Label x={226} y={176} anchor="start">LENGTH</Label><Label x={273} y={126} anchor="start">SLEEVE</Label><Footer/>
  </Base>;}
 
 export function ShirtMeasurementSvg(){return <Base label="Shirt">
- <path d="M91 56 126 38 144 54 167 69 190 54 208 38 243 56 276 83 252 113 220 91 220 232 114 232 114 91 82 113 58 83Z" {...outline}/>
- <path d="M144 54 167 83 190 54M167 83v149M154 79l13 14 13-14M120 121h94" {...seam}/>
- <circle cx="167" cy="115" r="2" fill="currentColor" opacity=".35"/><circle cx="167" cy="145" r="2" fill="currentColor" opacity=".35"/><circle cx="167" cy="175" r="2" fill="currentColor" opacity=".35"/>
- <line x1="126" y1="40" x2="208" y2="40" {...guide}/><line x1="114" y1="121" x2="220" y2="121" {...guide}/><line x1="126" y1="56" x2="126" y2="232" {...guide}/><line x1="208" y1="56" x2="252" y2="96" {...guide}/>
- <Dot x={126} y={56}/><Dot x={208} y={56}/><Dot x={114} y={121}/><Dot x={220} y={121}/><Dot x={126} y={232}/><Dot x={252} y={96}/>
- <Label x={167} y={26}>SHOULDER</Label><Label x={20} y={124} anchor="start">CHEST ×2</Label><Label x={226} y={173} anchor="start">LENGTH</Label><Label x={264} y={73} anchor="start">SLEEVE</Label><Footer/>
+ <path d="M91 58c12-8 24-14 37-19l19 17c6 5 13 9 20 13 7-4 14-8 20-13l19-17c13 5 25 11 37 19 13 8 24 18 33 30l-26 31c-10-8-21-15-32-21v134H116V98c-11 6-22 13-32 21L58 88c9-12 20-22 33-30Z" {...outline}/>
+ <path d="M147 56 167 86 187 56M167 86v146M151 78l16 16 16-16M122 123h90M121 213h92" {...seam}/>
+ <path d="M137 41c5 17 18 28 30 28s25-11 30-28" {...seam}/>
+ <circle cx="167" cy="116" r="2" fill="currentColor" opacity=".35"/><circle cx="167" cy="145" r="2" fill="currentColor" opacity=".35"/><circle cx="167" cy="174" r="2" fill="currentColor" opacity=".35"/><circle cx="167" cy="203" r="2" fill="currentColor" opacity=".35"/>
+ <line x1="128" y1="40" x2="206" y2="40" {...guide}/><line x1="116" y1="123" x2="218" y2="123" {...guide}/><line x1="128" y1="58" x2="128" y2="232" {...guide}/><line x1="206" y1="58" x2="251" y2="101" {...guide}/>
+ <Dot x={128} y={58}/><Dot x={206} y={58}/><Dot x={116} y={123}/><Dot x={218} y={123}/><Dot x={128} y={232}/><Dot x={251} y={101}/>
+ <Label x={167} y={26}>SHOULDER</Label><Label x={20} y={126} anchor="start">CHEST ×2</Label><Label x={226} y={173} anchor="start">LENGTH</Label><Label x={263} y={75} anchor="start">SLEEVE</Label><Footer/>
  </Base>;}
 
 export function HoodieMeasurementSvg(){return <Base label="Hoodie">
@@ -52,6 +61,14 @@ export function BottomMeasurementSvg(){return <Base label="Trousers">
  <Label x={167} y={14} size={9}>WAIST ×2</Label><Label x={24} y={73} anchor="start" size={9}>HIP ×2</Label><Label x={174} y={93} anchor="start" size={9}>FRONT RISE</Label><Label x={25} y={123} anchor="start" size={9}>THIGH ×2</Label><Label x={173} y={188} anchor="start" size={9}>INSEAM</Label><Label x={232} y={159} anchor="start" size={9}>OUTSEAM</Label><Label x={214} y={228} anchor="start" size={9}>LEG OPENING ×2</Label>
  </Base>;}
 
+export function JeansMeasurementSvg(){return <Base label="Jeans">
+ <path d="M108 24h118l9 66-21 150h-39l-8-115-8 115h-39L99 90Z" {...outline}/>
+ <path d="M104 58h126M126 25q5 17 41 17t41-17M167 24v80q-22 14-23 42M167 104q22 14 23 42M124 92h34M176 92h34" {...seam}/>
+ <line x1="108" y1="34" x2="226" y2="34" {...guide}/><line x1="105" y1="72" x2="229" y2="72" {...guide}/><line x1="167" y1="43" x2="167" y2="120" {...guide}/><line x1="108" y1="121" x2="158" y2="121" {...guide}/><line x1="167" y1="135" x2="167" y2="240" {...guide}/><line x1="226" y1="28" x2="214" y2="240" {...guide}/><line x1="175" y1="232" x2="214" y2="232" {...guide}/>
+ {[ [108,34],[226,34],[105,72],[229,72],[167,43],[167,120],[108,121],[158,121],[167,135],[167,240],[226,28],[214,240],[175,232],[214,232] ].map(([x,y],i)=><Dot x={x} y={y} r={3.2} key={i}/>)}
+ <Label x={167} y={14} size={9}>WAIST ×2</Label><Label x={22} y={75} anchor="start" size={9}>HIP ×2</Label><Label x={174} y={94} anchor="start" size={9}>FRONT RISE</Label><Label x={23} y={124} anchor="start" size={9}>THIGH ×2</Label><Label x={173} y={189} anchor="start" size={9}>INSEAM</Label><Label x={237} y={160} anchor="start" size={9}>OUTSEAM</Label><Label x={220} y={230} anchor="start" size={9}>LEG OPENING ×2</Label>
+ </Base>;}
+
 export function ShortsMeasurementSvg(){return <Base label="Shorts">
  <path d="M106 38h122l6 63-23 95-40-2-4-59-4 59-40 2-23-95Z" {...outline}/>
  <path d="M102 70h130M167 38v73q-19 13-21 32M167 111q19 13 21 32" {...seam}/>
@@ -60,5 +77,5 @@ export function ShortsMeasurementSvg(){return <Base label="Shorts">
  <Label x={167} y={28} size={9}>WAIST ×2</Label><Label x={22} y={85} anchor="start" size={9}>HIP ×2</Label><Label x={174} y={103} anchor="start" size={9}>FRONT RISE</Label><Label x={22} y={131} anchor="start" size={9}>THIGH ×2</Label><Label x={174} y={169} anchor="start" size={9}>INSEAM</Label><Label x={236} y={145} anchor="start" size={9}>OUTSEAM</Label><Label x={214} y={185} anchor="start" size={9}>LEG OPENING ×2</Label><Footer/>
  </Base>;}
 
-const SVG_BY_CATEGORY={tee:TeeMeasurementSvg,shirt:ShirtMeasurementSvg,hoodie:HoodieMeasurementSvg,jacket:JacketMeasurementSvg,bottom:BottomMeasurementSvg,shorts:ShortsMeasurementSvg};
+const SVG_BY_CATEGORY={tee:TeeMeasurementSvg,long_sleeve:LongSleeveMeasurementSvg,shirt:ShirtMeasurementSvg,hoodie:HoodieMeasurementSvg,jacket:JacketMeasurementSvg,jeans:JeansMeasurementSvg,bottom:BottomMeasurementSvg,shorts:ShortsMeasurementSvg};
 export default function MeasurementIllustration({category}){const Component=SVG_BY_CATEGORY[category];return Component?<Component/>:null;}

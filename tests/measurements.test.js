@@ -4,9 +4,13 @@ import {convertMeasurementValue,formatMeasurementDisplay,measurementCategory,mea
 
 test('AX product categories use the agreed measurement schemas',()=>{
  assert.deepEqual(measurementFieldsForProduct({title:'Oversized T-Shirt'}),['chest','shoulder','length','sleeve']);
+ assert.deepEqual(measurementFieldsForProduct({title:'Full Sleeve Cropped Tee'}),['chest','shoulder','length','sleeve']);
  assert.deepEqual(measurementFieldsForProduct({title:'Linen Shirt'}),['chest','shoulder','length','sleeve']);
+ assert.deepEqual(measurementFieldsForProduct({title:'Baggy Jeans'}),['waist','hip','front_rise','thigh','inseam','outseam','leg_opening']);
  assert.deepEqual(measurementFieldsForProduct({title:'Cargo Pants'}),['waist','hip','front_rise','thigh','inseam','outseam','leg_opening']);
  assert.equal(measurementCategory({title:'Relaxed Shorts'}),'shorts');
+ assert.equal(measurementCategory({title:'Raw Denim Jeans'}),'jeans');
+ assert.equal(measurementCategory({title:'Long Sleeve T-shirt'}),'long_sleeve');
 });
 
 test('measurement markers follow A-D for tops and A-G for bottoms',()=>{

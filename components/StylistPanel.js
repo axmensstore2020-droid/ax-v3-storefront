@@ -4,12 +4,19 @@ import {useEffect,useRef,useState} from 'react';
 import Dialog from './Dialog';
 import Icon from './Icon';
 import ProductImage from './ProductImage';
+import MeasurementIllustration from './MeasurementIllustrations';
 import {useNavigation} from './NavigationProvider';
 import {formatMoney} from '../lib/catalog';
 import {CONSENT_VERSION,normalizeProfile} from '../lib/stylist/validation';
 import './stylist.css';
 
-const blankProfile = {unit:'cm',chest:'',waist:'',hip:'',height:'',inseam:'',fit:'regular',styles:'',colors:'',avoid:'',usualSize:''};
+const blankProfile = {unit:'cm',chest:'',waist:'',hip:'',height:'',inseam:'',weight:'',fit:'regular',build:'',topFit:'',bottomFit:'',styles:'',colors:'',avoid:'',usualSize:''};
+const bodyFields = [
+  ['height','Height'],['weight','Weight'],['chest','Chest'],['waist','Waist'],['hip','Hips'],['inseam','Inseam']
+];
+const categoryGuides = [
+  ['tee','T-shirts'],['long_sleeve','Long sleeves'],['shirt','Shirts'],['jacket','Jackets'],['jeans','Jeans'],['bottom','Trousers']
+];
 const needsCustomerFitData = fit => fit?.status === 'needs_data' && ((Array.isArray(fit.missing) && fit.missing.length > 0) || /(?:choose the unit|add your body)/i.test(fit.message || ''));
 async function prepareImage(file) {
   if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 8000000) throw new Error('Choose a JPEG, PNG or WebP photo under 8 MB.');
@@ -123,22 +130,49 @@ export default function StylistPanel({request,onClose}) {
     </div>
     <div className="ax-chat-body" id={'ax-panel-'+tab} role="tabpanel" aria-labelledby={'ax-tab-'+tab}>
       {tab === 'fit' ? <div className="ax-fit-form">
-        <p>Optional body measurements—not flat garment widths. Use a tape around your chest, waist and hips without pulling tight. A photo cannot tell us your measurements.</p>
-        <label>Measurement unit<select value={profile.unit} onChange={e=>changeUnit(e.target.value)}><option value="cm">Centimetres (cm)</option><option value="inches">Inches</option></select></label>
-        <div className="ax-fit-grid">{['chest','waist','hip','height','inseam'].map(key => <label key={key}>{key === 'hip' ? 'Hips' : key.charAt(0).toUpperCase()+key.slice(1)} ({profile.unit})<input type="number" inputMode="decimal" min="0" step="0.01" value={profile[key] ?? ''} onChange={e=>changeProfile(key,e.target.value)}/></label>)}</div>
-        <label>Preferred fit<select value={profile.fit} onChange={e=>changeProfile('fit',e.target.value)}><option value="regular">Regular</option><option value="relaxed">Relaxed</option><option value="oversized">Oversized</option></select></label>
+        <section className="ax-fit-hero" aria-labelledby="ax-fit-title">
+          <p className="ax-fit-kicker">AX FIT PROFILE</p>
+          <h3 id="ax-fit-title">Find your size without guessing.</h3>
+          <p>Enter body measurements you know, choose how you like clothes to sit, then ask AX to compare them with each product’s approved size guide.</p>
+        </section>
+        <div className="ax-fit-steps" aria-label="Fit recommendation flow">
+          <span><b>1</b> Body</span><span><b>2</b> Preference</span><span><b>3</b> AX size check</span>
+        </div>
+        <div className="ax-fit-card">
+          <div><p className="ax-section-label">Your body</p><p>Use a tape around the body. Do not enter flat garment widths here.</p></div>
+          <label>Unit<select value={profile.unit} onChange={e=>changeUnit(e.target.value)}><option value="cm">Centimetres (cm)</option><option value="inches">Inches</option></select></label>
+          <div className="ax-fit-grid">{bodyFields.map(([key,label]) => <label key={key}>{label} ({key==='weight' ? (profile.unit==='cm'?'kg':'lb') : profile.unit})<input type="number" inputMode="decimal" min="0" step="0.01" value={profile[key] ?? ''} onChange={e=>changeProfile(key,e.target.value)}/></label>)}</div>
+        </div>
+        <div className="ax-fit-card">
+          <p className="ax-section-label">Build and fit preference</p>
+          <div className="ax-choice-row" role="group" aria-label="Body build">{[['narrow','Narrow'],['average','Average'],['broad','Broader']].map(([value,label])=><button type="button" key={value} aria-pressed={profile.build===value} onClick={()=>changeProfile('build',profile.build===value?'':value)}>{label}</button>)}</div>
+          <label>Preferred overall fit<select value={profile.fit} onChange={e=>changeProfile('fit',e.target.value)}><option value="regular">Regular</option><option value="relaxed">Relaxed</option><option value="oversized">Oversized</option></select></label>
+          <label>T-shirt / shirt feel<select value={profile.topFit || ''} onChange={e=>changeProfile('topFit',e.target.value)}><option value="">Choose when useful</option><option value="close">Closer</option><option value="regular">Regular</option><option value="relaxed">Relaxed</option><option value="oversized">Oversized</option></select></label>
+          <label>Jeans / trouser feel<select value={profile.bottomFit || ''} onChange={e=>changeProfile('bottomFit',e.target.value)}><option value="">Choose when useful</option><option value="straight">Straight</option><option value="relaxed">Relaxed</option><option value="baggy">Baggy</option></select></label>
+        </div>
+        <div className="ax-fit-card">
+          <p className="ax-section-label">How AX measures garments</p>
+          <p>Product size charts are garment measurements. Compare them with a similar piece you already own.</p>
+          <div className="ax-guide-strip" aria-label="Measurement guide categories">{categoryGuides.map(([category,label])=><figure key={category}><MeasurementIllustration category={category}/><figcaption>{label}</figcaption></figure>)}</div>
+        </div>
         <label>Usual size (optional)<input value={profile.usualSize} maxLength={40} onChange={e=>changeProfile('usualSize',e.target.value)} placeholder="Tops M, trousers 32…"/></label>
         <label>Styles you like<input value={profile.styles} maxLength={180} onChange={e=>changeProfile('styles',e.target.value)} placeholder="Minimal, Korean fits, streetwear…"/></label>
         <label>Colours you like<input value={profile.colors} maxLength={180} onChange={e=>changeProfile('colors',e.target.value)} placeholder="Black, sage, cream…"/></label>
         <label>Anything to avoid?<input value={profile.avoid} maxLength={180} onChange={e=>changeProfile('avoid',e.target.value)} placeholder="Large prints, tight sleeves…"/></label>
-        <p className="ax-small">Relevant details are used when you ask about styling or fit. Saving is optional. Personal fit checks need AX’s approved size guide for that product.</p>
+        <p className="ax-small">A customer photo can help with colour and styling ideas, but AX will not estimate your measurements from it. Virtual try-on needs a separate image model, not just GPT.</p>
         <label className="ax-checkbox"><input type="checkbox" checked={saveConsent} onChange={e=>setSaveConsent(e.target.checked)}/><span>Save my measurements and preferences privately for 30 days, for this browser.</span></label>
         <div className="ax-profile-actions"><button onClick={saveProfile} disabled={!saveConsent || !status?.profiles || profileBusy}>Save profile</button><button onClick={forgetProfile} disabled={profileBusy}>Delete saved profile</button></div>
         <p role="status" className="ax-small">{profileNotice}</p>
         <button className="solid-button" onClick={()=>{setTab('chat');setDraft(request.product ? 'Check my fit for this piece and tell me how the cut will wear and what to pair it with.' : 'Help me find a piece that suits my fit and style.');}}>USE THESE DETAILS <Icon name="arrow"/></button>
       </div> : <>
         <div className="ax-transcript" ref={transcript} role="log" aria-label="Stylist conversation" aria-live="polite" aria-relevant="additions">
-          {!messages.length && status?.available && <div className="ax-quick-actions" aria-label="Quick asks">{quickActions.map(action=><button type="button" key={action.label} onClick={()=>useQuickAction(action)}><span className="ax-quick-icon"><Icon name={action.icon} size={17}/></span><span>{action.label}</span></button>)}</div>}
+          {!messages.length && status?.available && <div className="ax-stylist-start">
+            <div className="ax-stylist-orb" aria-hidden="true"><span/><span/><span/></div>
+            <p className="ax-fit-kicker">AX STYLIST</p>
+            <h3>What are we building today?</h3>
+            <p>Search the store, style a piece, check fit, or add a photo for colour and outfit advice.</p>
+            <div className="ax-quick-actions" aria-label="Quick asks">{quickActions.map(action=><button type="button" key={action.label} onClick={()=>useQuickAction(action)}><span className="ax-quick-icon"><Icon name={action.icon} size={17}/></span><span>{action.label}</span></button>)}</div>
+          </div>}
           {status === null && <p className="ax-status-line" role="status">Checking availability…</p>}
           {status && !status.available && <div className="ax-chat-notice"><p>AX Stylist is temporarily unavailable.</p><div className="style-links">{styles.slice(0,3).map(style=><Link key={style.key} href={style.href} onClick={onClose}>{style.label}<Icon name="arrow" size={15}/></Link>)}</div></div>}
           {messages.map((item,i)=><article ref={item.role === 'assistant' && i === messages.length-1 ? latestReply : null} className={'ax-message ax-message-'+item.role} key={i}><span className="ax-message-role">{item.role === 'user' ? 'YOU' : 'AX'}</span><p>{item.message}</p>{item.photo && <p className="ax-small">Photo used for this reply; not saved in the chat.</p>}
