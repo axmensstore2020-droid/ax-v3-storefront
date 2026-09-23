@@ -175,7 +175,11 @@ export default function AXPlayroom(){
   if(event.key==='ArrowRight')target=row*3+(col+1)%3;if(event.key==='ArrowLeft')target=row*3+(col+2)%3;if(event.key==='ArrowDown')target=(index+3)%9;if(event.key==='ArrowUp')target=(index+6)%9;if(event.key==='Home')target=0;if(event.key==='End')target=8;setFocusCell(target);cells.current[target]?.focus({preventScroll:true});
  }
 
- function minimizeGame(){setOpen(false);setVisible(true);setShowRules(false);}
+ function minimizeGame(){
+  if(result&&settlement.state==='loading'){setToast('Finishing your verified result…');window.setTimeout(()=>setToast(''),1800);return;}
+  const cooldownStarted=result&&settlement.state==='ready'&&(settlement.outcome==='win'||settlement.outcome==='loss');
+  setOpen(false);setVisible(!cooldownStarted);setShowRules(false);
+ }
  function openGame(){setVisible(true);setOpen(true);}
  async function copyCode(){
   const value=settlement.rewardCode;
