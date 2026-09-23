@@ -20,11 +20,11 @@ test('only playable Shopify hosted videos enter the gallery, with a mobile-sized
   assert.equal(videos[0].poster, 'https://cdn.shopify.com/poster.jpg');
 });
 
-test('colour changes retain the chosen image first, videos next, and deduplicate photos', () => {
+test('videos lead the gallery, followed by the chosen colour image and deduplicated photos', () => {
   const red={url:'red.jpg'}, black={url:'black.jpg'}, video={id:'video', type:'video'};
   const product={images:[red, black, red], videos:[video]};
-  assert.deepEqual(productGallery(product, red).map(m=>m.id || m.url), ['red.jpg','video','black.jpg']);
-  assert.deepEqual(productGallery(product, black).map(m=>m.id || m.url), ['black.jpg','video','red.jpg']);
+  assert.deepEqual(productGallery(product, red).map(m=>m.id || m.url), ['video','red.jpg','black.jpg']);
+  assert.deepEqual(productGallery(product, black).map(m=>m.id || m.url), ['video','black.jpg','red.jpg']);
   assert.deepEqual(productGallery({images:[red,red]}, red).map(m=>m.url), ['red.jpg']);
   assert.deepEqual(productGallery({videos:[video]}), [video]);
 });
