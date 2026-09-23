@@ -94,7 +94,7 @@ export default function AXPlayroom(){
    });
   },motionOn?680:180);
   return()=>{cancelled=true;window.clearTimeout(timer);};
- }
+ },[open,phase,turn,motionOn]);
 
  useEffect(()=>()=>{if(endTimer.current)window.clearTimeout(endTimer.current);},[]);
 
