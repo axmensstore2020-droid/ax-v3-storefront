@@ -8,11 +8,18 @@ export default function ProductVideo({media, title}) {
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
+    let visible = false;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const syncPlayback = () => {
+      if (!visible || document.hidden) video.pause();
+      else if (!reducedMotion.matches) video.play()?.catch(() => {});
+    };
     const observer = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => {
-      if (!entries[0].isIntersecting || entries[0].intersectionRatio < 0.5) video.pause();
+      visible = entries[0].isIntersecting && entries[0].intersectionRatio >= 0.5;
+      syncPlayback();
     }, {threshold:[0, 0.5]});
     observer?.observe(video);
-    const onVisibility = () => { if (document.hidden) video.pause(); };
+    const onVisibility = () => syncPlayback();
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       observer?.disconnect();
@@ -21,7 +28,7 @@ export default function ProductVideo({media, title}) {
     };
   }, []);
   return <div className="pdp-video-wrap">
-    <video ref={ref} className="pdp-video" controls playsInline preload="none"
+    <video ref={ref} className="pdp-video" controls muted loop playsInline preload="none"
       poster={media.poster ? imageUrl(media.poster, 800) : undefined}
       aria-label={media.altText || title + ' — product video'}
       onError={() => setFailed(true)}
