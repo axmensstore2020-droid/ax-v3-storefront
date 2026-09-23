@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import {assertAllowedKeys} from '../../../lib/request-body.js';
 import {cookieValue,PLAYROOM_GUARD_COOKIE,readLimitedJson,reservePlayroomBurst,sameOriginRequest} from '../../../lib/request-security.js';
-import {createPlayroomRound,PLAYROOM_COOLDOWN_COOKIE,PLAYROOM_GAME_COOKIE,PLAYROOM_GAME_MAX_AGE,playroomStatusFromToken,settlePlayroomRound} from '../../../lib/playroom-server.js';
+import {createPlayroomRound,getPlayroomAxMove,PLAYROOM_COOLDOWN_COOKIE,PLAYROOM_GAME_COOKIE,PLAYROOM_GAME_MAX_AGE,playroomStatusFromToken,settlePlayroomRound} from '../../../lib/playroom-server.js';
 
 export const dynamic='force-dynamic';
 
@@ -36,10 +36,22 @@ export async function POST(request){
     if(!status.eligible)return json({ok:false,error:'Your next Playroom round is not ready yet.',nextEligibleAt:status.nextEligibleAt,lastOutcome:status.lastOutcome},409,guard);
     try{
       const round=createPlayroomRound(body.first);
-      const response=json({ok:true,seed:round.seed,expiresAt:round.expiresAt},200,guard);
+      const response=json({ok:true,expiresAt:round.expiresAt},200,guard);
       response.cookies.set(PLAYROOM_GAME_COOKIE,round.token,{...cookieBase,secure:secure(),maxAge:PLAYROOM_GAME_MAX_AGE});
       return response;
     }catch(error){return json({ok:false,error:error.message||'The round could not start.'},503,guard);}
+  }
+
+  if(body.action==='move'){
+    if(!Array.isArray(body.moves))return json({ok:false,error:'Invalid Playroom move history.'},400,guard);
+    const token=cookieValue(request,PLAYROOM_GAME_COOKIE);
+    if(!token)return json({ok:false,error:'This Playroom round expired. Start a new round.'},409,guard);
+    try{
+      const index=getPlayroomAxMove(token,body.moves);
+      return json({ok:true,index},200,guard);
+    }catch(error){
+      return json({ok:false,error:error.message||'AX could not make a move.'},409,guard);
+    }
   }
 
   if(body.action==='finish'){
