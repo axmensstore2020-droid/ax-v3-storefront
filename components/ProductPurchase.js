@@ -2,6 +2,8 @@
 import {useEffect,useRef,useState} from 'react';
 import AddToCart from './AddToCart';
 import ProductImage from './ProductImage';
+import ProductVideo from './ProductVideo';
+import {productGallery} from '../lib/product-media';
 import ProductDataPanel from './ProductDataPanel';
 import {StylistButton} from './StylistProvider';
 import Icon from './Icon';
@@ -30,7 +32,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
   const primary = selectionImage(product,selected,variant);
   const deliveryWeight=deliveryWeightForProduct(product,selected,variant);
   const deliverySubtotal=Number(variant?.price?.amount ?? product.price ?? 0);
-  const gallery = [...new Map([primary,...(product.images || [])].filter(image => image?.url).map(image => [image.url,image])).values()];
+  const gallery = productGallery(product,primary);
   useEffect(() => {
     galleryRef.current?.scrollTo({left:0,behavior:'auto'});
     const next=primary?.url || '';
@@ -51,8 +53,10 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
     trackStoreEvent('product_view',{productHandle:product.handle,value:marketing.value,currency:marketing.currency,metadata:{variantId:variant?.id || ''}});
   },[product,variant]);
   return <section className="pdp">
-    <div ref={galleryRef} className={`pdp-gallery${gallery.length===1?' single-image':''}`} aria-label="Product photos">
-      {gallery.map((image,index) => <div className="pdp-image" key={image.url}><ProductImage src={image.url} alt={image.altText || product.title+', view '+(index+1)} sizes="(max-width:700px) 94vw,50vw" widths={PDP_WIDTHS} fallbackWidth={index===0?800:720} eager={index===0}/></div>)}
+    <div ref={galleryRef} className={`pdp-gallery${gallery.length===1?' single-image':''}`} aria-label="Product photos and videos">
+      {gallery.map((media,index) => <div className="pdp-image" key={media.id || media.url}>{media.type==='video'
+        ? <ProductVideo media={media} title={product.title}/>
+        : <ProductImage src={media.url} alt={media.altText || product.title+', view '+(index+1)} sizes="(max-width:700px) 94vw,50vw" widths={PDP_WIDTHS} fallbackWidth={index===0?800:720} eager={index===0}/>}</div>)}
     </div>
     <div className="pdp-info">
       <p className="eyebrow">{product.type || 'AX MENSWEAR'}</p><div className="pdp-title-row"><h1 className="editorial">{product.title}</h1><WishlistButton handle={product.handle} className="pdp-wishlist" showLabel/></div>

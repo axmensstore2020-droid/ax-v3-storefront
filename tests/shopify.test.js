@@ -6,6 +6,18 @@ process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN='test-only-public';
 const live=await import('../lib/shopify.js');
 const realFetch=globalThis.fetch;
 const sample={id:'gid://shopify/Product/1',handle:'real-shirt',title:'Real Linen Shirt',productType:'Shirt',description:'Linen shirt',tags:['Linen'],availableForSale:true,featuredImage:{url:'https://cdn.shopify.com/real.jpg'},priceRange:{minVariantPrice:{amount:'1000',currencyCode:'INR'}}};
+test('PDP fetch carries a processed Shopify video through product normalization', async t => {
+ t.after(()=>{globalThis.fetch=realFetch;});
+ const media={id:'video-1',mediaContentType:'VIDEO',alt:'Model video',previewImage:{url:'https://cdn.shopify.com/poster.jpg'},sources:[{url:'https://cdn.shopify.com/model.mp4',mimeType:'video/mp4',height:720}]};
+ globalThis.fetch=async(url,init)=>{
+  const query=JSON.parse(init.body).query;
+  if(query.includes('query Product(')) assert.match(query,/media\(first:100\)/);
+  return Response.json({data:{product:{...sample,images:{nodes:[{url:sample.featuredImage.url}]},variants:{nodes:[]},metafields:[],media:{nodes:[media]}}}});
+ };
+ const product=await live.getProduct(sample.handle);
+ assert.equal(product.videos[0].sources[0].url,media.sources[0].url);
+ assert.equal(product.images[0].url,sample.featuredImage.url);
+});
 test('private header takes precedence and carts are never cached',async t=>{
  t.after(()=>{globalThis.fetch=realFetch;});
  let options;
