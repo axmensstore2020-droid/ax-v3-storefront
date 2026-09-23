@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {choosePlayroomMove,nextPlayroomAxMove,playroomEmpty,playroomOutcome,replayPlayroomRound,seededPlayroomRandom} from '../lib/playroom-game.js';
-import {createPlayroomRound,createShopifyPlayroomDiscount,getPlayroomAxMove,nextPlayroomDay,playroomDiscountScopeReady,settlePlayroomRound} from '../lib/playroom-server.js';
+import {createPlayroomRound,createShopifyPlayroomDiscount,getPlayroomAxMove,nextPlayroomDay,playroomDiscountScopeReady,playroomStatusFromTokens,settlePlayroomRound} from '../lib/playroom-server.js';
+import {sealEncryptedToken} from '../lib/sealed-token.js';
 
 const env={
  SHOPIFY_STORE_DOMAIN:'ax-test.myshopify.com',
@@ -20,6 +21,34 @@ function buildRound(first,seed){
   turn=turn==='O'?'X':'O';
  }
  return {moves,result,board};
+}
+
+function replayState(first,moves){
+ const board=Array(9).fill('');let turn=first;
+ for(const index of moves){board[index]=turn;turn=turn==='O'?'X':'O';}
+ return {board,turn,result:playroomOutcome(board)};
+}
+
+function findOutcomeRound(first,seed,target,moves=[]){
+ const state=replayState(first,moves);
+ if(state.result)return state.result.winner===target?moves:null;
+ if(state.turn==='X'){
+  const index=nextPlayroomAxMove({first,moves,seed});
+  return findOutcomeRound(first,seed,target,[...moves,index]);
+ }
+ for(const index of playroomEmpty(state.board)){
+  const found=findOutcomeRound(first,seed,target,[...moves,index]);
+  if(found)return found;
+ }
+ return null;
+}
+
+function findDrawSeed(){
+ for(let index=0;index<80;index++){
+  const seed='bonus-draw-seed-'+index,moves=findOutcomeRound('O',seed,'draw');
+  if(moves)return {seed,moves};
+ }
+ throw new Error('Could not find a deterministic Playroom draw seed.');
 }
 
 test('Playroom seeded opponent is deterministic and histories are verifiable',()=>{
@@ -94,4 +123,41 @@ test('settled Playroom result maps to the verified board outcome',async()=>{
  if(expected==='win')assert.match(settled.rewardCode,/^AXPLAY10-[A-F0-9]{10}$/);
  if(expected==='draw')assert.equal(settled.nextEligibleAt,null);
  if(expected==='loss')assert.ok(Date.parse(settled.nextEligibleAt)>now);
+});
+
+
+test('first draw grants exactly one signed Bonus Round and no immediate cooldown',async()=>{
+ const now=Date.parse('2026-09-23T12:00:00Z'),{seed,moves}=findDrawSeed();
+ const token=sealEncryptedToken({kind:'playroom-game',first:'O',seed,nonce:'abcdef1234567890',bonus:false,iat:now,exp:now+20*60*1000},env.AX_PLAYROOM_SECRET,'pxg1');
+ const settled=await settlePlayroomRound(token,moves,{env,now:now+60_000});
+ assert.equal(settled.outcome,'draw');
+ assert.equal(settled.bonusAvailable,true);
+ assert.ok(settled.bonusToken);
+ assert.ok(settled.cooldownToken);
+ assert.equal(settled.nextEligibleAt,null);
+ const status=playroomStatusFromTokens(settled.cooldownToken,settled.bonusToken,{env,now:now+61_000});
+ assert.equal(status.eligible,true);
+ assert.equal(status.bonusAvailable,true);
+ assert.equal(status.lastOutcome,'draw');
+});
+
+test('a draw in the Bonus Round ends the session until the next India day',async()=>{
+ const now=Date.parse('2026-09-23T12:00:00Z'),{seed,moves}=findDrawSeed();
+ const token=sealEncryptedToken({kind:'playroom-game',first:'O',seed,nonce:'fedcba0987654321',bonus:true,iat:now,exp:now+20*60*1000},env.AX_PLAYROOM_SECRET,'pxg1');
+ const settled=await settlePlayroomRound(token,moves,{env,now:now+60_000});
+ assert.equal(settled.outcome,'draw');
+ assert.equal(settled.bonusAvailable,false);
+ assert.equal(settled.bonusToken,null);
+ assert.ok(settled.nextEligibleAt);
+ const status=playroomStatusFromTokens(settled.cooldownToken,'',{env,now:now+61_000});
+ assert.equal(status.eligible,false);
+ assert.equal(status.bonusAvailable,false);
+ assert.equal(status.lastOutcome,'draw');
+});
+
+test('Playroom round records whether it is the one Bonus Round',()=>{
+ const normal=createPlayroomRound('O',{bonus:false,env,now:Date.parse('2026-09-23T12:00:00Z')});
+ const bonus=createPlayroomRound('O',{bonus:true,env,now:Date.parse('2026-09-23T12:00:00Z')});
+ assert.equal(normal.bonus,false);
+ assert.equal(bonus.bonus,true);
 });
