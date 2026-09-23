@@ -19,6 +19,7 @@ const discovery={
 
 const {
   authorizationUrl,
+  authCompleteUrl,
   callbackUrl,
   customerAccountConfig,
   discoverCustomerAccount,
@@ -54,6 +55,12 @@ test('safe return paths never leave the AX origin',()=>{
   assert.equal(safeReturnTo('https://evil.example/account'),'/account');
   assert.equal(safeReturnTo('//evil.example/account'),'/account');
   assert.equal(safeReturnTo('/account\u0000evil'),'/account');
+});
+
+test('successful auth returns to the intended AX page with a one-time animation marker',()=>{
+  const config=customerAccountConfig(baseEnv);
+  assert.equal(authCompleteUrl(config,'/products?search=1'),'https://ax.test/products?search=1&axAuth=complete');
+  assert.equal(authCompleteUrl(config,'https://evil.example/account'),'https://ax.test/account?axAuth=complete');
 });
 
 test('OAuth uses PKCE, the registered callback and confidential token exchange',async()=>{
