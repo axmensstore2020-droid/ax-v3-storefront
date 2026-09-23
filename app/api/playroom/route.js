@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import {assertAllowedKeys} from '../../../lib/request-body.js';
 import {cookieValue,PLAYROOM_GUARD_COOKIE,readLimitedJson,reservePlayroomBurst,sameOriginRequest} from '../../../lib/request-security.js';
-import {createPlayroomRound,getPlayroomAxMove,PLAYROOM_COOLDOWN_COOKIE,PLAYROOM_GAME_COOKIE,PLAYROOM_GAME_MAX_AGE,playroomStatusFromToken,settlePlayroomRound} from '../../../lib/playroom-server.js';
+import {createPlayroomRound,getPlayroomAxMove,PLAYROOM_COOLDOWN_COOKIE,PLAYROOM_GAME_COOKIE,PLAYROOM_GAME_MAX_AGE,playroomDiscountScopeReady,playroomStatusFromToken,settlePlayroomRound} from '../../../lib/playroom-server.js';
 
 export const dynamic='force-dynamic';
 
@@ -15,8 +15,10 @@ function json(body,status=200,guard=null){
 }
 
 export async function GET(request){
-  const cooldown=cookieValue(request,PLAYROOM_COOLDOWN_COOKIE);
-  return json(playroomStatusFromToken(cooldown));
+  const cooldown=cookieValue(request,PLAYROOM_COOLDOWN_COOKIE),status=playroomStatusFromToken(cooldown);
+  if(!status.available)return json(status);
+  if(!(await playroomDiscountScopeReady()))return json({available:false,eligible:false,nextEligibleAt:null,lastOutcome:null});
+  return json(status);
 }
 
 export async function POST(request){
@@ -34,6 +36,7 @@ export async function POST(request){
     const status=playroomStatusFromToken(cookieValue(request,PLAYROOM_COOLDOWN_COOKIE));
     if(!status.available)return json({ok:false,error:'AX Playroom rewards are not available yet.'},503,guard);
     if(!status.eligible)return json({ok:false,error:'Your next Playroom round is not ready yet.',nextEligibleAt:status.nextEligibleAt,lastOutcome:status.lastOutcome},409,guard);
+    if(!(await playroomDiscountScopeReady()))return json({ok:false,error:'AX Playroom rewards are not enabled in Shopify yet.'},503,guard);
     try{
       const round=createPlayroomRound(body.first);
       const response=json({ok:true,expiresAt:round.expiresAt},200,guard);
