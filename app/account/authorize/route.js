@@ -1,5 +1,5 @@
 import {NextResponse} from 'next/server';
-import {clearCookieOptions,cookieOptions,customerAccountConfig,CUSTOMER_ACCOUNT_OAUTH_COOKIE,CUSTOMER_ACCOUNT_SESSION_COOKIE,CUSTOMER_ACCOUNT_SESSION_MAX_AGE,discoverCustomerAccount,exchangeCode,readOAuthState,safeReturnTo,sealAccount} from '../../../lib/customer-account.js';
+import {authCompleteUrl,clearCookieOptions,cookieOptions,customerAccountConfig,CUSTOMER_ACCOUNT_OAUTH_COOKIE,CUSTOMER_ACCOUNT_SESSION_COOKIE,CUSTOMER_ACCOUNT_SESSION_MAX_AGE,discoverCustomerAccount,exchangeCode,readOAuthState,sealAccount} from '../../../lib/customer-account.js';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -19,7 +19,7 @@ export async function GET(request) {
   }
   try {
     const endpoints=await discoverCustomerAccount(config),session=await exchangeCode(config,endpoints,{code,verifier:oauth.verifier},fetch);
-    const response=NextResponse.redirect(new URL(safeReturnTo(oauth.returnTo),config.siteOrigin));
+    const response=NextResponse.redirect(authCompleteUrl(config,oauth.returnTo));
     response.cookies.set(CUSTOMER_ACCOUNT_SESSION_COOKIE,sealAccount({...session,exp:Date.now()+CUSTOMER_ACCOUNT_SESSION_MAX_AGE*1000},config.sessionSecret),cookieOptions(CUSTOMER_ACCOUNT_SESSION_MAX_AGE));
     response.cookies.set(CUSTOMER_ACCOUNT_OAUTH_COOKIE,'',clearCookieOptions());
     return response;
