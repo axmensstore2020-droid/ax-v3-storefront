@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {reserveAccountBurst,reserveCartBurst,reserveCatalogBurst,sameOriginRequest,CART_GUARD_COOKIE,CATALOG_GUARD_COOKIE} from '../lib/request-security.js';
+import {reserveAccountBurst,reserveCartBurst,reserveCatalogBurst,reservePlayroomBurst,sameOriginRequest,CART_GUARD_COOKIE,CATALOG_GUARD_COOKIE,PLAYROOM_GUARD_COOKIE} from '../lib/request-security.js';
 import {assertAllowedFormKeys,assertAllowedKeys,readLimitedForm,readLimitedJson} from '../lib/request-body.js';
 
 test('same-origin guard accepts AX and rejects cross-site requests',()=>{
@@ -59,4 +59,11 @@ test('account mutation limiter is bound to the signed-in session cookie',()=>{
  for(let i=0;i<5;i++) assert.equal(reserveAccountBurst(request,{limit:5,windowMs:60_000,now:4000+i}).allowed,true);
  assert.equal(reserveAccountBurst(request,{limit:5,windowMs:60_000,now:5000}).allowed,false);
  assert.equal(reserveAccountBurst(new Request('https://axstore.in/account/actions/profile'),{limit:5,now:5000}).allowed,false);
+});
+
+test('Playroom reward endpoint has its own anonymous burst guard',()=>{
+ const token=randomUUID();
+ const request=new Request('https://axstore.in/api/playroom',{headers:{cookie:`${PLAYROOM_GUARD_COOKIE}=${token}`}});
+ for(let i=0;i<10;i++) assert.equal(reservePlayroomBurst(request,{limit:10,windowMs:60_000,now:6000+i}).allowed,true);
+ assert.equal(reservePlayroomBurst(request,{limit:10,windowMs:60_000,now:7000}).allowed,false);
 });

@@ -61,3 +61,32 @@
 @media(max-width:350px){.ax-xo-play-shell{padding:15px}.ax-xo-player{font-size:11px}.ax-xo-stage-wrap,.ax-xo-result-stage{min-height:321px}.ax-xo-session>span{font-size:8px}.ax-xo-session>div{gap:10px}.ax-xo-ticket-info strong{font-size:9px}.ax-xo-copy{width:27px}.ax-xo-ticket-percent{font-size:30px}}
 .ax-xo-modal.reduce-motion *,.ax-xo-modal.reduce-motion *:before,.ax-xo-modal.reduce-motion *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 @media(prefers-reduced-motion:reduce){.ax-play-teaser,.ax-xo-modal,.ax-xo-modal *,.ax-xo-modal *:before,.ax-xo-modal *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+
+/* Official Playroom: minimized state sits directly above the AX navigation island. */
+.ax-play-teaser.ax-play-teaser-minimized{
+ left:50%;right:auto;bottom:calc(102px + env(safe-area-inset-bottom));z-index:59;
+ width:min(360px,calc(100vw - 32px));transform:translateX(-50%);animation:none;
+ align-items:center;justify-content:center
+}
+.ax-play-teaser-minimized .ax-play-card{
+ width:100%;min-width:0;border-radius:999px;padding:9px 12px 9px 10px;
+ background:rgba(247,247,244,.94);backdrop-filter:blur(16px) saturate(1.08);
+ -webkit-backdrop-filter:blur(16px) saturate(1.08);box-shadow:0 10px 28px #1516121a
+}
+.ax-play-teaser-minimized .ax-play-mark{width:34px;height:34px}
+.ax-xo-choices button:disabled,.ax-xo-result-actions button:disabled,.ax-xo-copy:disabled{opacity:.48;cursor:not-allowed}
+.ax-xo-copy:disabled{pointer-events:none}
+.ax-xo-ticket.has-error{border-color:#9f756c;background:#f4ebe7}
+.ax-xo-ticket.has-error .ax-xo-ticket-info p{color:#7d5148}
+.ax-xo-retry-reward{
+ margin:-8px auto 16px;border:0;border-bottom:1px solid currentColor;background:transparent;
+ color:var(--xo-ink);font:500 10px/1 var(--xo-sans);letter-spacing:.08em;text-transform:uppercase;padding:4px 0
+}
+.ax-xo-live-caption{color:var(--xo-muted)}
+.ax-xo-live-note{border-color:var(--xo-hairline)!important;background:var(--xo-white)!important;color:var(--xo-muted)!important}
+@media(min-width:701px){.ax-play-teaser.ax-play-teaser-minimized{bottom:calc(112px + env(safe-area-inset-bottom))}}
+@media(max-width:420px){
+ .ax-play-teaser.ax-play-teaser-minimized{width:calc(100vw - 24px);bottom:calc(100px + env(safe-area-inset-bottom))}
+ .ax-play-teaser-minimized .ax-play-card small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
