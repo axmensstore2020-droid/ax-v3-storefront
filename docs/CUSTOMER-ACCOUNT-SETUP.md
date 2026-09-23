@@ -73,6 +73,22 @@ The Delhivery token is used only on the AX server. The storefront does not expos
 
 If a Customer Account API permission is enabled after a customer already signed in and the related data remains unavailable, sign out once and sign in again before troubleshooting further.
 
+## Social sign-in and AX verification animation
+
+Customer accounts keep passwordless email sign-in as the fallback. Google and Facebook are enabled from **Shopify admin → Settings → Customer accounts → Authentication → Manage** after their OAuth credentials are created.
+
+For AX:
+
+- Connect Google with a dedicated Google Cloud OAuth client using the exact redirect/deauthorize URLs shown by Shopify.
+- Connect Facebook with a dedicated Meta Developer app for customer authentication. Do not edit the existing Facebook & Instagram sales-channel, Meta Pixel, Dataset, Conversions API or ad-account configuration when doing this.
+- Shopify remains the authentication authority; AX never receives Google/Facebook passwords.
+- After a successful email OTP, Google login or Facebook login, Shopify returns through `/account/authorize`. AX adds a one-time `axAuth=complete` marker to the intended AX destination.
+- `AuthSuccessOverlay` displays the short AX “Verified / You’re in” animation on that destination and removes the marker with `history.replaceState`. It does not create a separate success page or extra client navigation, avoiding an artificial extra page-view hop in the storefront.
+- The hosted Shopify OTP input page itself cannot accept custom AX content blocks on standard customer accounts. The animation therefore begins immediately after successful verification, when the shopper is back on AX.
+- Respect `prefers-reduced-motion`; the reduced-motion version is brief and static.
+
+If Shop Pay remains enabled, Shopify can still offer **Sign in with Shop** on its hosted authentication experience. Do not disable Shop Pay merely to remove that prompt without a separate checkout/conversion decision.
+
 ## Flow
 
 - There is no separate password-style AX registration form. With Shopify customer accounts, **Sign in or create account** opens Shopify's secure account flow; a new customer follows the email verification steps there and then returns to AX.
