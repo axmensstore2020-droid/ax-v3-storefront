@@ -2,7 +2,7 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import Icon from './Icon';
 import Brand from './Brand';
-import {choosePlayroomMove,playroomOutcome,seededPlayroomRandom} from '../lib/playroom-game.js';
+import {playroomOutcome} from '../lib/playroom-game.js';
 
 const TEASER_KEY='ax:playroom-teaser:v2';
 
@@ -34,7 +34,6 @@ export default function AXPlayroom(){
  const endTimer=useRef(null);
  const audioRef=useRef(null);
  const movesRef=useRef([]);
- const randomRef=useRef(null);
  const settledRef=useRef(false);
  const moveCount=useMemo(()=>board.filter(Boolean).length,[board]);
  const status=starting?'Preparing your round':phase==='choose'?'Your opening. Your choice.':phase==='ending'?'Round complete.':turn==='X'?'AX is thinking':phase==='review'?'Final board.':phase==='result'&&settlement.state==='loading'?'Verifying your result':phase==='result'?'Round complete.':'Your move. Make it count.';
@@ -64,13 +63,27 @@ export default function AXPlayroom(){
  },[]);
 
  useEffect(()=>{
-  if(!open||phase!=='playing'||turn!=='X'||!randomRef.current)return;
+  if(!open||phase!=='playing'||turn!=='X')return;
+  let cancelled=false;
   setThinking(true);
-  const timer=window.setTimeout(()=>{
+  const timer=window.setTimeout(async()=>{
+   let data=null,errorMessage='';
+   for(let attempt=0;attempt<2&&!cancelled;attempt++){
+    try{
+     const response=await fetch('/api/playroom',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'move',moves:movesRef.current})});
+     data=await response.json().catch(()=>null);
+     if(response.ok&&data?.ok&&Number.isInteger(data.index))break;
+     errorMessage=data?.error||'AX could not make a move.';
+    }catch(error){errorMessage=error.message||'AX could not make a move.';}
+    if(attempt===0)await new Promise(resolve=>window.setTimeout(resolve,350));
+   }
+   if(cancelled)return;
+   if(!data?.ok||!Number.isInteger(data.index)){
+    setThinking(false);setToast(errorMessage||'AX could not make a move. Reopen the Playroom to retry.');window.setTimeout(()=>setToast(''),2800);return;
+   }
+   const index=data.index;
    setBoard(current=>{
-    if(playroomOutcome(current))return current;
-    const index=choosePlayroomMove(current,randomRef.current);
-    if(index==null||index<0)return current;
+    if(playroomOutcome(current)||current[index])return current;
     const next=current.slice();next[index]='X';
     const nextMoves=[...movesRef.current,index];movesRef.current=nextMoves;
     setLastMove(index);playSound('ax');
@@ -80,8 +93,8 @@ export default function AXPlayroom(){
     return next;
    });
   },motionOn?680:180);
-  return()=>window.clearTimeout(timer);
- },[open,phase,turn,motionOn]);
+  return()=>{cancelled=true;window.clearTimeout(timer);};
+ }
 
  useEffect(()=>()=>{if(endTimer.current)window.clearTimeout(endTimer.current);},[]);
 
@@ -101,9 +114,9 @@ export default function AXPlayroom(){
   try{
    const response=await fetch('/api/playroom',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'start',first:mark})});
    const data=await response.json().catch(()=>null);
-   if(!response.ok||!data?.seed)throw new Error(data?.error||'The Playroom round could not start.');
+   if(!response.ok||!data?.ok)throw new Error(data?.error||'The Playroom round could not start.');
    if(endTimer.current)window.clearTimeout(endTimer.current);
-   movesRef.current=[];randomRef.current=seededPlayroomRandom(data.seed);settledRef.current=false;
+   movesRef.current=[];settledRef.current=false;
    setSettlement({state:'idle',outcome:null,rewardCode:null,rewardEndsAt:null,nextEligibleAt:null,error:''});
    setRounds(value=>value+1);setBoard(Array(9).fill(''));setLine([]);setLastMove(-1);setResult(null);setPhase('playing');setFocusCell(4);playSound('place');setTurn(mark);
   }catch(error){
@@ -152,7 +165,7 @@ export default function AXPlayroom(){
 
  function resetRound(){
   if(endTimer.current)window.clearTimeout(endTimer.current);
-  movesRef.current=[];randomRef.current=null;settledRef.current=false;
+  movesRef.current=[];settledRef.current=false;
   setBoard(Array(9).fill(''));setPhase('choose');setTurn('');setLine([]);setLastMove(-1);setResult(null);setThinking(false);setFocusCell(4);
   setSettlement({state:'idle',outcome:null,rewardCode:null,rewardEndsAt:null,nextEligibleAt:null,error:''});
  }
