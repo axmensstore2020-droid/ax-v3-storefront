@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {choosePlayroomMove,nextPlayroomAxMove,playroomEmpty,playroomOutcome,replayPlayroomRound,seededPlayroomRandom} from '../lib/playroom-game.js';
-import {createPlayroomRound,createShopifyPlayroomDiscount,getPlayroomAxMove,nextPlayroomDay,settlePlayroomRound} from '../lib/playroom-server.js';
+import {createPlayroomRound,createShopifyPlayroomDiscount,getPlayroomAxMove,nextPlayroomDay,playroomDiscountScopeReady,settlePlayroomRound} from '../lib/playroom-server.js';
 
 const env={
  SHOPIFY_STORE_DOMAIN:'ax-test.myshopify.com',
@@ -50,6 +50,17 @@ test('official Playroom session keeps the AI seed server-side',()=>{
 test('loss cooldown unlocks at the next India calendar day',()=>{
  const now=Date.parse('2026-09-23T18:00:00Z');
  assert.equal(new Date(nextPlayroomDay(now)).toISOString(),'2026-09-23T18:30:00.000Z');
+});
+
+test('official Playroom fails closed unless Shopify grants write_discounts',async()=>{
+ let query='';
+ const fetchImpl=async(url,init)=>{
+  query=JSON.parse(init.body).query;
+  return Response.json({data:{currentAppInstallation:{accessScopes:[{handle:'read_products'},{handle:'write_discounts'}]}}});
+ };
+ const ready=await playroomDiscountScopeReady({env:{...env,SHOPIFY_ADMIN_ACCESS_TOKEN:'shpat_'+('y'.repeat(40))},fetchImpl,now:Date.parse('2026-09-23T11:00:00Z')});
+ assert.equal(ready,true);
+ assert.match(query,/currentAppInstallation/);
 });
 
 test('Shopify Playroom reward is 10 percent, single-use, seven-day and non-stackable',async()=>{
