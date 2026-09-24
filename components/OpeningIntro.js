@@ -2,7 +2,7 @@
 
 import {useEffect,useRef} from 'react';
 import {animate} from 'motion';
-import {AX_MOTION} from '../lib/motion';
+import Brand from './Brand';
 
 const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -15,18 +15,13 @@ export default function OpeningIntro(){
     if(root.dataset.axIntro!=='play') return;
 
     const blocker=blockerRef.current;
-    const shell=document.querySelector('.ax-site-shell');
-    const mark=document.querySelector('.header .brand .brand-mark');
-    if(!blocker || !shell || !mark){
+    if(!blocker){
       root.dataset.axIntro='skip';
       return;
     }
 
     let disposed=false,skipped=false;
     const active=new Set();
-    const compact=window.matchMedia('(max-width: 700px)').matches;
-    const zoom=compact?3.6:3.4;
-    const timing=compact?AX_MOTION.introCompact:AX_MOTION.intro;
 
     const track=control=>{
       active.add(control);
@@ -35,10 +30,7 @@ export default function OpeningIntro(){
     };
 
     const clear=()=>{
-      shell.style.willChange='';
-      shell.style.transform='';
-      shell.style.transformOrigin='';
-      shell.style.filter='';
+      blocker.style.opacity='';
     };
 
     const finish=()=>{
@@ -62,37 +54,12 @@ export default function OpeningIntro(){
       await nextFrame();
       if(disposed || skipped) return;
 
-      // Measure the unscaled header position synchronously, then restore the opening zoom
-      // before the browser gets a chance to paint a normal-scale frame.
-      shell.style.transform='none';
-      const markRect=mark.getBoundingClientRect();
-      if(!markRect.width || !markRect.height){
-        finish();
-        return;
-      }
-
-      const originX=markRect.left+2;
-      const originY=markRect.top+2;
-      shell.style.transformOrigin=`${originX}px ${originY}px`;
-      shell.style.willChange='transform';
-      shell.style.transform=`translate3d(0,0,0) scale(${zoom})`;
-
-      await wait(compact?220:280);
+      await wait(1950);
       if(disposed || skipped) return;
 
-      const zoomOut=track(animate(
-        shell,
-        {
-          transform:[
-            `translate3d(0,0,0) scale(${zoom})`,
-            `translate3d(0,0,0) scale(${zoom*.985})`,
-            'translate3d(0,0,0) scale(1)'
-          ]
-        },
-        {...timing,times:[0,.12,1]}
-      ));
+      const fade=track(animate(blocker,{opacity:[1,0]},{duration:.46,ease:[.22,.68,.2,1]}));
 
-      await zoomOut;
+      await fade;
       if(disposed || skipped) return;
 
       root.dataset.axIntro='skip';
@@ -112,5 +79,17 @@ export default function OpeningIntro(){
     };
   },[]);
 
-  return <div ref={blockerRef} className="ax-opening-intro" aria-hidden="true"/>;
+  return <div ref={blockerRef} className="ax-opening-intro" aria-hidden="true">
+    <div className="ax-opening-stage">
+      <Brand inverse/>
+      <svg className="ax-opening-route" viewBox="0 0 400 150" role="presentation">
+        <path className="ax-opening-trail" pathLength="1" d="M18 84 C66 84 63 35 116 35 S173 111 225 111 S286 38 382 44"/>
+        <g className="ax-opening-runner">
+          <circle cx="0" cy="0" r="11"/>
+          <path d="M0 0 9-6A11 11 0 0 0 1-11Z"/>
+          <animateMotion dur="1.95s" path="M18 84 C66 84 63 35 116 35 S173 111 225 111 S286 38 382 44" fill="freeze"/>
+        </g>
+      </svg>
+    </div>
+  </div>;
 }
