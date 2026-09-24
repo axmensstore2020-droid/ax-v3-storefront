@@ -2,18 +2,11 @@ import {Fragment} from 'react';
 import Link from 'next/link';
 import ProductImage,{imageUrl} from '../components/ProductImage';
 import Icon from '../components/Icon';
-import {StylistButton} from '../components/StylistProvider';
 import {getHomepageProducts} from '../lib/shopify';
-import {getNavigation,getHomepageCampaigns} from '../lib/content';
-import RecentlyViewed from '../components/RecentlyViewed';
+import {getHomepageCampaigns} from '../lib/content';
 import HeroVideo from '../components/HeroVideo';
 
 export const revalidate=60;
-
-function findImage(products, pattern, fallback='') {
- const match=products.find(product => product.image && pattern.test([product.title,...(product.tags || []),product.type,product.style].join(' ')));
- return match?.image || fallback;
-}
 
 function findTaggedImage(products, pattern, fallback) {
  const match=products.find(product => product.image && pattern.test((product.tags || []).join(' ')));
@@ -25,7 +18,7 @@ function safeHref(value,fallback) {
 }
 
 function themeClass(value,fallback='sage') {
- const theme=['sage','peach','blue','butter','lilac'].includes(String(value || '').toLowerCase()) ? String(value).toLowerCase() : fallback;
+ const theme=['sage','peach','blue','butter','lilac','red'].includes(String(value || '').toLowerCase()) ? String(value).toLowerCase() : fallback;
  return `editorial-pastel-${theme}`;
 }
 
@@ -69,23 +62,14 @@ function ArrowLink({href,children,className=''}) {
 }
 
 export default async function Home() {
- const [products,{styles},campaigns]=await Promise.all([getHomepageProducts(),getNavigation(),getHomepageCampaigns()]);
+ const [products,campaigns]=await Promise.all([getHomepageProducts(),getHomepageCampaigns()]);
  const imagePool=products.filter(product => product.image);
  const hero=findTaggedImage(imagePool,/^(home[-_ ]?hero|editorial[-_ ]?hero)$/i,imagePool[0]);
- const second=findTaggedImage(imagePool,/^(home[-_ ]?(secondary|feature)|editorial[-_ ]?secondary)$/i,imagePool.find(product => product.id!==hero?.id) || hero);
- const linen=findImage(products,/linen/i,hero?.image || '');
- const jeans=findImage(products,/(jeans|denim)/i,second?.image || hero?.image || '');
- const jacket=findImage(products,/(jacket|outerwear|coat)/i,hero?.image || '');
- const shirt=findImage(products,/(shirt|flannel|polo)/i,second?.image || hero?.image || '');
 
  const heroCampaign=campaign(campaigns,'hero',{slot:'hero',eyebrow:'AX MEN’S STORE · COIMBATORE',title:'Inspired by the fear\nof being average.',description:'A considered wardrobe for every version of your day—easy layers, sharper moments and pieces that feel like you.',imageSrc:'',mobileImageSrc:'',imageAlt:'AX hero video',desktopVideoSrc:'',mobileVideoSrc:'',videoEnabled:true,usesCustomVideo:false,ctaLabel:'EXPLORE NEW ARRIVALS',ctaLink:'/products',theme:'editorial-pastel-sage'});
- const welcome=campaign(campaigns,'welcome',{slot:'welcome',eyebrow:'WELCOME TO AX',title:'A wardrobe with\nroom to be yourself.',description:'Discover the mood first. Then find the piece that belongs in your everyday.',theme:'editorial-pastel-sage'});
- const newArrivals=campaign(campaigns,'new-arrivals',{slot:'new-arrivals',eyebrow:'THE SHIRT EDIT',title:'Explore shirts',description:'Fresh shapes and familiar favourites, curated for the days ahead.',imageSrc:'https://cdn.shopify.com/s/files/1/0859/5216/8176/files/E5966B24-A17E-4BFF-B98F-50CD9AE9BFDA.png?v=1789567270',imageAlt:'White Premium Linen Button-Down Shirt',ctaLabel:'EXPLORE SHIRTS',ctaLink:'/collections/shirts',theme:'editorial-pastel-sage'});
- const linenCampaign=campaign(campaigns,'linen',{slot:'linen',eyebrow:'OUTER LAYERS',title:'Jackets',description:'Motorsport-inspired layers built for everyday streetwear.',imageSrc:jacket,imageAlt:'AX racing jacket editorial',ctaLabel:'SHOP JACKETS',ctaLink:'/collections/jackets-gilets',theme:'editorial-pastel-peach'});
- const jeansCampaign=campaign(campaigns,'jeans',{slot:'jeans',eyebrow:'THE WIDE-LEG EDIT',title:'Wide-leg denims',description:'Relaxed, baggy silhouettes with full-length drape for everyday streetwear.',imageSrc:'https://cdn.shopify.com/s/files/1/0859/5216/8176/files/black-wide-leg-baggy-jeans-model-front.jpg?v=1789979272',imageAlt:'Black Wide Leg Baggy Jeans',ctaLabel:'SHOP WIDE-LEG DENIMS',ctaLink:'/collections/jeans',theme:'editorial-pastel-blue'});
- const winter=campaign(campaigns,'winter',{slot:'winter',eyebrow:'A NEW CHAPTER',title:'Winter Arc',description:'Texture, contrast and layers made for cooler evenings.',imageSrc:jacket,imageAlt:'AX winter arc editorial',ctaLabel:'EXPLORE THE WINTER ARC',ctaLink:'/collections/winter-arc',theme:'editorial-pastel-butter'});
- const special=campaign(campaigns,'special',{slot:'special',eyebrow:'FOR A LIMITED TIME',title:'Special prices',description:'Last pieces, considered prices. Find the ones worth keeping.',imageSrc:second?.image || '',imageAlt:'AX special prices editorial',ctaLabel:'SHOP SPECIAL PRICES',ctaLink:'/collections/special-prices',theme:'editorial-pastel-lilac'});
- const close=campaign(campaigns,'close',{slot:'close',eyebrow:'NEED A LITTLE DIRECTION?',title:'Let AX Stylist\nshow you around.',description:'',ctaLabel:'EXPLORE WITH AX',ctaLink:'',theme:'editorial-pastel-sage'});
+ const newArrivals=campaign(campaigns,'new-arrivals',{slot:'new-arrivals',eyebrow:'NEW IN',title:'New arrivals',description:'Fresh pieces, just landed at AX.',imageSrc:'https://cdn.shopify.com/s/files/1/0859/5216/8176/files/white-wide-leg-jeans-front-model.jpg?v=1789980594',imageAlt:'White Wide Leg Baggy Jeans',ctaLabel:'SHOP NEW ARRIVALS',ctaLink:'/products',theme:'editorial-pastel-sage'});
+ const bestSellers=campaign(campaigns,'linen',{slot:'linen',eyebrow:'MOST WANTED',title:'Best sellers',description:'The AX pieces in the spotlight right now.',imageSrc:'https://cdn.shopify.com/s/files/1/0859/5216/8176/files/E5966B24-A17E-4BFF-B98F-50CD9AE9BFDA.png?v=1789567270',imageAlt:'White Premium Linen Button-Down Shirt',ctaLabel:'SHOP BEST SELLERS',ctaLink:'/collections/best-sellers',theme:'editorial-pastel-sage'});
+ const special=campaign(campaigns,'special',{slot:'special',eyebrow:'LIMITED TIME',title:'Special prices',description:'Selected pieces at reduced prices.',imageSrc:'',imageAlt:'',ctaLabel:'SHOP SPECIAL PRICES',ctaLink:'/collections/special-prices',theme:'editorial-pastel-red'});
 
  return <main id="main-content" className="editorial-home">
   <section className={`editorial-hero ${heroCampaign.theme}`} aria-labelledby="editorial-hero-title">
@@ -103,21 +87,16 @@ export default async function Home() {
    </div>
   </section>
 
-  <section className={`editorial-welcome ${welcome.theme}`} aria-labelledby="welcome-title"><p className="eyebrow">{welcome.eyebrow}</p><CampaignTitle value={welcome.title} id="welcome-title"/><p>{welcome.description}</p></section>
-
   <section className="editorial-campaigns" aria-label="AX campaigns">
    <article className={`editorial-campaign editorial-campaign-large ${newArrivals.theme}`}><div className="editorial-campaign-image"><EditorialImage src={newArrivals.imageSrc} mobileSrc={newArrivals.mobileImageSrc} alt={newArrivals.imageAlt} sizes="(max-width:700px) 100vw, 58vw"/></div><div className="editorial-campaign-copy"><p className="eyebrow">{newArrivals.eyebrow}</p><CampaignTitle value={newArrivals.title}/>{newArrivals.description && <p>{newArrivals.description}</p>}<ArrowLink href={newArrivals.ctaLink}>{newArrivals.ctaLabel}</ArrowLink></div></article>
-   <article className={`editorial-campaign editorial-campaign-small ${linenCampaign.theme}`}><div className="editorial-campaign-image"><EditorialImage src={linenCampaign.imageSrc} mobileSrc={linenCampaign.mobileImageSrc} alt={linenCampaign.imageAlt} sizes="(max-width:700px) 100vw, 38vw"/></div><div className="editorial-campaign-copy"><p className="eyebrow">{linenCampaign.eyebrow}</p><CampaignTitle value={linenCampaign.title}/>{linenCampaign.description && <p>{linenCampaign.description}</p>}<ArrowLink href={linenCampaign.ctaLink}>{linenCampaign.ctaLabel}</ArrowLink></div></article>
+   <article className={`editorial-campaign editorial-campaign-small ${bestSellers.theme}`}><div className="editorial-campaign-image"><EditorialImage src={bestSellers.imageSrc} mobileSrc={bestSellers.mobileImageSrc} alt={bestSellers.imageAlt} sizes="(max-width:700px) 100vw, 38vw"/></div><div className="editorial-campaign-copy"><p className="eyebrow">{bestSellers.eyebrow}</p><CampaignTitle value={bestSellers.title}/>{bestSellers.description && <p>{bestSellers.description}</p>}<ArrowLink href={bestSellers.ctaLink}>{bestSellers.ctaLabel}</ArrowLink></div></article>
   </section>
 
-  <section className={`editorial-split-campaign ${jeansCampaign.theme}`} aria-labelledby="jeans-title"><div className="editorial-split-copy"><p className="eyebrow">{jeansCampaign.eyebrow}</p><CampaignTitle value={jeansCampaign.title} id="jeans-title"/>{jeansCampaign.description && <p>{jeansCampaign.description}</p>}<ArrowLink href={jeansCampaign.ctaLink}>{jeansCampaign.ctaLabel}</ArrowLink></div><div className="editorial-split-image"><EditorialImage src={jeansCampaign.imageSrc} mobileSrc={jeansCampaign.mobileImageSrc} alt={jeansCampaign.imageAlt} sizes="(max-width:700px) 100vw, 55vw"/></div></section>
-  <section className={`editorial-feature ${winter.theme}`} aria-labelledby="winter-title"><div className="editorial-feature-image"><EditorialImage src={winter.imageSrc} mobileSrc={winter.mobileImageSrc} alt={winter.imageAlt} sizes="(max-width:700px) 100vw, 55vw"/></div><div className="editorial-feature-copy"><p className="eyebrow">{winter.eyebrow}</p><CampaignTitle value={winter.title} id="winter-title"/>{winter.description && <p>{winter.description}</p>}<ArrowLink href={winter.ctaLink}>{winter.ctaLabel}</ArrowLink></div></section>
-  <section className={`editorial-special ${special.theme}`} aria-labelledby="special-title"><div className="editorial-special-copy"><p className="eyebrow">{special.eyebrow}</p><CampaignTitle value={special.title} id="special-title"/>{special.description && <p>{special.description}</p>}<ArrowLink href={special.ctaLink}>{special.ctaLabel}</ArrowLink></div><div className="editorial-special-image"><EditorialImage src={special.imageSrc} mobileSrc={special.mobileImageSrc} alt={special.imageAlt} sizes="(max-width:700px) 100vw, 44vw"/></div></section>
-
-  <RecentlyViewed/>
-
-  <section className="editorial-style-index" aria-labelledby="style-title"><div><p className="eyebrow">FIND YOUR WAY IN</p><CampaignTitle value="Explore by mood." id="style-title"/><p>Old money, Korean fits, streetwear and everything in between.</p></div><nav className="editorial-style-links" aria-label="Style collections">{styles.map((style,index) => <Link key={style.key} href={style.href}><span><small>{String(index+1).padStart(2,'0')}</small>{style.label}</span><Icon name="arrow" size={18}/></Link>)}</nav></section>
-
-  <section className={`editorial-close ${close.theme}`} aria-labelledby="close-title"><p className="eyebrow">{close.eyebrow}</p><CampaignTitle value={close.title} id="close-title"/>{close.ctaLink ? <ArrowLink href={close.ctaLink}>{close.ctaLabel}</ArrowLink> : <StylistButton className="editorial-action">{close.ctaLabel} <Icon name="arrow" size={18}/></StylistButton>}</section>
+  <section className={`editorial-special-offer ${special.theme}`} aria-labelledby="special-title">
+   <p className="eyebrow">{special.eyebrow}</p>
+   <CampaignTitle value={special.title} id="special-title"/>
+   {special.description && <p>{special.description}</p>}
+   <ArrowLink href={special.ctaLink}>{special.ctaLabel}</ArrowLink>
+  </section>
  </main>;
 }
