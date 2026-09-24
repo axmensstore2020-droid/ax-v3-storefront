@@ -6,6 +6,7 @@ import {getHomepageProducts} from '../lib/shopify';
 import {getHomepageCampaigns} from '../lib/content';
 import HeroVideo from '../components/HeroVideo';
 import {styledWithAx} from '../lib/styled-with-ax';
+import StyledWithAxCarousel from '../components/StyledWithAxCarousel';
 
 export const revalidate=60;
 
@@ -102,12 +103,7 @@ export default async function Home() {
 
   {styledWithAx.length>0 && <section className="styled-with-ax" aria-labelledby="styled-with-ax-title">
    <div className="styled-with-ax-head"><div><p className="eyebrow">COMMUNITY / EDITORIAL</p><CampaignTitle value="Styled with AX" id="styled-with-ax-title"/></div><p>Selected AX collaborations, campaign moments and community styling.</p></div>
-   <div className="styled-with-ax-grid">
-    {styledWithAx.map((item,index)=>{
-     const media=<><div className="styled-with-ax-media"><ProductImage src={item.src} alt={item.alt || item.title || 'Styled with AX'} sizes="(max-width:700px) 50vw, 25vw"/></div><div className="styled-with-ax-meta"><span>{item.label || 'STYLED WITH AX'}</span>{item.title && <span>{item.title}</span>}</div></>;
-     return item.href ? <Link className={`styled-with-ax-card styled-card-${(index%5)+1}`} href={item.href} key={item.src}>{media}</Link> : <article className={`styled-with-ax-card styled-card-${(index%5)+1}`} key={item.src}>{media}</article>;
-    })}
-   </div>
+   <StyledWithAxCarousel items={styledWithAx}/>
   </section>}
  </main>;
 }
