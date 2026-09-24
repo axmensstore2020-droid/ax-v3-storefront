@@ -45,6 +45,14 @@ export default function StyledWithAxCarousel({items=[]}) {
   snapDoneRef.current=false;
  }
 
+ function renderReducedTarget(){
+  if(!reducedMotionRef.current) return;
+  currentRef.current=targetRef.current;
+  wrap();
+  x.jump(-currentRef.current);
+  updateEdgeLens();
+ }
+
  function wrap(){
   const loop=loopWidthRef.current;
   if(!loop) return;
@@ -149,6 +157,7 @@ export default function StyledWithAxCarousel({items=[]}) {
    if(frameRef.current) cancelAnimationFrame(frameRef.current);
    frameRef.current=0;
    lastFrameRef.current=0;
+   track.style.willChange='';
   }
 
   function tick(time){
@@ -173,7 +182,8 @@ export default function StyledWithAxCarousel({items=[]}) {
   }
 
   function startLoop(){
-   if(frameRef.current || !activeRef.current || document.hidden) return;
+   if(frameRef.current || !activeRef.current || document.hidden || reducedMotionRef.current) return;
+   track.style.willChange='transform';
    lastFrameRef.current=0;
    frameRef.current=requestAnimationFrame(tick);
   }
@@ -229,6 +239,7 @@ export default function StyledWithAxCarousel({items=[]}) {
   lastXRef.current=event.clientX;
   lastTimeRef.current=now;
   markInput();
+  renderReducedTarget();
  }
 
  function endDrag(event){
@@ -236,8 +247,13 @@ export default function StyledWithAxCarousel({items=[]}) {
   draggingRef.current=false;
   if(event?.pointerId!=null) viewportRef.current?.releasePointerCapture?.(event.pointerId);
   pointerIdRef.current=null;
-  targetRef.current+=velocityRef.current*FLICK_MS;
-  markInput();
+  if(reducedMotionRef.current){
+   snapNearest();
+   renderReducedTarget();
+  }else{
+   targetRef.current+=velocityRef.current*FLICK_MS;
+   markInput();
+  }
  }
 
  function onWheel(event){
@@ -245,6 +261,7 @@ export default function StyledWithAxCarousel({items=[]}) {
   if(!delta) return;
   targetRef.current+=delta;
   markInput();
+  renderReducedTarget();
  }
 
  function onKeyDown(event){
@@ -253,11 +270,13 @@ export default function StyledWithAxCarousel({items=[]}) {
    event.preventDefault();
    targetRef.current+=viewportRef.current.clientWidth*.42;
    markInput();
+   renderReducedTarget();
   }
   if(event.key==='ArrowLeft'){
    event.preventDefault();
    targetRef.current-=viewportRef.current.clientWidth*.42;
    markInput();
+   renderReducedTarget();
   }
  }
 

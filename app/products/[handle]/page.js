@@ -1,3 +1,4 @@
+import '../../pdp-cleanup.css';
 import Link from 'next/link';
 import {preload} from 'react-dom';
 import {notFound} from 'next/navigation';

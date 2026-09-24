@@ -10,6 +10,7 @@ import {featuredProductRank} from '../lib/merchandising';
 import {trackStoreEvent} from '../lib/store-analytics';
 import {swatchColor} from '../lib/color';
 import {availableOptionValues,productMatchesAvailableFilters} from '../lib/product-variants';
+import {requestMotionScan} from '../lib/motion-scan';
 
 function unique(values){return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];}
 function discountPercent(product){
@@ -93,6 +94,10 @@ export default function ProductGridClient({products,title='New in',initialTerm='
  },[filtered,wide]);
 
  const suggestions=useMemo(()=>term.trim().length>=2?products.filter(product=>matchesSearch(product,term)).slice(0,5):[],[products,term]);
+ useEffect(()=>{
+  if(filtersOpen||sortOpen||suggestions.length) requestMotionScan(document);
+ },[filtersOpen,sortOpen,suggestions.length]);
+
  const heading=styleWorlds.find(item=>item.key===canonicalStyle(style))?.label||title,Heading=home?'h2':'h1';
  const activeFilterCount=[size,color,fit,availability,style].filter(Boolean).length+(priceMin>0||priceMax<priceCeiling?1:0);
  const sortLabel=SORT_OPTIONS.find(([value])=>value===sort)?.[1]||'Featured';

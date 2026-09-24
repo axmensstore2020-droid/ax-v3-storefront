@@ -1,5 +1,6 @@
 'use client';
 import {useEffect} from 'react';
+import {usePathname} from 'next/navigation';
 import {animate} from 'motion';
 import {AX_MOTION} from '../lib/motion';
 
@@ -157,6 +158,7 @@ function entryPreset(node){
 }
 
 export default function MotionEnhancer(){
+  const pathname=usePathname();
   useEffect(()=>{
     if(typeof window==='undefined' || typeof IntersectionObserver==='undefined') return;
     const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -299,40 +301,32 @@ export default function MotionEnhancer(){
       ));
     }
 
+    function onMotionScan(event){
+      const root=event.detail?.root;
+      const target=root?.querySelectorAll?root:document;
+      prepareReveal(target);
+      animateEntries(target);
+      prepareDetails(target);
+    }
+
     prepareReveal(document);
     prepareDetails(document);
     window.addEventListener('ax:gallery-primary-change',onGalleryPrimaryChange);
     window.addEventListener('ax:grid-change',onGridChange);
-
-    let frame=0;
-    const mutationObserver=new MutationObserver(mutations=>{
-      cancelAnimationFrame(frame);
-      frame=requestAnimationFrame(()=>{
-        for(const mutation of mutations){
-          for(const node of mutation.addedNodes){
-            if(node.nodeType!==Node.ELEMENT_NODE) continue;
-            prepareReveal(node);
-            animateEntries(node);
-            prepareDetails(node);
-          }
-        }
-      });
-    });
-    mutationObserver.observe(document.body,{childList:true,subtree:true});
+    window.addEventListener('ax:motion-scan',onMotionScan);
 
     return()=>{
-      cancelAnimationFrame(frame);
-      mutationObserver.disconnect();
       observer.disconnect();
       window.removeEventListener('ax:gallery-primary-change',onGalleryPrimaryChange);
       window.removeEventListener('ax:grid-change',onGridChange);
+      window.removeEventListener('ax:motion-scan',onMotionScan);
       for(const [details,handler] of detailListeners) details.removeEventListener('toggle',handler);
       detailListeners.clear();
       for(const controls of active) controls.stop?.();
       active.clear();
       document.documentElement.classList.remove('ax-motion-enabled');
     };
-  },[]);
+  },[pathname]);
 
   return null;
 }

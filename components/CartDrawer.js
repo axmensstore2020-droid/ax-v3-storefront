@@ -11,6 +11,7 @@ import {trackMarketingEvent} from './MetaMarketing';
 import {trackStoreEvent} from '../lib/store-analytics';
 import {partialCodHandlingFee} from '../lib/partial-cod';
 import CartRecommendations from './CartRecommendations';
+import {requestMotionScan} from '../lib/motion-scan';
 
 const PIN_KEY='ax_delivery_pincode';
 
@@ -27,6 +28,10 @@ export default function CartDrawer(){
   });
   return()=>cancelAnimationFrame(frame);
  },[open,checkoutIntent,busy,cart?.id]);
+
+ useEffect(()=>{
+  if(open) requestMotionScan(checkoutRef.current?.closest?.('dialog') || document);
+ },[open,cart?.totalQuantity,notice,codState,checkoutIntent,busy]);
 
  useEffect(()=>{
   if(!open || !partialCodEnabled) return;

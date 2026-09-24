@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {trackStoreEvent} from '../lib/store-analytics';
+import {requestMotionScan} from '../lib/motion-scan';
 
 const PIN_KEY='ax_delivery_pincode';
 
@@ -17,7 +18,7 @@ function formatDeliveryDate(value){
 
 export default function ShippingEstimator({weightGrams,productHandle='',className='',subtotal=0,compact=false}) {
   const [pincode,setPincode]=useState(''),[result,setResult]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
-  const inputRef=useRef(null);
+  const inputRef=useRef(null),sectionRef=useRef(null);
   const hasWeight=Number.isFinite(Number(weightGrams)) && Number(weightGrams)>0;
 
   useEffect(()=>{
@@ -26,6 +27,10 @@ export default function ShippingEstimator({weightGrams,productHandle='',classNam
       if(/^\d{6}$/.test(saved||'')) setPincode(saved);
     }catch{}
   },[]);
+
+  useEffect(()=>{
+    if(result||error) requestMotionScan(sectionRef.current);
+  },[result,error]);
 
   async function check(event) {
     event?.preventDefault?.();
@@ -60,7 +65,7 @@ export default function ShippingEstimator({weightGrams,productHandle='',classNam
   const place=locationLabel(result);
   const deliveryDate=formatDeliveryDate(result?.estimatedDelivery?.latestDate);
   const deliveryService=result?.estimatedDelivery?.service==='express'?'EXPRESS DELIVERY':'STANDARD DELIVERY';
-  return <section className={`shipping-estimator ${compact?'shipping-estimator-compact':''} ${className}`.trim()} aria-label="Delivery and services">
+  return <section ref={sectionRef} className={`shipping-estimator ${compact?'shipping-estimator-compact':''} ${className}`.trim()} aria-label="Delivery and services">
     <div className="shipping-estimator-heading"><strong>Delivery &amp; Services</strong></div>
     {result
       ? <div className="delivery-location-row"><div><strong>{result.pincode}</strong>{place&&<span>{place}</span>}</div><button type="button" className="delivery-change" onClick={changeLocation}>CHANGE</button></div>

@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import {animate} from 'motion';
 import Icon from './Icon';
 import {AX_MOTION} from '../lib/motion';
+import {requestMotionScan} from '../lib/motion-scan';
 
 function dialogPreset(dialog){
  const drawer=dialog.classList.contains('side-dialog')||dialog.classList.contains('cart-dialog');
@@ -30,6 +31,7 @@ export default function Dialog({ title, onClose, children, className = '', id })
   const overflow = document.body.style.overflow;
   dialog.showModal();
   document.body.style.overflow = 'hidden';
+  requestMotionScan(dialog);
 
   let controls;
   if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
