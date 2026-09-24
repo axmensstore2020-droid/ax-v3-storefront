@@ -15,18 +15,18 @@
   z-index:1200;
   pointer-events:auto;
   touch-action:manipulation;
-  background:#090a0b;
+  background:#f7f7f4;
   opacity:1;
 }
 html[data-ax-intro="play"]{overflow:hidden}
 html[data-ax-intro="play"] .ax-opening-intro{display:block}
 .ax-opening-stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .ax-opening-stage>.brand-mark{width:clamp(86px,21vw,142px);flex:none}
-.ax-opening-stage>.brand-mark img{display:block;width:100%;height:auto;filter:invert(1)}
+.ax-opening-stage>.brand-mark img{display:block;width:100%;height:auto}
 .ax-opening-route{display:block;width:min(88vw,480px);height:auto;overflow:visible}
-.ax-opening-trail{fill:none;stroke:#f5f5f2;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:ax-opening-draw 1.95s cubic-bezier(.4,0,.2,1) forwards}
-.ax-opening-runner circle{fill:#f5f5f2}
-.ax-opening-runner path{fill:#090a0b}
+.ax-opening-trail{fill:none;stroke:#111;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:ax-opening-draw 1.95s cubic-bezier(.4,0,.2,1) forwards}
+.ax-opening-runner circle{fill:#111}
+.ax-opening-runner path{fill:#f7f7f4}
 @keyframes ax-opening-draw{to{stroke-dashoffset:0}}
 /* Keep fixed storefront controls out of view until the opening finishes. */
 html[data-ax-intro="play"] .ax-island,
@@ -328,7 +328,7 @@ html[data-ax-intro="play"] .cart-dialog{opacity:0!important;pointer-events:none!
   display:grid;
   place-items:center;
   padding:80px var(--gutter);
-  background:#fff;
+  background:#f7f7f4;
   opacity:0;
   animation:ax-route-loader-reveal 150ms ease forwards;
 }
