@@ -21,10 +21,16 @@ export default function HeroVideo({
  const [usingFallback,setUsingFallback]=useState(false);
  const [retryKey,setRetryKey]=useState(0);
  const [failed,setFailed]=useState(false);
- const hasFallback=Boolean(mobileFallbackSrc || desktopFallbackSrc);
+ const [isMobile,setIsMobile]=useState(null);
 
- const activeMobile=usingFallback ? (mobileFallbackSrc || desktopFallbackSrc) : mobileSrc;
- const activeDesktop=usingFallback ? (desktopFallbackSrc || mobileFallbackSrc) : desktopSrc;
+ const primarySrc=isMobile===null ? '' : (isMobile ? (mobileSrc || desktopSrc) : (desktopSrc || mobileSrc));
+ const explicitFallback=isMobile===null ? '' : (isMobile ? (mobileFallbackSrc || desktopFallbackSrc) : (desktopFallbackSrc || mobileFallbackSrc));
+ // If the device-specific file fails, cross-fallback to the other supplied hero file.
+ // This keeps desktop alive even when a desktop encode/CDN request fails.
+ const crossFallback=isMobile===null ? '' : (isMobile ? desktopSrc : mobileSrc);
+ const fallbackSrc=explicitFallback || (crossFallback!==primarySrc ? crossFallback : '');
+ const activeSrc=usingFallback ? fallbackSrc : primarySrc;
+ const hasFallback=Boolean(fallbackSrc);
 
  function recover(){
   if(failed || recoveryTimer.current) return;
@@ -48,8 +54,16 @@ export default function HeroVideo({
  }
 
  useEffect(() => {
+  const query=window.matchMedia('(max-width:700px)');
+  const sync=()=>setIsMobile(query.matches);
+  sync();
+  query.addEventListener?.('change',sync);
+  return ()=>query.removeEventListener?.('change',sync);
+ },[]);
+
+ useEffect(() => {
   const video=videoRef.current;
-  if(!video || failed) return;
+  if(!video || failed || isMobile===null || !activeSrc) return;
 
   video.muted=true;
   video.defaultMuted=true;
@@ -81,15 +95,17 @@ export default function HeroVideo({
    video.removeEventListener('canplay',play);
    document.removeEventListener('visibilitychange',handleVisibility);
   };
- },[usingFallback,retryKey,failed]);
+ },[usingFallback,retryKey,failed,isMobile,activeSrc]);
 
  useEffect(()=>()=>{if(recoveryTimer.current) clearTimeout(recoveryTimer.current);},[]);
 
- if(failed) return null;
+ if(failed || isMobile===null || !activeSrc) return null;
 
  return <video
+  key={`${isMobile?'mobile':'desktop'}-${usingFallback?'fallback':'primary'}-${retryKey}`}
   ref={videoRef}
   className={`${className}${ready ? ' is-ready' : ''}`}
+  src={retryUrl(activeSrc,retryKey)}
   autoPlay
   muted
   loop
@@ -100,8 +116,5 @@ export default function HeroVideo({
   onCanPlay={() => {retryCount.current=0;setReady(true);}}
   onPlaying={() => {retryCount.current=0;setReady(true);}}
   onError={recover}
- >
-  {activeMobile && <source key={'mobile-'+usingFallback+'-'+retryKey} media="(max-width:700px)" src={retryUrl(activeMobile,retryKey)} type="video/mp4"/>}
-  {activeDesktop && <source key={'desktop-'+usingFallback+'-'+retryKey} src={retryUrl(activeDesktop,retryKey)} type="video/mp4"/>}
- </video>;
+ />;
 }
