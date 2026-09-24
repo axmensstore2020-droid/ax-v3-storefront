@@ -105,6 +105,11 @@ export default function StyledWithAxCarousel({items=[]}) {
     item.node.style.transformOrigin=origin;
     item.origin=origin;
    }
+   const willChange=edge>.01?'transform':'';
+   if(willChange!==item.willChange){
+    item.node.style.willChange=willChange;
+    item.willChange=willChange;
+   }
   }
  }
 
@@ -126,7 +131,8 @@ export default function StyledWithAxCarousel({items=[]}) {
     width:card.offsetWidth,
     edge:Number.NaN,
     tilt:Number.NaN,
-    origin:''
+    origin:'',
+    willChange:''
    }));
    loopWidthRef.current=loop;
 
