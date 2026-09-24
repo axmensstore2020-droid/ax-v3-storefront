@@ -95,6 +95,33 @@ for(const token of ['enable row level security','deny_direct_client_access','rev
   if(!migration.includes(token)) fail(`security migration: missing ${token}`);
 }
 
+const migrationFiles=files.filter(file=>file.startsWith('supabase/migrations/') && file.endsWith('.sql'));
+const migrationTexts=migrationFiles.map(file=>read(file));
+const allMigrations=migrationTexts.join('\n');
+const publicAxTables=new Set();
+for(const content of migrationTexts){
+  for(const match of content.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?public\.(ax_[a-z0-9_]+)/gi)){
+    publicAxTables.add(match[1]);
+  }
+}
+for(const table of publicAxTables){
+  if(!new RegExp('alter\\s+table(?:\\s+if\\s+exists)?\\s+public\\.'+table+'\\s+enable\\s+row\\s+level\\s+security','i').test(allMigrations)){
+    fail('Supabase migrations: public.'+table+' must enable RLS');
+  }
+  if(!new RegExp('revoke\\s+all\\s+on(?:\\s+table)?[\\s\\S]*?public\\.'+table+'[\\s\\S]*?from\\s+public\\s*,\\s*anon\\s*,\\s*authenticated','i').test(allMigrations)){
+    fail('Supabase migrations: public.'+table+' must revoke browser-role grants');
+  }
+  if(!new RegExp('grant\\s+[\\s\\S]*?on(?:\\s+table)?[\\s\\S]*?public\\.'+table+'[\\s\\S]*?to\\s+service_role','i').test(allMigrations)){
+    fail('Supabase migrations: public.'+table+' must explicitly grant service_role for Data API access');
+  }
+  if(new RegExp('grant\\s+[\\s\\S]*?on(?:\\s+table)?[\\s\\S]*?public\\.'+table+'[\\s\\S]*?to\\s+(?:anon|authenticated)','i').test(allMigrations)){
+    fail('Supabase migrations: public.'+table+' must not grant direct browser-role access');
+  }
+}
+if(!/grant\s+usage,\s*select\s+on\s+sequence\s+public\.ax_store_events_id_seq\s+to\s+service_role/i.test(allMigrations)){
+  fail('Supabase migrations: ax_store_events identity sequence must grant usage/select to service_role');
+}
+
 if(failures.length){
   console.error('Security invariant failures:');
   for(const item of failures) console.error('- '+item);
