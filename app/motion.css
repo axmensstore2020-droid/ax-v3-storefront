@@ -20,6 +20,11 @@
 }
 html[data-ax-intro="play"]{overflow:hidden}
 html[data-ax-intro="play"] .ax-opening-intro{display:block}
+/* Fixed overlays live outside the transformed site shell so the intro cannot push them off-screen. */
+html[data-ax-intro="play"] .ax-island,
+html[data-ax-intro="play"] .ax-play-teaser,
+html[data-ax-intro="play"] .ax-xo-backdrop,
+html[data-ax-intro="play"] .cart-dialog{opacity:0!important;pointer-events:none!important}
 .ax-site-shell{
   transform-origin:var(--gutter) 22px;
 }
