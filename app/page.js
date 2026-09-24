@@ -5,6 +5,7 @@ import Icon from '../components/Icon';
 import {getHomepageProducts} from '../lib/shopify';
 import {getHomepageCampaigns} from '../lib/content';
 import HeroVideo from '../components/HeroVideo';
+import {styledWithAx} from '../lib/styled-with-ax';
 
 export const revalidate=60;
 
@@ -13,9 +14,6 @@ function findTaggedImage(products, pattern, fallback) {
  return match || fallback;
 }
 
-function isCollaboration(product) {
- return /(^|[\s_-])(collab|collaboration|styled[\s_-]?with[\s_-]?ax)([\s_-]|$)/i.test((product.tags || []).join(' '));
-}
 
 function safeHref(value,fallback) {
  return typeof value==='string' && (/^\/(?!\/)/.test(value) || /^https:\/\//i.test(value)) ? value : fallback;
@@ -69,7 +67,6 @@ export default async function Home() {
  const [products,campaigns]=await Promise.all([getHomepageProducts(),getHomepageCampaigns()]);
  const imagePool=products.filter(product => product.image);
  const hero=findTaggedImage(imagePool,/^(home[-_ ]?hero|editorial[-_ ]?hero)$/i,imagePool[0]);
- const styledGallery=[...imagePool].sort((a,b)=>Number(isCollaboration(b))-Number(isCollaboration(a))).slice(0,10);
 
  const heroCampaign=campaign(campaigns,'hero',{slot:'hero',eyebrow:'AX MEN’S STORE · COIMBATORE',title:'Inspired by the fear\nof being average.',description:'A considered wardrobe for every version of your day—easy layers, sharper moments and pieces that feel like you.',imageSrc:'',mobileImageSrc:'',imageAlt:'AX hero video',desktopVideoSrc:'',mobileVideoSrc:'',videoEnabled:true,usesCustomVideo:false,ctaLabel:'EXPLORE NEW ARRIVALS',ctaLink:'/products',theme:'editorial-pastel-sage'});
  const bestSellers=campaign(campaigns,'linen',{slot:'linen',eyebrow:'MOST WANTED',title:'Best sellers',description:'The AX pieces in the spotlight right now.',imageSrc:'https://cdn.shopify.com/s/files/1/0859/5216/8176/files/E5966B24-A17E-4BFF-B98F-50CD9AE9BFDA.png?v=1789567270',imageAlt:'White Premium Linen Button-Down Shirt',ctaLabel:'SHOP BEST SELLERS',ctaLink:'/collections/best-sellers',theme:'editorial-pastel-sage'});
@@ -103,13 +100,13 @@ export default async function Home() {
    <ArrowLink href={special.ctaLink}>{special.ctaLabel}</ArrowLink>
   </section>
 
-  {styledGallery.length>0 && <section className="styled-with-ax" aria-labelledby="styled-with-ax-title">
-   <div className="styled-with-ax-head"><div><p className="eyebrow">COMMUNITY / EDITORIAL</p><CampaignTitle value="Styled with AX" id="styled-with-ax-title"/></div><p>AX looks, campaign moments and selected collaborations.</p></div>
+  {styledWithAx.length>0 && <section className="styled-with-ax" aria-labelledby="styled-with-ax-title">
+   <div className="styled-with-ax-head"><div><p className="eyebrow">COMMUNITY / EDITORIAL</p><CampaignTitle value="Styled with AX" id="styled-with-ax-title"/></div><p>Selected AX collaborations, campaign moments and community styling.</p></div>
    <div className="styled-with-ax-grid">
-    {styledGallery.map((item,index)=><Link className={`styled-with-ax-card styled-card-${(index%5)+1}`} href={`/products/${item.handle}`} key={item.id}>
-     <div className="styled-with-ax-media"><ProductImage src={item.image} alt={item.imageAlt || item.title} sizes="(max-width:700px) 50vw, 25vw"/></div>
-     <div className="styled-with-ax-meta"><span>{isCollaboration(item)?'COLLABORATION':'STYLED WITH AX'}</span><span>{item.title}</span></div>
-    </Link>)}
+    {styledWithAx.map((item,index)=>{
+     const media=<><div className="styled-with-ax-media"><ProductImage src={item.src} alt={item.alt || item.title || 'Styled with AX'} sizes="(max-width:700px) 50vw, 25vw"/></div><div className="styled-with-ax-meta"><span>{item.label || 'STYLED WITH AX'}</span>{item.title && <span>{item.title}</span>}</div></>;
+     return item.href ? <Link className={`styled-with-ax-card styled-card-${(index%5)+1}`} href={item.href} key={item.src}>{media}</Link> : <article className={`styled-with-ax-card styled-card-${(index%5)+1}`} key={item.src}>{media}</article>;
+    })}
    </div>
   </section>}
  </main>;
