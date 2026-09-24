@@ -17,12 +17,13 @@ export default function AXPlayroomMount(){
  useEffect(()=>{
   if(!eligiblePath || checked.current) return;
   const controller=new AbortController();
+  let completed=false;
   checked.current=true;
   fetch('/api/playroom',{cache:'no-store',credentials:'same-origin',signal:controller.signal})
    .then(response=>response.ok?response.json():null)
-   .then(data=>{if(data?.available&&data?.eligible)setStatus(data);})
+   .then(data=>{completed=true;if(data?.available&&data?.eligible)setStatus(data);})
    .catch(error=>{if(error?.name!=='AbortError')checked.current=false;});
-  return()=>controller.abort();
+  return()=>{controller.abort();if(!completed)checked.current=false;};
  },[eligiblePath]);
 
  useEffect(()=>{
