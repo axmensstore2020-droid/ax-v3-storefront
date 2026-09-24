@@ -13,9 +13,14 @@ function AXRouteLineLoader({label}) {
           values="M 38 80 C 74 40 116 40 160 80 C 204 120 246 120 282 80;M 38 80 C 76 22 116 138 160 80 C 204 22 244 138 282 80;M 38 80 C 74 40 116 40 160 80 C 204 120 246 120 282 80"
         />
       </path>
-      <image className="ax-line-loader-mark" href="/ax-logo-160.webp" x="-20" y="-12" width="40" height="24" preserveAspectRatio="xMidYMid meet">
-        <animateMotion dur="2.8s" repeatCount="indefinite" rotate="0" path={track}/>
-      </image>
+      <g className="ax-line-loader-beacon">
+        <circle cx="0" cy="0" r="15"/>
+        <g className="ax-line-loader-beacon-logo">
+          <image href="/ax-logo-160.webp" x="-9" y="-5.2" width="18" height="10.5" preserveAspectRatio="xMidYMid meet"/>
+          <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="2.8s" repeatCount="indefinite"/>
+        </g>
+        <animateMotion dur="2.8s" repeatCount="indefinite" rotate="auto" path={track}/>
+      </g>
     </svg>
   </div>;
 }

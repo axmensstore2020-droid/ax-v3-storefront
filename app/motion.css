@@ -25,8 +25,8 @@ html[data-ax-intro="play"] .ax-opening-intro{display:block}
 .ax-opening-stage>.brand-mark img{display:block;width:100%;height:auto}
 .ax-opening-route{display:block;width:min(88vw,480px);height:auto;overflow:visible}
 .ax-opening-trail{fill:none;stroke:#111;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:ax-opening-draw 1.95s cubic-bezier(.4,0,.2,1) forwards}
-.ax-opening-runner circle{fill:#111}
-.ax-opening-runner path{fill:#f7f7f4}
+.ax-opening-runner circle{fill:#f7f7f4;stroke:#111;stroke-width:1.2}
+.ax-line-loader-beacon circle{fill:#f7f7f4;stroke:currentColor;stroke-width:1.25}
 @keyframes ax-opening-draw{to{stroke-dashoffset:0}}
 /* Keep fixed storefront controls out of view until the opening finishes. */
 html[data-ax-intro="play"] .ax-island,
@@ -244,9 +244,6 @@ html[data-ax-intro="play"] .cart-dialog{opacity:0!important;pointer-events:none!
   stroke-linejoin:round;
   vector-effect:non-scaling-stroke;
 }
-.ax-line-loader-mark{
-  opacity:.98;
-}
 .ax-particle-loader{
   --ax-loader-size:84px;
   --ax-loader-dot:4px;
@@ -363,7 +360,8 @@ html[data-ax-intro="play"] .cart-dialog{opacity:0!important;pointer-events:none!
     animation:none!important;
   }
   .ax-line-loader-path animate,
-  .ax-line-loader-mark animateMotion{
+  .ax-line-loader-beacon animateMotion,
+  .ax-line-loader-beacon animateTransform{
     display:none;
   }
 }

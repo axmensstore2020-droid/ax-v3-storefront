@@ -81,13 +81,16 @@ export default function OpeningIntro(){
 
   return <div ref={blockerRef} className="ax-opening-intro" aria-hidden="true">
     <div className="ax-opening-stage">
-      <Brand inverse/>
+      <Brand/>
       <svg className="ax-opening-route" viewBox="0 0 400 150" role="presentation">
         <path className="ax-opening-trail" pathLength="1" d="M18 84 C66 84 63 35 116 35 S173 111 225 111 S286 38 382 44"/>
         <g className="ax-opening-runner">
           <circle cx="0" cy="0" r="11"/>
-          <path d="M0 0 9-6A11 11 0 0 0 1-11Z"/>
-          <animateMotion dur="1.95s" path="M18 84 C66 84 63 35 116 35 S173 111 225 111 S286 38 382 44" fill="freeze"/>
+          <g className="ax-opening-runner-logo">
+            <image href="/ax-logo-160.webp" x="-7" y="-4.1" width="14" height="8.2" preserveAspectRatio="xMidYMid meet"/>
+            <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="1.95s" fill="freeze"/>
+          </g>
+          <animateMotion dur="1.95s" path="M18 84 C66 84 63 35 116 35 S173 111 225 111 S286 38 382 44" rotate="auto" fill="freeze"/>
         </g>
       </svg>
     </div>
