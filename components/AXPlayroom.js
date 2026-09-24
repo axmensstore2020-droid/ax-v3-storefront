@@ -53,7 +53,7 @@ export default function AXPlayroom(){
     const data=response.ok?await response.json():null;
     if(!active||!data?.available||!data?.eligible)return;
     if(data.bonusAvailable)setBonusRound(true);
-    const delay=direct?0:(window.sessionStorage.getItem(TEASER_KEY)?2400:8500);
+    const delay=direct?0:(window.sessionStorage.getItem(TEASER_KEY)?1400:4200);
     timer=window.setTimeout(()=>{
      if(!active)return;
      setVisible(true);setOpen(true);
