@@ -12,7 +12,7 @@ import LinkedColourways from './LinkedColourways';
 // options and enables Add to Bag only when they resolve to a real available Shopify
 // variant. For option-matching bugs, inspect lib/product-variants.js before changing UI logic.
 export default function AddToCart({product,options,selected,variant,onSelect,colourways=[],beforeAddButton=null,afterAddButton=null,restockAlertsEnabled=false}) {
-  const {addItem,busy,setOpen,cart,demoLines,demo,notice}=useCart(),variants=product.variants||[],shown=visibleOptions(options).filter(option=>!(colourways.length>1 && /colou?r/i.test(option.name||'') && option.values?.length===1));
+  const {addItem,busy,openCart,cart,demoLines,demo,notice}=useCart(),variants=product.variants||[],shown=visibleOptions(options).filter(option=>!(colourways.length>1 && /colou?r/i.test(option.name||'') && option.values?.length===1));
   const [buying,setBuying]=useState(false);
   const missing=shown.find(option=>!selected[option.name]);
   const available=!missing && (product.demo || Boolean(variant?.availableForSale));
@@ -38,14 +38,14 @@ export default function AddToCart({product,options,selected,variant,onSelect,col
     : (cart?.lines?.nodes||[]).some(line=>line.merchandise?.id===variant?.id));
   const buttonText=busy&&!buying?'UPDATING BAG…':inBag?'VIEW BAG':missing?'CHOOSE '+missing.name.toUpperCase():product.demo?'ADD TO PREVIEW BAG':available?'ADD TO BAG':soldOutVariant?'SOLD OUT':'UNAVAILABLE';
   async function add(){
-    if(inBag){setOpen(true);return;}
+    if(inBag){openCart();return;}
     await addItem({merchandiseId:variant?.id,variant,product});
   }
   async function quickBuy(){
     if(!available || product.demo || busy)return;
     setBuying(true);
     const added=inBag || await addItem({merchandiseId:variant?.id,variant,product});
-    if(added)setOpen(true);
+    if(added)openCart('checkout');
     setBuying(false);
   }
   return <div className="buy-box">
@@ -71,7 +71,7 @@ export default function AddToCart({product,options,selected,variant,onSelect,col
     {beforeAddButton}
     <div className="purchase-actions">
       <button type="button" className="add-bag" disabled={(!available&&!inBag)||busy} onClick={add}>{buttonText}</button>
-      <button type="button" className="buy-now" disabled={!available||busy||product.demo} onClick={quickBuy}>{buying?'OPENING BAG…':product.demo?'BUY NOW UNAVAILABLE':'BUY NOW'}</button>
+      <button type="button" className="buy-now" disabled={!available||busy||product.demo} onClick={quickBuy}>{buying?'OPENING CHECKOUT…':product.demo?'BUY NOW UNAVAILABLE':'BUY NOW'}</button>
     </div>
     {notice&&<p className="cart-note cart-inline-notice" role="alert">{notice}</p>}
     {afterAddButton}
