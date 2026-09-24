@@ -27,7 +27,7 @@ Shopper browser
       -> Sentry                          (sanitized application errors when configured)
 ```
 
-Customer-account access tokens are encrypted in HttpOnly cookies and are used only server-side. Private Supabase tables have RLS enabled with direct anonymous/authenticated grants revoked. AX Stylist profile records are keyed by an HMAC of the anonymous Stylist session rather than a client-supplied database ID. Shopify cart IDs can additionally be bound to a signed HttpOnly browser cookie. Restock alerts remain inactive until the email owner confirms a one-time link.
+Customer-account access tokens are encrypted in HttpOnly cookies and are used only server-side. Private Supabase tables have explicit Supabase Data API grants for the server `service_role`, RLS enabled, and direct anonymous/authenticated grants revoked. AX Stylist profile records are keyed by an HMAC of the anonymous Stylist session rather than a client-supplied database ID. Shopify cart IDs can additionally be bound to a signed HttpOnly browser cookie. Restock alerts remain inactive until the email owner confirms a one-time link.
 
 ## Commerce boundary
 
