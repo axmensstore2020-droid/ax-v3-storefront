@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect,useMemo,useRef} from 'react';
-import {motion,useAnimationFrame,useMotionValue} from 'motion/react';
+import {motion,useMotionValue} from 'motion/react';
 import Link from 'next/link';
 import ProductImage from './ProductImage';
 
@@ -22,6 +22,7 @@ export default function StyledWithAxCarousel({items=[]}) {
  const currentRef=useRef(0);
  const targetRef=useRef(0);
  const loopWidthRef=useRef(0);
+ const geometryRef=useRef([]);
  const measuredRef=useRef(false);
  const draggingRef=useRef(false);
  const pointerIdRef=useRef(null);
@@ -32,34 +33,10 @@ export default function StyledWithAxCarousel({items=[]}) {
  const autoResumeRef=useRef(0);
  const snapDoneRef=useRef(true);
  const reducedMotionRef=useRef(false);
+ const activeRef=useRef(false);
+ const frameRef=useRef(0);
+ const lastFrameRef=useRef(0);
  const loopItems=useMemo(()=>[...items,...items,...items],[items]);
-
- useEffect(()=>{
-  const viewport=viewportRef.current,track=trackRef.current;
-  if(!viewport || !track || !items.length) return;
-
-  reducedMotionRef.current=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function measure(){
-   const cards=Array.from(track.children);
-   if(cards.length<=items.length) return;
-   const loop=cards[items.length].offsetLeft-cards[0].offsetLeft;
-   if(!loop) return;
-   loopWidthRef.current=loop;
-   if(!measuredRef.current){
-    currentRef.current=loop;
-    targetRef.current=loop;
-    x.jump(-loop);
-    measuredRef.current=true;
-   }
-  }
-
-  const observer=new ResizeObserver(measure);
-  observer.observe(viewport);
-  observer.observe(track);
-  measure();
-  return ()=>observer.disconnect();
- },[items,x]);
 
  function markInput(){
   const now=performance.now();
@@ -81,66 +58,147 @@ export default function StyledWithAxCarousel({items=[]}) {
  }
 
  function snapNearest(){
-  const viewport=viewportRef.current,track=trackRef.current;
-  if(!viewport || !track) return;
+  const viewport=viewportRef.current;
+  if(!viewport || !geometryRef.current.length) return;
   const center=viewport.clientWidth/2;
   let best=null,bestDistance=Infinity;
 
-  Array.from(track.children).forEach(card=>{
-   const cardCenter=card.offsetLeft+card.offsetWidth/2-currentRef.current;
+  for(const item of geometryRef.current){
+   const cardCenter=item.left+item.width/2-currentRef.current;
    const distance=Math.abs(cardCenter-center);
    if(distance<bestDistance){
     bestDistance=distance;
-    best=card;
+    best=item;
    }
-  });
+  }
 
   if(best){
-   targetRef.current=best.offsetLeft+best.offsetWidth/2-center;
+   targetRef.current=best.left+best.width/2-center;
    snapDoneRef.current=true;
   }
  }
 
  function updateEdgeLens(){
-  const viewport=viewportRef.current,track=trackRef.current;
-  if(!viewport || !track) return;
+  const viewport=viewportRef.current;
+  if(!viewport || !geometryRef.current.length) return;
 
   const width=viewport.clientWidth;
   const edgeZone=clamp(width*.115,42,110);
 
-  Array.from(track.children).forEach(card=>{
-   const center=card.offsetLeft+card.offsetWidth/2-currentRef.current;
+  for(const item of geometryRef.current){
+   const center=item.left+item.width/2-currentRef.current;
    const leftFx=clamp((edgeZone-center)/edgeZone,0,1);
    const rightFx=clamp((center-(width-edgeZone))/edgeZone,0,1);
    const edge=Math.max(leftFx,rightFx);
    const tilt=(leftFx-rightFx)*18;
+   const origin=leftFx>rightFx?'100% 50%':rightFx>leftFx?'0% 50%':'50% 50%';
 
-   card.style.setProperty('--ax-edge',edge.toFixed(3));
-   card.style.setProperty('--ax-tilt',tilt.toFixed(2)+'deg');
-   card.style.transformOrigin=leftFx>rightFx?'100% 50%':rightFx>leftFx?'0% 50%':'50% 50%';
-  });
- }
-
- useAnimationFrame((time,delta)=>{
-  if(!measuredRef.current) return;
-  const now=performance.now();
-  const dt=Math.min(48,Math.max(0,delta));
-
-  if(!draggingRef.current){
-   if(!snapDoneRef.current && now-lastInputRef.current>=SNAP_IDLE_MS){
-    snapNearest();
+   if(Math.abs(edge-item.edge)>.004){
+    item.node.style.setProperty('--ax-edge',edge.toFixed(3));
+    item.edge=edge;
    }
-   if(!reducedMotionRef.current && now>=autoResumeRef.current){
-    targetRef.current+=AUTOPLAY_SPEED*(dt/1000);
+   if(Math.abs(tilt-item.tilt)>.08){
+    item.node.style.setProperty('--ax-tilt',tilt.toFixed(2)+'deg');
+    item.tilt=tilt;
+   }
+   if(origin!==item.origin){
+    item.node.style.transformOrigin=origin;
+    item.origin=origin;
    }
   }
+ }
 
-  const ease=draggingRef.current?TOUCH_EASE:EASE;
-  currentRef.current+=(targetRef.current-currentRef.current)*ease;
-  wrap();
-  x.set(-currentRef.current);
-  updateEdgeLens();
- });
+ useEffect(()=>{
+  const viewport=viewportRef.current,track=trackRef.current;
+  if(!viewport || !track || !items.length) return;
+
+  reducedMotionRef.current=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function measure(){
+   const cards=Array.from(track.children);
+   if(cards.length<=items.length) return;
+   const loop=cards[items.length].offsetLeft-cards[0].offsetLeft;
+   if(!loop) return;
+
+   geometryRef.current=cards.map(card=>({
+    node:card,
+    left:card.offsetLeft,
+    width:card.offsetWidth,
+    edge:Number.NaN,
+    tilt:Number.NaN,
+    origin:''
+   }));
+   loopWidthRef.current=loop;
+
+   if(!measuredRef.current){
+    currentRef.current=loop;
+    targetRef.current=loop;
+    x.jump(-loop);
+    measuredRef.current=true;
+   }
+   updateEdgeLens();
+  }
+
+  function stopLoop(){
+   if(frameRef.current) cancelAnimationFrame(frameRef.current);
+   frameRef.current=0;
+   lastFrameRef.current=0;
+  }
+
+  function tick(time){
+   frameRef.current=0;
+   if(!activeRef.current || document.hidden) return;
+   const delta=lastFrameRef.current?time-lastFrameRef.current:16.67;
+   lastFrameRef.current=time;
+   const now=performance.now();
+   const dt=Math.min(48,Math.max(0,delta));
+
+   if(!draggingRef.current){
+    if(!snapDoneRef.current && now-lastInputRef.current>=SNAP_IDLE_MS) snapNearest();
+    if(!reducedMotionRef.current && now>=autoResumeRef.current) targetRef.current+=AUTOPLAY_SPEED*(dt/1000);
+   }
+
+   const ease=draggingRef.current?TOUCH_EASE:EASE;
+   currentRef.current+=(targetRef.current-currentRef.current)*ease;
+   wrap();
+   x.set(-currentRef.current);
+   updateEdgeLens();
+   frameRef.current=requestAnimationFrame(tick);
+  }
+
+  function startLoop(){
+   if(frameRef.current || !activeRef.current || document.hidden) return;
+   lastFrameRef.current=0;
+   frameRef.current=requestAnimationFrame(tick);
+  }
+
+  const resizeObserver=new ResizeObserver(measure);
+  resizeObserver.observe(viewport);
+  resizeObserver.observe(track);
+
+  const intersectionObserver=new IntersectionObserver(entries=>{
+   activeRef.current=Boolean(entries[0]?.isIntersecting);
+   if(activeRef.current) startLoop();
+   else stopLoop();
+  },{rootMargin:'160px 0px',threshold:0});
+  intersectionObserver.observe(viewport);
+
+  const onVisibility=()=>{
+   if(document.hidden) stopLoop();
+   else if(activeRef.current) startLoop();
+  };
+  document.addEventListener('visibilitychange',onVisibility);
+
+  measure();
+  return ()=>{
+   stopLoop();
+   resizeObserver.disconnect();
+   intersectionObserver.disconnect();
+   document.removeEventListener('visibilitychange',onVisibility);
+   activeRef.current=false;
+   geometryRef.current=[];
+  };
+ },[items,x]);
 
  function onPointerDown(event){
   const viewport=viewportRef.current;
