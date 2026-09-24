@@ -24,6 +24,21 @@ test('catalog requests without a PDP product force live product search first',as
   assert.deepEqual(f.inputs[0].tool_choice,{type:'function',name:'search_products'});
   assert.equal(f.routes[0].intent,'catalog');
 });
+test('Indian fashion and occasion vocabulary stays inside styling scope',()=>{
+  for(const message of [
+    'Style a mundu for an Onam event',
+    'What should I wear with a kurta?',
+    'Bandhgala or suit for a wedding reception?',
+    'How do I style a sherwani?',
+    'Veshti with a shirt for a Tamil wedding',
+    'Build a streetwear look for Coimbatore'
+  ]) {
+    const route=routeAXStylistRequest({message},config);
+    assert.equal(route.intent,'styling',message);
+    assert.equal(route.tier,'luna',message);
+  }
+});
+
 test('genuinely complex styling escalates, with medium reserved for compound complexity',()=>{
   for(const context of [{message:'Build an entire outfit using AX pieces'},{message:'Analyze my overall outfit',image:'photo'},{message:'Recommend sizing between M and L for chest 94 waist 78 hip 96'},{message:'Compare five shirts for the office, avoid navy'},{message:'Style an office outfit under 3000 for humid weather, avoid prints'}]) assert.equal(routeAXStylistRequest(context,config).tier,'terra',context.message);
   assert.equal(routeAXStylistRequest({message:'Build an entire outfit'},config).reasoningEffort,'low');
