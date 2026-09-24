@@ -7,6 +7,7 @@ import {getHomepageCampaigns} from '../lib/content';
 import HeroVideo from '../components/HeroVideo';
 import {styledWithAx} from '../lib/styled-with-ax';
 import StyledWithAxCarousel from '../components/StyledWithAxCarousel';
+import OpeningIntro from '../components/OpeningIntro';
 
 export const revalidate=60;
 
@@ -75,7 +76,7 @@ export default async function Home() {
  const heroPoster=heroCampaign.imageSrc || hero?.image || '';
  const heroMobilePoster=heroCampaign.mobileImageSrc || heroPoster;
 
- return <main id="main-content" className="editorial-home">
+ return <><OpeningIntro/><main id="main-content" className="editorial-home">
   <section className={`editorial-hero ${heroCampaign.theme}`} aria-labelledby="editorial-hero-title">
    <Link className="editorial-hero-visual" href={heroCampaign.ctaLink} aria-label={heroCampaign.ctaLabel}>
     {heroPoster && <EditorialImage src={heroPoster} mobileSrc={heroMobilePoster} alt={heroCampaign.imageAlt || hero?.imageAlt || 'AX editorial campaign'} sizes="(max-width:700px) 100vw, 62vw" eager/>}
@@ -107,5 +108,5 @@ export default async function Home() {
    <div className="styled-with-ax-head"><div><p className="eyebrow">COMMUNITY / EDITORIAL</p><CampaignTitle value="Styled with AX" id="styled-with-ax-title"/></div><p>Selected AX collaborations, campaign moments and community styling.</p></div>
    <StyledWithAxCarousel items={styledWithAx}/>
   </section>}
- </main>;
+ </main></>;
 }
