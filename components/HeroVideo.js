@@ -110,7 +110,7 @@ export default function HeroVideo({
   muted
   loop
   playsInline
-  preload="auto"
+  preload="metadata"
   aria-hidden="true"
   onLoadedData={() => setReady(true)}
   onCanPlay={() => {retryCount.current=0;setReady(true);}}
