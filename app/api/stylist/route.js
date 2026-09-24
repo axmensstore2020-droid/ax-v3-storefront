@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {json,stylistConfigured,reserveRequest} from '../../../lib/stylist/http.js';
 import {sameOrigin,validateImage,historyFromToken,historyToken,conversationContext,hash} from '../../../lib/stylist/security.js';
-import {validateChat} from '../../../lib/stylist/validation.js';
+import {MAX_BODY_BYTES,validateChat} from '../../../lib/stylist/validation.js';
 import {assertAllowedKeys,readLimitedJson} from '../../../lib/request-body.js';
 import {createOpenAI} from '../../../lib/stylist/openai.js';
 import {createCatalog} from '../../../lib/stylist/catalog.js';
@@ -21,7 +21,7 @@ export async function POST(request) {
   if(!stylistConfigured()) return json({ok:false,error:'Personal AI styling is not available yet. You can still explore the catalog or email AX.'},503);
   let body;
   try {
-    body=await readLimitedJson(request);
+    body=await readLimitedJson(request,MAX_BODY_BYTES);
     assertAllowedKeys(body,['message','image','conversation','productHandle','selectedOptions','profile','consent'],'Stylist');
     body=validateChat(body);
     if(body.image && process.env.AX_STYLIST_IMAGES_ENABLED!=='true') throw new Error('Photo styling is not enabled yet.');
