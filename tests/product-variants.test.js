@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {productOptions,initialSelection,selectionImage,optionAvailable,cartLineDetails} from '../lib/product-variants.js';
+import {availableOptionValues,cartLineDetails,initialSelection,optionAvailable,productMatchesAvailableFilters,productOptions,selectionAfterOption,selectionImage} from '../lib/product-variants.js';
 import {findVariant} from '../lib/commerce.js';
 import {recommendationCard} from '../lib/stylist/recommendations.js';
 const image=color=>({url:'https://cdn.shopify.com/'+color.toLowerCase()+'.jpg',altText:color});
@@ -34,4 +34,20 @@ test('AI cards preserve exact color and require size confirmation; wrong variant
   assert.equal(recommendationCard(p,{...choice,selectedOptions:[{name:'Color',value:'Red'}]}),null);
   assert.equal(recommendationCard(p,{...choice,variantId:p.variants[3].id}),null);
   assert.equal(recommendationCard(p,choice,{productHandle:'shirt',selectedOptions:{Color:'Black'}}),null);
+});
+
+
+test('changing colour clears a stale size while impossible size changes are ignored',()=>{
+  assert.deepEqual(selectionAfterOption(product.variants,{Color:'Black',Size:'M'},'Color','Beige'),{Color:'Beige'});
+  assert.deepEqual(selectionAfterOption(product.variants,{Color:'Beige',Size:'S'},'Size','M'),{Color:'Beige',Size:'S'});
+});
+
+test('catalog filter values and combinations use sellable variants only',()=>{
+  const filterProduct={...product,color:'Black, Beige, Red',options:[...productOptions(product),{name:'Unused',values:['x']}],variants:[...product.variants,variant(5,'Red','XL',false)]};
+  assert.deepEqual(availableOptionValues(filterProduct,/size/i).sort(),['M','S']);
+  assert.deepEqual(availableOptionValues(filterProduct,/^colou?r$/i).sort(),['Beige','Black']);
+  assert.equal(productMatchesAvailableFilters(filterProduct,{size:'M',color:'Black'}),true);
+  assert.equal(productMatchesAvailableFilters(filterProduct,{size:'S',color:'Beige'}),true);
+  assert.equal(productMatchesAvailableFilters(filterProduct,{size:'M',color:'Beige'}),false);
+  assert.equal(productMatchesAvailableFilters(filterProduct,{size:'XL',color:'Red'}),false);
 });

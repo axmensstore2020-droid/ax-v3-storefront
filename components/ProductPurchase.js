@@ -9,7 +9,7 @@ import {StylistButton} from './StylistProvider';
 import Icon from './Icon';
 import {findVariant} from '../lib/commerce';
 import {productMarketingData} from '../lib/marketing';
-import {initialSelection,productOptions,selectionImage} from '../lib/product-variants';
+import {initialSelection,productOptions,selectionAfterOption,selectionImage} from '../lib/product-variants';
 import {trackMarketingEvent} from './MetaMarketing';
 import {trackStoreEvent} from '../lib/store-analytics';
 import {deliveryWeightForProduct} from '../lib/weight';
@@ -60,7 +60,7 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
     </div>
     <div className="pdp-info">
       <p className="eyebrow">{product.type || 'AX MENSWEAR'}</p><div className="pdp-title-row"><h1 className="editorial">{product.title}</h1><WishlistButton handle={product.handle} className="pdp-wishlist" showLabel/></div>
-      <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} colourways={colourways} onSelect={(name,value) => {setSelected(current => ({...current,[name]:value}));trackStoreEvent('select_variant',{productHandle:product.handle,metadata:{option:name,value}});}} afterAddButton={<ShippingEstimator weightGrams={deliveryWeight} productHandle={product.handle} subtotal={deliverySubtotal}/>} restockAlertsEnabled={restockAlertsEnabled}/>
+      <AddToCart product={product} options={productOptions(product)} selected={selected} variant={variant} colourways={colourways} onSelect={(name,value) => {setSelected(current => selectionAfterOption(product.variants || [],current,name,value));trackStoreEvent('select_variant',{productHandle:product.handle,metadata:{option:name,value}});}} afterAddButton={<ShippingEstimator weightGrams={deliveryWeight} productHandle={product.handle} subtotal={deliverySubtotal}/>} restockAlertsEnabled={restockAlertsEnabled}/>
       {children}
       <ProductDataPanel product={product} selectedOptions={selected}/>
       {completeLookItems.length>0 && <div className="pdp-after-product-info"><CompleteLook product={product} mainVariant={variant} mainSelection={selected} items={completeLookItems}/></div>}

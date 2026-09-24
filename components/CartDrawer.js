@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import {useEffect,useState} from 'react';
+import {useEffect,useRef,useState} from 'react';
 import {useCart} from './CartProvider';
 import {formatMoney} from '../lib/catalog';
 import {checkoutMarketingData} from '../lib/marketing';
@@ -15,8 +15,18 @@ import CartRecommendations from './CartRecommendations';
 const PIN_KEY='ax_delivery_pincode';
 
 export default function CartDrawer(){
- const {cart,demoLines,demo,open,setOpen,busy,notice,updateItem,freeShippingThreshold,partialCodEnabled}=useCart();
+ const {cart,demoLines,demo,open,setOpen,checkoutIntent,busy,notice,updateItem,freeShippingThreshold,partialCodEnabled}=useCart();
+ const checkoutRef=useRef(null);
  const [codPincode,setCodPincode]=useState(''),[codState,setCodState]=useState('idle'),[codMessage,setCodMessage]=useState(''),[codBusy,setCodBusy]=useState(false);
+
+ useEffect(()=>{
+  if(!open || !checkoutIntent || busy) return;
+  const frame=requestAnimationFrame(()=>{
+   checkoutRef.current?.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+   checkoutRef.current?.focus?.({preventScroll:true});
+  });
+  return()=>cancelAnimationFrame(frame);
+ },[open,checkoutIntent,busy,cart?.id]);
 
  useEffect(()=>{
   if(!open || !partialCodEnabled) return;
@@ -64,7 +74,7 @@ export default function CartDrawer(){
    {threshold>0&&<div className="shipping-progress"><div><span style={{width:progress+'%'}}/></div><p>{remaining>0?<><strong>{formatMoney(remaining,currency)}</strong> away from free standard delivery.</>:<strong>Free standard delivery unlocked.</strong>}</p></div>}
    {!demo&&<CartRecommendations handles={lines.map(line=>line.handle)} onNavigate={()=>setOpen(false)}/>}
    <div className="cart-total"><span>Subtotal</span><strong>{formatMoney(subtotal,currency)}</strong></div>
-   {demo?<button className="checkout-button" disabled>PREVIEW · CHECKOUT UNAVAILABLE</button>:busy?<button className="checkout-button" disabled>UPDATING BAG…</button>:<div className="checkout-methods"><a className="checkout-button" href={cart.checkoutUrl} onClick={beginCheckout}>PAY ONLINE</a>{partialCodEnabled&&<div className="partial-cod-gate"><div className="partial-cod-option-head"><strong>PARTIAL COD</strong><span>COD handling {formatMoney(codHandlingFee,currency)}</span></div><p className="partial-cod-option-copy">Check your pincode first. Full address is only needed after COD is available.</p><form className="partial-cod-pincode-form" onSubmit={event=>{event.preventDefault();checkCodAvailability();}}><input aria-label="Delivery pincode for COD" inputMode="numeric" autoComplete="postal-code" maxLength="6" pattern="[0-9]{6}" placeholder="6-digit pincode" value={codPincode} onChange={updateCodPincode}/><button type="submit" disabled={codBusy||codPincode.length!==6}>{codBusy?'CHECKING…':'CHECK COD'}</button></form>{codMessage&&<p className={'partial-cod-status '+codState} role="status">{codMessage}</p>}{codState==='available'&&<Link className="partial-cod-continue" href="/partial-cod" onClick={()=>{beginCheckout();setOpen(false);}}>CONTINUE WITH PARTIAL COD</Link>}<small>₹40 minimum · 2% of product value above ₹2,000</small></div>}</div>}
+   {demo?<button className="checkout-button" disabled>PREVIEW · CHECKOUT UNAVAILABLE</button>:busy?<button className="checkout-button" disabled>UPDATING BAG…</button>:<div ref={checkoutRef} tabIndex={-1} className={`checkout-methods${checkoutIntent?' quick-checkout':''}`} aria-label="Checkout payment options">{checkoutIntent&&<p className="checkout-intent-note" role="status">Buy now · choose your payment method.</p>}<a className="checkout-button" href={cart.checkoutUrl} onClick={beginCheckout}>PAY ONLINE</a>{partialCodEnabled&&<div className="partial-cod-gate"><div className="partial-cod-option-head"><strong>PARTIAL COD</strong><span>COD handling {formatMoney(codHandlingFee,currency)}</span></div><p className="partial-cod-option-copy">Check your pincode first. Full address is only needed after COD is available.</p><form className="partial-cod-pincode-form" onSubmit={event=>{event.preventDefault();checkCodAvailability();}}><input aria-label="Delivery pincode for COD" inputMode="numeric" autoComplete="postal-code" maxLength="6" pattern="[0-9]{6}" placeholder="6-digit pincode" value={codPincode} onChange={updateCodPincode}/><button type="submit" disabled={codBusy||codPincode.length!==6}>{codBusy?'CHECKING…':'CHECK COD'}</button></form>{codMessage&&<p className={'partial-cod-status '+codState} role="status">{codMessage}</p>}{codState==='available'&&<Link className="partial-cod-continue" href="/partial-cod" onClick={()=>{beginCheckout();setOpen(false);}}>CONTINUE WITH PARTIAL COD</Link>}<small>₹40 minimum · 2% of product value above ₹2,000</small></div>}</div>}
   </>}
  </Dialog>;
 }

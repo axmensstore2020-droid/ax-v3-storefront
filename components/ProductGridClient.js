@@ -9,11 +9,8 @@ import {styleWorlds,canonicalStyle,matchesCategory,matchesStyle,matchesSearch,no
 import {featuredProductRank} from '../lib/merchandising';
 import {trackStoreEvent} from '../lib/store-analytics';
 import {swatchColor} from '../lib/color';
+import {availableOptionValues,productMatchesAvailableFilters} from '../lib/product-variants';
 
-function optionValues(product,pattern){
- const option=(product.options||[]).find(item=>pattern.test(item.name||''));
- return option?.values || option?.optionValues?.map(value=>value.name) || [];
-}
 function unique(values){return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];}
 function discountPercent(product){
  const price=Number(product.price||0),compareAt=Number(product.compareAtPrice||0);
@@ -57,20 +54,19 @@ export default function ProductGridClient({products,title='New in',initialTerm='
   return()=>clearTimeout(searchTimer.current);
  },[term]);
 
- const sizes=useMemo(()=>unique(products.flatMap(product=>optionValues(product,/size/i))).sort((a,b)=>sizeRank(a)-sizeRank(b)||a.localeCompare(b)),[products]);
- const colors=useMemo(()=>unique(products.flatMap(product=>[...optionValues(product,/^colou?r$/i),...(product.color?String(product.color).split(','):[])])).sort((a,b)=>a.localeCompare(b)),[products]);
+ const sizes=useMemo(()=>unique(products.flatMap(product=>availableOptionValues(product,/size/i))).sort((a,b)=>sizeRank(a)-sizeRank(b)||a.localeCompare(b)),[products]);
+ const colors=useMemo(()=>unique(products.flatMap(product=>{
+  const variantColors=availableOptionValues(product,/^colou?r$/i);
+  return variantColors.length?variantColors:(product.availableForSale===false?[]:(product.color?String(product.color).split(','):[]));
+ })).sort((a,b)=>a.localeCompare(b)),[products]);
  const fits=useMemo(()=>unique(products.map(product=>product.fit)).sort((a,b)=>a.localeCompare(b)),[products]);
 
  const filtered=useMemo(()=>{
   const result=products.filter(product=>{
    if(!matchesCategory(product,category)||!matchesStyle(product,style)||!matchesSearch(product,term))return false;
-   if(size && !optionValues(product,/size/i).some(value=>normalize(value)===normalize(size)))return false;
-   if(color){
-    const values=[...optionValues(product,/^colou?r$/i),product.color||''];
-    if(!values.some(value=>normalize(value).includes(normalize(color))))return false;
-   }
+   if((size||color) && !productMatchesAvailableFilters(product,{size,color}))return false;
    if(fit && normalize(product.fit)!==normalize(fit))return false;
-   if(availability==='in-stock' && product.availableForSale===false)return false;
+   if(availability==='in-stock' && !productMatchesAvailableFilters(product))return false;
    const price=Number(product.price||0);
    if(Number.isFinite(price)&&(price<priceMin||price>priceMax))return false;
    return true;
