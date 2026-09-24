@@ -10,11 +10,6 @@ import HeroVideo from '../components/HeroVideo';
 
 export const revalidate=60;
 
-const DEFAULT_HERO_MOBILE_VIDEO='https://cdn.shopify.com/s/files/1/0859/5216/8176/files/ax-home-hero-mobile_0c454cdc-ec4c-44be-a893-27b5e4d1130f.mp4?v=1790080870';
-const DEFAULT_HERO_DESKTOP_VIDEO='https://cdn.shopify.com/s/files/1/0859/5216/8176/files/ax-home-hero-desktop_1a865eca-9565-4113-b89f-75e8cde4213b.mp4?v=1790080870';
-const DEFAULT_HERO_MOBILE_BACKUP='https://d2ol7oe51mr4n9.cloudfront.net/user_3JHmA5rA3F2ZOEAYLj6xipUiqFY/c97b0b2a-49f6-470d-b72f-c48b562a33c3.mp4';
-const DEFAULT_HERO_DESKTOP_BACKUP='https://d2ol7oe51mr4n9.cloudfront.net/user_3JHmA5rA3F2ZOEAYLj6xipUiqFY/bb44e5e9-95de-42eb-ace5-7078d0e149c5.mp4';
-
 function findImage(products, pattern, fallback='') {
  const match=products.find(product => product.image && pattern.test([product.title,...(product.tags || []),product.type,product.style].join(' ')));
  return match?.image || fallback;
@@ -83,7 +78,7 @@ export default async function Home() {
  const jacket=findImage(products,/(jacket|outerwear|coat)/i,hero?.image || '');
  const shirt=findImage(products,/(shirt|flannel|polo)/i,second?.image || hero?.image || '');
 
- const heroCampaign=campaign(campaigns,'hero',{slot:'hero',eyebrow:'AX MEN’S STORE · COIMBATORE',title:'Wear your\npoint of view.',description:'A considered wardrobe for every version of your day—easy layers, sharper moments and pieces that feel like you.',imageSrc:hero?.image || '',imageAlt:'AX new arrivals editorial',desktopVideoSrc:DEFAULT_HERO_DESKTOP_VIDEO,mobileVideoSrc:DEFAULT_HERO_MOBILE_VIDEO,videoEnabled:true,usesCustomVideo:false,ctaLabel:'EXPLORE NEW ARRIVALS',ctaLink:'/products',theme:'editorial-pastel-sage'});
+ const heroCampaign=campaign(campaigns,'hero',{slot:'hero',eyebrow:'AX MEN’S STORE · COIMBATORE',title:'Wear your\npoint of view.',description:'A considered wardrobe for every version of your day—easy layers, sharper moments and pieces that feel like you.',imageSrc:'',mobileImageSrc:'',imageAlt:'AX hero video',desktopVideoSrc:'',mobileVideoSrc:'',videoEnabled:true,usesCustomVideo:false,ctaLabel:'EXPLORE NEW ARRIVALS',ctaLink:'/products',theme:'editorial-pastel-sage'});
  const welcome=campaign(campaigns,'welcome',{slot:'welcome',eyebrow:'WELCOME TO AX',title:'A wardrobe with\nroom to be yourself.',description:'Discover the mood first. Then find the piece that belongs in your everyday.',theme:'editorial-pastel-sage'});
  const newArrivals=campaign(campaigns,'new-arrivals',{slot:'new-arrivals',eyebrow:'THE SHIRT EDIT',title:'New arrivals',description:'Fresh shapes and familiar favourites, curated for the days ahead.',imageSrc:shirt,imageAlt:'AX shirts editorial',ctaLabel:'SHOP NEW IN',ctaLink:'/products',theme:'editorial-pastel-sage'});
  const linenCampaign=campaign(campaigns,'linen',{slot:'linen',eyebrow:'LIGHT LAYERS',title:'Linen shirts',description:'',imageSrc:linen,imageAlt:'AX linen shirts editorial',ctaLabel:'SHOP LINEN',ctaLink:'/collections/linen',theme:'editorial-pastel-peach'});
@@ -95,12 +90,10 @@ export default async function Home() {
  return <main id="main-content" className="editorial-home">
   <section className={`editorial-hero ${heroCampaign.theme}`} aria-labelledby="editorial-hero-title">
    <Link className="editorial-hero-visual" href={heroCampaign.ctaLink} aria-label={heroCampaign.ctaLabel}>
-    <EditorialImage src={heroCampaign.imageSrc} mobileSrc={heroCampaign.mobileImageSrc} alt={heroCampaign.imageAlt || 'AX editorial campaign'} sizes="(max-width:700px) 100vw, 62vw" eager/>
+    {heroCampaign.imageSrc && <EditorialImage src={heroCampaign.imageSrc} mobileSrc={heroCampaign.mobileImageSrc} alt={heroCampaign.imageAlt || 'AX editorial campaign'} sizes="(max-width:700px) 100vw, 62vw" eager/>}
     {heroCampaign.videoEnabled && (heroCampaign.mobileVideoSrc || heroCampaign.desktopVideoSrc) && <HeroVideo
      mobileSrc={heroCampaign.mobileVideoSrc || heroCampaign.desktopVideoSrc}
      desktopSrc={heroCampaign.desktopVideoSrc || heroCampaign.mobileVideoSrc}
-     mobileFallbackSrc={heroCampaign.usesCustomVideo ? '' : DEFAULT_HERO_MOBILE_BACKUP}
-     desktopFallbackSrc={heroCampaign.usesCustomVideo ? '' : DEFAULT_HERO_DESKTOP_BACKUP}
     />}
     <span className="editorial-image-caption">{heroCampaign.ctaLabel} <Icon name="arrow" size={17}/></span>
    </Link>
