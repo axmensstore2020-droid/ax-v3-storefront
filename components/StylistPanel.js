@@ -37,14 +37,14 @@ async function prepareImage(file) {
   if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 8000000) throw new Error('Choose a JPEG, PNG or WebP photo under 8 MB.');
   const bitmap = await createImageBitmap(file);
   try {
-    const ratio = Math.min(1,1024/Math.max(bitmap.width,bitmap.height));
+    const ratio = Math.min(1,768/Math.max(bitmap.width,bitmap.height));
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1,Math.round(bitmap.width*ratio)); canvas.height = Math.max(1,Math.round(bitmap.height*ratio));
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#f7f7f4'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
     // Re-encode to remove EXIF/location metadata. Photo is held only in memory.
-    const data = canvas.toDataURL('image/jpeg',0.8);
-    if (data.length > 2000000) throw new Error('Please choose a smaller photo.');
+    const data = canvas.toDataURL('image/jpeg',0.72);
+    if (data.length > 1000000) throw new Error('This photo is still too large after compression. Choose a smaller photo.');
     return data;
   } finally { bitmap.close(); }
 }
@@ -132,7 +132,14 @@ export default function StylistPanel({request,onClose}) {
       if (controller.signal.aborted) return;
       setMessages(current => [...current,{role:'user',message,...(image ? {photo:true} : {})},{role:'assistant',...result}]);
       setConversation(result.conversation);setDraft('');setPhoto('');
-    } catch(e) {if (!controller.signal.aborted) setError(e.message || 'Could not reach AX. Please try again.');}
+    } catch(e) {
+      if (!controller.signal.aborted) {
+        const networkFailure=e instanceof TypeError || /failed to fetch|networkerror|load failed/i.test(e.message || '');
+        setError(networkFailure
+          ? `The connection was interrupted before AX replied. Your message${image?' and photo':''} are still here. Wait a moment, then try again.`
+          : e.message || 'Could not reach AX. Please try again.');
+      }
+    }
     finally {if (abort.current === controller && mounted.current) {sending.current=false;setBusy(false);}}
   }
   async function saveProfile() {
