@@ -40,7 +40,7 @@ Create or select an approved Supabase project for AX. Provisioning a paid plan i
 
 For the existing AX project `vfhhstewkefqopcgxrki`, the original tables already exist, the new usage migration is applied, and the daily cleanup job is active. Do not rerun these steps there. For a new environment:
 
-1. Run [the base migration](../supabase/migrations/20260915_ax_stylist.sql), then [usage and advanced budget](../supabase/migrations/20260915235149_ax_stylist_usage_and_model_budget.sql).
+1. Run [the base migration](../supabase/migrations/20260915_ax_stylist.sql), then [usage and advanced budget](../supabase/migrations/20260915235149_ax_stylist_usage_and_model_budget.sql), then [quota alerts](../supabase/migrations/20260924_stylist_quota_alerts.sql).
 2. Confirm `ax_stylist_profiles`, `ax_stylist_limits` and `ax_stylist_usage` have Row Level Security enabled. `anon` and `authenticated` must have no access. The server-only service-role/secret key accesses them.
 3. Enable Supabase Cron in the dashboard. Create a daily job with schedule `0 3 * * *`, command `select public.ax_stylist_purge_expired();`. This deletes expired records even when no one opens the store. Never enable chat without arranging this purge.
 4. Copy the project URL and the server-side **Secret key** privately to Hostinger. If your dashboard only exposes the legacy `service_role` key, that is accepted as a fallback. Do not put either key into browser code. The normal public/publishable/anon key is not suitable for the server-only tables.
@@ -77,12 +77,31 @@ On your phone: open the AX web-app dashboard → deployment/build settings → E
 | `SUPABASE_SECRET_KEY` | Private Supabase server-side Secret key (use the legacy `SUPABASE_SERVICE_ROLE_KEY` only when the dashboard has no Secret key) |
 | `AX_STYLIST_DAILY_LIMIT` | Start with `150` total attempts per UTC day across all visitors |
 | `AX_STYLIST_VISITOR_HOURLY_LIMIT` | Start with `12` per anonymous browser per UTC hour |
+| `AX_STYLIST_ALERT_WARNING_PERCENT` | `80`; sends one merchant warning when the shared daily counter first reaches this percentage |
+| `AX_STYLIST_ALERT_EMAIL` | Merchant inbox that receives the 80% and 100% quota alerts |
+| `AX_STYLIST_ALERT_FROM_EMAIL` | Verified Resend sender; can use the same verified domain as restock mail |
+| `RESEND_API_KEY` | Server-only Resend key used for quota-alert delivery (and restock mail when enabled) |
 | `AX_STYLIST_IMAGES_ENABLED` | Start `false`; set `true` only after photo safety/quality checks |
 | `AX_STYLIST_IP_HEADER` | Leave unset unless Hostinger confirms a single IP header its trusted proxy overwrites |
 
 A password manager can generate the signing secret. If an operator uses a terminal, `node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))'` generates one; run privately and do not send its output here.
 
 The backend will remain unavailable if required configuration is missing. A public `/api/stylist` check only reports availability, photo availability and profile availability—not keys. `/ax-stylist` displays matching operational/privacy information from code rather than an outdated Shopify page.
+
+
+### Quota alerts and customer limit messages
+
+The shared Supabase limiter returns the exact blocking reason instead of a generic boolean. A shopper who reaches the per-browser hourly ceiling sees **“You’ve used your AX Stylist allowance for this hour. Try again shortly.”** A shopper blocked by the shared daily ceiling sees **“AX Stylist is taking a short break after reaching today’s shared limit. It’ll be back after the daily reset.”** The provider call is never made after a rejected reservation.
+
+At the configured warning percentage (default 80%) and again when the global daily ceiling reaches 100%, Supabase atomically reserves a one-shot alert marker for that UTC day. AX sends a merchant-only email through Resend containing only the aggregate counter and limit—never a shopper prompt, photo, profile or identity. If email delivery fails, AX releases the alert marker so a later request can retry. Individual hourly-limit hits do **not** email the merchant, to avoid noisy alerts.
+
+The alert thresholds follow whatever values are actually deployed in Hostinger. Changing the repository example does not override production environment variables.
+
+### AX fashion knowledge layer
+
+The Stylist developer prompt includes a curated, version-controlled fashion knowledge layer in `lib/stylist/fashion-knowledge.js`. It covers Indian and South Indian context, streetwear, formal and smart-casual dressing, wedding/occasion wear, fabrics, colour coordination, footwear/accessories, outfit construction, old-money-inspired and Korean-inspired menswear. It explicitly distinguishes garments such as mundu, veshti, dhoti, kurta, Nehru-style jackets, bandhgalas/Jodhpuri suits, achkans and sherwanis rather than treating Indian dress as one generic category.
+
+This is **not model fine-tuning** and it does not replace live Shopify grounding. Product facts must still come from AX’s read-only catalog tools. The knowledge layer is intended for stable styling principles and cultural vocabulary; it must not claim that a style is currently trending without an approved current source. When regional etiquette or ceremony details are uncertain, the Stylist asks for context instead of inventing a rule. This makes the training easy to audit and update before considering retrieval or fine-tuning later.
 
 ## 5. Privacy and content review before launch
 
