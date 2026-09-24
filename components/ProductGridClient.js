@@ -6,6 +6,7 @@ import ProductImage from './ProductImage';
 import Icon from './Icon';
 import {formatMoney} from '../lib/catalog';
 import {styleWorlds,canonicalStyle,matchesCategory,matchesStyle,matchesSearch,normalize} from '../lib/navigation';
+import {featuredProductRank} from '../lib/merchandising';
 import {trackStoreEvent} from '../lib/store-analytics';
 import {swatchColor} from '../lib/color';
 
@@ -35,6 +36,7 @@ const SORT_OPTIONS=[
 ];
 
 export default function ProductGridClient({products,title='New in',initialTerm='',initialType='all',initialStyle='',searchOpen=false,collection=false,home=false}) {
+ const originalOrder=useMemo(()=>new Map(products.map((product,index)=>[product.id,index])),[products]);
  const priceCeiling=useMemo(()=>{
   const highest=Math.max(0,...products.map(product=>Number(product.price||0)).filter(Number.isFinite));
   return Math.max(100,Math.ceil(highest/100)*100);
@@ -79,9 +81,14 @@ export default function ProductGridClient({products,title='New in',initialTerm='
    if(sort==='discount-asc')return discountPercent(a)-discountPercent(b);
    if(sort==='discount-desc')return discountPercent(b)-discountPercent(a);
    if(sort==='recent')return Date.parse(b.createdAt||b.updatedAt||0)-Date.parse(a.createdAt||a.updatedAt||0);
+   if(sort==='featured'){
+    const rank=featuredProductRank(a)-featuredProductRank(b);
+    if(rank)return rank;
+    return (originalOrder.get(a.id)??0)-(originalOrder.get(b.id)??0);
+   }
    return 0;
   });
- },[products,category,style,term,size,color,fit,availability,priceMin,priceMax,sort]);
+ },[products,category,style,term,size,color,fit,availability,priceMin,priceMax,sort,originalOrder]);
 
  useEffect(()=>{
   if(!gridMotionReady.current){gridMotionReady.current=true;return;}
