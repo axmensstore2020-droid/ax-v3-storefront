@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {recommendFit} from '../lib/stylist/fit.js';
-import {normalizeProfile,validateChat} from '../lib/stylist/validation.js';
+import {MAX_BODY_BYTES,normalizeProfile,validateChat} from '../lib/stylist/validation.js';
 import {readLimitedJson} from '../lib/request-body.js';
 import {normalizeProductData} from '../lib/product-data.js';
+import {readFileSync} from 'node:fs';
 
 export const shirt = () => ({handle:'linen-shirt',title:'Linen shirt',measurementUnit:'cm',measurementBasis:'circumference',
   sizeMeasurements:{S:{chest:104},M:{chest:110}},
@@ -55,4 +56,18 @@ test('request limits work even without a Content-Length header',async()=>{
   const request=new Request('https://ax.test/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'x'.repeat(1000)})});
   await assert.rejects(readLimitedJson(request,100),/too large/);
   await assert.rejects(readLimitedJson(new Request('https://ax.test/',{method:'POST',body:'{}'})),/JSON/);
+});
+
+test('Stylist photo requests use the configured body allowance instead of the 8 KB JSON default',async()=>{
+  const payload=JSON.stringify({message:'style this',image:'x'.repeat(20000)});
+  assert.ok(Buffer.byteLength(payload)>8192);
+  const request=new Request('https://ax.test/api/stylist',{method:'POST',headers:{'Content-Type':'application/json'},body:payload});
+  const parsed=await readLimitedJson(request,MAX_BODY_BYTES);
+  assert.equal(parsed.message,'style this');
+  const routeSource=readFileSync(new URL('../app/api/stylist/route.js',import.meta.url),'utf8');
+  assert.match(routeSource,/readLimitedJson\(request,MAX_BODY_BYTES\)/);
+});
+test('Stylist request body allowance remains bounded',async()=>{
+  const request=new Request('https://ax.test/api/stylist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'x',image:'a'.repeat(MAX_BODY_BYTES)})});
+  await assert.rejects(()=>readLimitedJson(request,MAX_BODY_BYTES),/too large/);
 });
