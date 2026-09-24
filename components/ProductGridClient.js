@@ -10,6 +10,7 @@ import {featuredProductRank} from '../lib/merchandising';
 import {trackStoreEvent} from '../lib/store-analytics';
 import {swatchColor} from '../lib/color';
 import {availableOptionValues,productMatchesAvailableFilters} from '../lib/product-variants';
+import {requestMotionScan} from '../lib/motion-scan';
 
 function unique(values){return [...new Set(values.map(value=>String(value||'').trim()).filter(Boolean))];}
 function discountPercent(product){
@@ -91,6 +92,10 @@ export default function ProductGridClient({products,title='New in',initialTerm='
   const frame=requestAnimationFrame(()=>window.dispatchEvent(new CustomEvent('ax:grid-change',{detail:{grid:gridRef.current}})));
   return()=>cancelAnimationFrame(frame);
  },[filtered,wide]);
+
+ useEffect(()=>{
+  if(filtersOpen||sortOpen||suggestions.length) requestMotionScan(document);
+ },[filtersOpen,sortOpen,suggestions.length]);
 
  const suggestions=useMemo(()=>term.trim().length>=2?products.filter(product=>matchesSearch(product,term)).slice(0,5):[],[products,term]);
  const heading=styleWorlds.find(item=>item.key===canonicalStyle(style))?.label||title,Heading=home?'h2':'h1';
