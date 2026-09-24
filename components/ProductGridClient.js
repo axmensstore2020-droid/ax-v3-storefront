@@ -93,11 +93,11 @@ export default function ProductGridClient({products,title='New in',initialTerm='
   return()=>cancelAnimationFrame(frame);
  },[filtered,wide]);
 
+ const suggestions=useMemo(()=>term.trim().length>=2?products.filter(product=>matchesSearch(product,term)).slice(0,5):[],[products,term]);
  useEffect(()=>{
   if(filtersOpen||sortOpen||suggestions.length) requestMotionScan(document);
  },[filtersOpen,sortOpen,suggestions.length]);
 
- const suggestions=useMemo(()=>term.trim().length>=2?products.filter(product=>matchesSearch(product,term)).slice(0,5):[],[products,term]);
  const heading=styleWorlds.find(item=>item.key===canonicalStyle(style))?.label||title,Heading=home?'h2':'h1';
  const activeFilterCount=[size,color,fit,availability,style].filter(Boolean).length+(priceMin>0||priceMax<priceCeiling?1:0);
  const sortLabel=SORT_OPTIONS.find(([value])=>value===sort)?.[1]||'Featured';
