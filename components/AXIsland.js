@@ -56,15 +56,18 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
   animationRef.current?.stop?.();
   if(immediate || reducedMotion()){
    bead.style.transform=`translateX(${target}px)`;
+   bead.style.willChange='';
    beadXRef.current=target;
    return;
   }
   const from=renderedX(bead,beadXRef.current);
   beadXRef.current=from;
+  bead.style.willChange='transform';
   const controls=animate(bead,{x:target},{type:'spring',stiffness:520,damping:34,mass:.62,velocity:0});
   animationRef.current=controls;
   controls.then?.(()=>{
    if(animationRef.current===controls) animationRef.current=null;
+   bead.style.willChange='';
    beadXRef.current=target;
   });
  }
@@ -112,6 +115,7 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
   return()=>{
    observer.disconnect();
    animationRef.current?.stop?.();
+   if(beadRef.current) beadRef.current.style.willChange='';
   };
  },[]);
 
@@ -120,6 +124,7 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
   animationRef.current?.stop?.();
   const bead=beadRef.current;
   if(!bead)return;
+  bead.style.willChange='transform';
   event.currentTarget.setPointerCapture?.(event.pointerId);
   const startX=renderedX(bead,beadXRef.current);
   beadXRef.current=startX;
@@ -150,7 +155,7 @@ export default function AXIsland({accountUrl,accountEnabled=false}) {
   event.currentTarget.releasePointerCapture?.(event.pointerId);
   pointerRef.current=null;
   islandRef.current?.classList.remove('is-bead-dragging');
-  if(!pointer.moved)return;
+  if(!pointer.moved){if(beadRef.current)beadRef.current.style.willChange='';return;}
   const index=nearestIslandIndex(islandRef.current?.clientWidth||0,renderedX(beadRef.current,beadXRef.current),BEAD_WIDTH,AX_ISLAND_SLOT_COUNT);
   suppressClickRef.current=true;
   commitIndex(index);
