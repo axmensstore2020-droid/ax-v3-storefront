@@ -40,7 +40,7 @@ Create or select an approved Supabase project for AX. Provisioning a paid plan i
 
 For the existing AX project `vfhhstewkefqopcgxrki`, the original tables already exist, the new usage migration is applied, and the daily cleanup job is active. Do not rerun these steps there. For a new environment:
 
-1. Run [the base migration](../supabase/migrations/20260915_ax_stylist.sql), then [usage and advanced budget](../supabase/migrations/20260915235149_ax_stylist_usage_and_model_budget.sql).
+1. Run [the base migration](../supabase/migrations/20260915_ax_stylist.sql), then [usage and advanced budget](../supabase/migrations/20260915235149_ax_stylist_usage_and_model_budget.sql), then [quota alerts](../supabase/migrations/20260924_stylist_quota_alerts.sql).
 2. Confirm `ax_stylist_profiles`, `ax_stylist_limits` and `ax_stylist_usage` have Row Level Security enabled. `anon` and `authenticated` must have no access. The server-only service-role/secret key accesses them.
 3. Enable Supabase Cron in the dashboard. Create a daily job with schedule `0 3 * * *`, command `select public.ax_stylist_purge_expired();`. This deletes expired records even when no one opens the store. Never enable chat without arranging this purge.
 4. Copy the project URL and the server-side **Secret key** privately to Hostinger. If your dashboard only exposes the legacy `service_role` key, that is accepted as a fallback. Do not put either key into browser code. The normal public/publishable/anon key is not suitable for the server-only tables.
