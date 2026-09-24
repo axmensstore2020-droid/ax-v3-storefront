@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {buildStylistQuotaAlert,sendStylistQuotaAlert,stylistAlertConfigured} from '../lib/stylist/alerts.js';
-import {FASHION_KNOWLEDGE} from '../lib/stylist/fashion-knowledge.js';
+import {FASHION_KNOWLEDGE,FASHION_KNOWLEDGE_VERSION} from '../lib/stylist/fashion-knowledge.js';
 import {INSTRUCTIONS} from '../lib/stylist/prompts.js';
 
 const env={
@@ -32,11 +32,20 @@ test('stylist quota alert uses deterministic Resend idempotency key',async()=>{
   assert.ok(!/raw-session|conversation_id|customer_id|prompt_text|image_url/.test(JSON.stringify(body)));
 });
 
-test('AX fashion knowledge covers Indian, streetwear, formal and wedding styling with cultural guardrails',()=>{
-  for(const term of ['mundu','veshti','dhoti','sherwani','bandhgala','streetwear','FORMAL','WEDDING WEAR','South Indian']) {
+test('AX fashion knowledge v2 covers styling systems, garments, Indian context and care guardrails',()=>{
+  assert.equal(FASHION_KNOWLEDGE_VERSION,'2026-09-24.v2');
+  for(const term of [
+    'mundu','veshti','dhoti','sherwani','bandhgala','South Indian','Onam',
+    'streetwear','Y2K','motorsport','workwear','Korean-inspired','old-money-inspired',
+    'SUITS, TAILORING','wide-leg','pleated','denim','FOOTWEAR','ACCESSORIES',
+    'COLOUR SYSTEM','FIT, SILHOUETTE','CLIMATE & PRACTICALITY','CARE BASICS','OUTFIT FORMULAS'
+  ]) {
     assert.match(FASHION_KNOWLEDGE,new RegExp(term,'i'));
   }
   assert.match(FASHION_KNOWLEDGE,/never assume religion, caste, ethnicity/i);
+  assert.match(FASHION_KNOWLEDGE,/live AX catalog data always overrides/i);
+  assert.match(FASHION_KNOWLEDGE,/product care labels override generic advice/i);
   assert.match(FASHION_KNOWLEDGE,/do not say something is "trending now"/i);
+  assert.match(FASHION_KNOWLEDGE,/never convert these principles into a personal size recommendation/i);
   assert.ok(INSTRUCTIONS.includes(FASHION_KNOWLEDGE));
 });
