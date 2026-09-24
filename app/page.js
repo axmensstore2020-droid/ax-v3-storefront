@@ -72,11 +72,13 @@ export default async function Home() {
  const heroCampaign=campaign(campaigns,'hero',{slot:'hero',eyebrow:'AX MEN’S STORE · COIMBATORE',title:'Inspired by the fear\nof being average.',description:'A considered wardrobe for every version of your day—easy layers, sharper moments and pieces that feel like you.',imageSrc:'',mobileImageSrc:'',imageAlt:'AX hero video',desktopVideoSrc:'',mobileVideoSrc:'',videoEnabled:true,usesCustomVideo:false,ctaLabel:'EXPLORE NEW ARRIVALS',ctaLink:'/products',theme:'editorial-pastel-sage'});
  const bestSellers=campaign(campaigns,'linen',{slot:'linen',eyebrow:'',title:'Best sellers',description:'The AX pieces in the spotlight right now.',imageSrc:'https://cdn.shopify.com/s/files/1/0859/5216/8176/files/E5966B24-A17E-4BFF-B98F-50CD9AE9BFDA.png?v=1789567270',imageAlt:'White Premium Linen Button-Down Shirt',ctaLabel:'SHOP BEST SELLERS',ctaLink:'/collections/best-sellers',theme:'editorial-pastel-sage'});
  const special=campaign(campaigns,'special',{slot:'special',eyebrow:'LIMITED TIME',title:'Special prices',description:'Selected pieces at reduced prices.',imageSrc:'',imageAlt:'',ctaLabel:'SHOP SPECIAL PRICES',ctaLink:'/collections/special-prices',theme:'editorial-pastel-red'});
+ const heroPoster=heroCampaign.imageSrc || hero?.image || '';
+ const heroMobilePoster=heroCampaign.mobileImageSrc || heroPoster;
 
  return <main id="main-content" className="editorial-home">
   <section className={`editorial-hero ${heroCampaign.theme}`} aria-labelledby="editorial-hero-title">
    <Link className="editorial-hero-visual" href={heroCampaign.ctaLink} aria-label={heroCampaign.ctaLabel}>
-    {heroCampaign.imageSrc && <EditorialImage src={heroCampaign.imageSrc} mobileSrc={heroCampaign.mobileImageSrc} alt={heroCampaign.imageAlt || 'AX editorial campaign'} sizes="(max-width:700px) 100vw, 62vw" eager/>}
+    {heroPoster && <EditorialImage src={heroPoster} mobileSrc={heroMobilePoster} alt={heroCampaign.imageAlt || hero?.imageAlt || 'AX editorial campaign'} sizes="(max-width:700px) 100vw, 62vw" eager/>}
     {heroCampaign.videoEnabled && (heroCampaign.mobileVideoSrc || heroCampaign.desktopVideoSrc) && <HeroVideo
      mobileSrc={heroCampaign.mobileVideoSrc || heroCampaign.desktopVideoSrc}
      desktopSrc={heroCampaign.desktopVideoSrc || heroCampaign.mobileVideoSrc}
