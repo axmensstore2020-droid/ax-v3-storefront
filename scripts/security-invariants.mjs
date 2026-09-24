@@ -98,6 +98,7 @@ for(const token of ['enable row level security','deny_direct_client_access','rev
 const migrationFiles=files.filter(file=>file.startsWith('supabase/migrations/') && file.endsWith('.sql'));
 const migrationTexts=migrationFiles.map(file=>read(file));
 const allMigrations=migrationTexts.join('\n');
+const migrationStatements=allMigrations.split(';').map(statement=>statement.trim()).filter(Boolean);
 const publicAxTables=new Set();
 for(const content of migrationTexts){
   for(const match of content.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?public\.(ax_[a-z0-9_]+)/gi)){
@@ -105,16 +106,17 @@ for(const content of migrationTexts){
   }
 }
 for(const table of publicAxTables){
+  const tableReference=new RegExp('public\\.'+table+'\\b','i');
   if(!new RegExp('alter\\s+table(?:\\s+if\\s+exists)?\\s+public\\.'+table+'\\s+enable\\s+row\\s+level\\s+security','i').test(allMigrations)){
     fail('Supabase migrations: public.'+table+' must enable RLS');
   }
-  if(!new RegExp('revoke\\s+all\\s+on(?:\\s+table)?[\\s\\S]*?public\\.'+table+'[\\s\\S]*?from\\s+public\\s*,\\s*anon\\s*,\\s*authenticated','i').test(allMigrations)){
+  if(!migrationStatements.some(statement=>/^revoke\b/i.test(statement) && tableReference.test(statement) && /from\s+public\s*,\s*anon\s*,\s*authenticated\b/i.test(statement))){
     fail('Supabase migrations: public.'+table+' must revoke browser-role grants');
   }
-  if(!new RegExp('grant\\s+[\\s\\S]*?on(?:\\s+table)?[\\s\\S]*?public\\.'+table+'[\\s\\S]*?to\\s+service_role','i').test(allMigrations)){
+  if(!migrationStatements.some(statement=>/^grant\b/i.test(statement) && tableReference.test(statement) && /to\s+service_role\b/i.test(statement))){
     fail('Supabase migrations: public.'+table+' must explicitly grant service_role for Data API access');
   }
-  if(new RegExp('grant\\s+[\\s\\S]*?on(?:\\s+table)?[\\s\\S]*?public\\.'+table+'[\\s\\S]*?to\\s+(?:anon|authenticated)','i').test(allMigrations)){
+  if(migrationStatements.some(statement=>/^grant\b/i.test(statement) && tableReference.test(statement) && /to\s+(?:anon|authenticated)\b/i.test(statement))){
     fail('Supabase migrations: public.'+table+' must not grant direct browser-role access');
   }
 }
