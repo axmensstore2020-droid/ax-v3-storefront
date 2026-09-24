@@ -4,16 +4,14 @@ import Icon from './Icon';
 import Brand from './Brand';
 import {playroomOutcome} from '../lib/playroom-game.js';
 
-const TEASER_KEY='ax:playroom-teaser:v2';
-
 function OMark({className=''}){return <svg className={className} viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="29"/></svg>;}
 function XMark({className=''}){return <svg className={className} viewBox="0 0 100 100" aria-hidden="true"><path d="m25 25 50 50"/><path d="M75 25 25 75"/></svg>;}
 function Arrow(){return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>;}
 function outcomeName(winner){return winner==='O'?'win':winner==='X'?'loss':'draw';}
 
-export default function AXPlayroom(){
- const [visible,setVisible]=useState(false);
- const [open,setOpen]=useState(false);
+export default function AXPlayroom({initialStatus=null}){
+ const [visible,setVisible]=useState(true);
+ const [open,setOpen]=useState(true);
  const [phase,setPhase]=useState('choose');
  const [board,setBoard]=useState(Array(9).fill(''));
  const [turn,setTurn]=useState('');
@@ -24,7 +22,7 @@ export default function AXPlayroom(){
  const [result,setResult]=useState(null);
  const [thinking,setThinking]=useState(false);
  const [starting,setStarting]=useState(false);
- const [bonusRound,setBonusRound]=useState(false);
+ const [bonusRound,setBonusRound]=useState(Boolean(initialStatus?.bonusAvailable));
  const [showRules,setShowRules]=useState(false);
  const [toast,setToast]=useState('');
  const [motionOn,setMotionOn]=useState(true);
@@ -39,30 +37,6 @@ export default function AXPlayroom(){
  const moveCount=useMemo(()=>board.filter(Boolean).length,[board]);
  const status=starting?'Preparing your round':phase==='choose'?'Your opening. Your choice.':phase==='ending'?'Round complete.':turn==='X'?'AX is thinking':phase==='review'?'Final board.':phase==='result'&&settlement.state==='loading'?'Verifying your result':phase==='result'?'Round complete.':'Your move. Make it count.';
 
- useEffect(()=>{
-  if(typeof window==='undefined')return;
-  let timer=null,active=true;
-  const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)');
-  if(reduced?.matches)setMotionOn(false);
-  const pathEligible=/^\/($|products|collections)/.test(window.location.pathname);
-  if(!pathEligible)return;
-  const direct=new URLSearchParams(window.location.search).get('play')==='1';
-  (async()=>{
-   try{
-    const response=await fetch('/api/playroom',{cache:'no-store',credentials:'same-origin'});
-    const data=response.ok?await response.json():null;
-    if(!active||!data?.available||!data?.eligible)return;
-    if(data.bonusAvailable)setBonusRound(true);
-    const delay=direct?0:(window.sessionStorage.getItem(TEASER_KEY)?1400:4200);
-    timer=window.setTimeout(()=>{
-     if(!active)return;
-     setVisible(true);setOpen(true);
-     try{window.sessionStorage.setItem(TEASER_KEY,'1');}catch{}
-    },delay);
-   }catch{}
-  })();
-  return()=>{active=false;if(timer)window.clearTimeout(timer);};
- },[]);
 
  useEffect(()=>{
   if(!open||phase!=='playing'||turn!=='X')return;

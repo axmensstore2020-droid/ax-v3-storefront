@@ -84,18 +84,47 @@ test('PDP still loads when optional inventory quantity scope is unavailable',asy
  t.after(()=>{globalThis.fetch=realFetch;});
  const product={...sample,handle:'inventory-safe-shirt',
   selectedOrFirstAvailableVariant:{id:'gid://shopify/ProductVariant/11',sku:'AX-11',price:{amount:'1000',currencyCode:'INR'},compareAtPrice:null,weight:404,weightUnit:'GRAMS',requiresShipping:true},
+  metafields:[{namespace:'ax_data',key:'fit',value:'Relaxed'}],
   images:{nodes:[]},options:[{name:'Size',optionValues:[{name:'M'}]}],
   variants:{nodes:[{id:'gid://shopify/ProductVariant/11',title:'M',sku:'AX-11',availableForSale:true,price:{amount:'1000',currencyCode:'INR'},compareAtPrice:null,weight:404,weightUnit:'GRAMS',requiresShipping:true,selectedOptions:[{name:'Size',value:'M'}],image:null}]}
  };
+ let calls=0;
  globalThis.fetch=async(url,init)=>{
+  calls++;
   const q=JSON.parse(init.body).query;
-  if(q.includes('query ProductInventory')) return Response.json({errors:[{message:'Access denied for quantityAvailable'}]});
-  if(q.includes('query ProductMetafields') || q.includes('query LegacyProductMetafields')) return Response.json({data:{product:{id:product.id,metafields:[]}}});
+  if(q.includes('quantityAvailable')) return Response.json({errors:[{message:'Access denied for quantityAvailable'}]});
   return Response.json({data:{product}});
  };
  const result=await live.getProduct('inventory-safe-shirt');
+ assert.equal(calls,2);
  assert.equal(result.handle,'inventory-safe-shirt');
  assert.equal(result.variants[0].availableForSale,true);
  assert.equal(result.variants[0].quantityAvailable,undefined);
  assert.equal(result.variants[0].weight,404);
+});
+
+test('PDP uses one Shopify request when consolidated product data is available',async t=>{
+ t.after(()=>{globalThis.fetch=realFetch;});
+ const product={...sample,handle:'fast-shirt',
+  metafields:[{namespace:'ax_data',key:'fit',value:'Relaxed'}],
+  images:{nodes:[]},options:[{name:'Size',optionValues:[{name:'M'}]}],
+  variants:{nodes:[{id:'gid://shopify/ProductVariant/12',title:'M',sku:'AX-12',availableForSale:true,quantityAvailable:3,price:{amount:'1000',currencyCode:'INR'},compareAtPrice:null,weight:404,weightUnit:'GRAMS',requiresShipping:true,selectedOptions:[{name:'Size',value:'M'}],image:null}]}
+ };
+ let calls=0;
+ globalThis.fetch=async()=>{calls++;return Response.json({data:{product}});};
+ const result=await live.getProduct('fast-shirt');
+ assert.equal(calls,1);
+ assert.equal(result.variants[0].quantityAvailable,3);
+ assert.equal(result.fit,'Relaxed');
+});
+
+test('complete-look products are fetched in one targeted batch',async t=>{
+ t.after(()=>{globalThis.fetch=realFetch;});
+ const second={...sample,id:'gid://shopify/Product/2',handle:'second-shirt',title:'Second Shirt',variants:{nodes:[]},options:[]};
+ let request,calls=0;
+ globalThis.fetch=async(url,init)=>{calls++;request=JSON.parse(init.body);return Response.json({data:{products:{nodes:[second,{...sample,variants:{nodes:[]},options:[]}]}}});};
+ const items=await live.getCompleteLookProducts(['real-shirt','second-shirt']);
+ assert.equal(calls,1);
+ assert.match(request.query,/PurchaseProductsByHandles/);
+ assert.deepEqual(items.map(item=>item.handle),['real-shirt','second-shirt']);
 });
