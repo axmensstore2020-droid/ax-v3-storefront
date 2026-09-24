@@ -64,7 +64,7 @@ export default function AddToCart({product,options,selected,variant,onSelect,col
           <span>{size?'Select Size':`${option.name}: ${selected[option.name]||'Choose an option'}`}</span>
           {size&&<MeasurementFit product={product} selectedOptions={selected} inline/>}
         </legend>
-        <div className="option-values">{option.values.map(value=>{const possible=optionAvailable(variants,selected,option.name,value);return <button type="button" key={value} disabled={busy} aria-pressed={selected[option.name]===value} className={`${selected[option.name]===value?'selected':''} ${possible?'':'unavailable'}`} onClick={()=>onSelect(option.name,value)}>{value}<span className="sr-only">{possible?'':' — unavailable with this selection'}</span></button>;})}</div>
+        <div className="option-values">{option.values.map(value=>{const possible=optionAvailable(variants,selected,option.name,value);return <button type="button" key={value} disabled={busy||!possible} aria-disabled={!possible} aria-pressed={selected[option.name]===value} className={`${selected[option.name]===value?'selected':''} ${possible?'':'unavailable'}`} onClick={()=>onSelect(option.name,value)}>{value}<span className="sr-only">{possible?'':' — unavailable with this selection'}</span></button>;})}</div>
       </fieldset>;
     })}
     {sizeOption && sizeFit?.text && <div className="size-recommendation" aria-live="polite"><p><strong>{selectedSize}</strong> · {sizeFit.text}</p><span>AX garment fit note.</span></div>}
