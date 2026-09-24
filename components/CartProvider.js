@@ -12,7 +12,7 @@ async function requestCart(body){
  return data.cart;
 }
 export function CartProvider({children,demo=false,freeShippingThreshold=0,partialCodEnabled=false}) {
- const [cart,setCart]=useState(null),[demoLines,setDemoLines]=useState([]),[open,setOpen]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
+ const [cart,setCart]=useState(null),[demoLines,setDemoLines]=useState([]),[open,setOpen]=useState(false),[checkoutIntent,setCheckoutIntent]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
  const locked=useRef(false),currentCartId=useRef(null),demoRef=useRef([]);
  useEffect(() => {
   let active=true;
@@ -22,6 +22,8 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
   requestCart({action:'get',cartId:id}).then(value => {if(active)setCart(value);}).catch(error => {if(['CART_NOT_FOUND','CART_OWNERSHIP'].includes(error.code)){write(CART_ID,null);currentCartId.current=null;}else if(active)setNotice('Your bag could not be loaded. Please try again.');}).finally(() => {if(active){locked.current=false;setBusy(false);}});
   return () => {active=false;};
  },[demo]);
+ useEffect(()=>{if(!open && checkoutIntent)setCheckoutIntent(false);},[open,checkoutIntent]);
+ function openCart(intent='bag'){setCheckoutIntent(intent==='checkout');setOpen(true);}
  function saveDemo(lines){demoRef.current=lines;setDemoLines(lines);write(DEMO_LINES,JSON.stringify(lines));}
  function saveCart(value){setCart(value);currentCartId.current=value.id;write(CART_ID,value.id);}
  async function addItem({merchandiseId,variant,product}){
@@ -68,13 +70,13 @@ export function CartProvider({children,demo=false,freeShippingThreshold=0,partia
    return true;
   }catch(error){setNotice(error.message);return false;}finally{locked.current=false;setBusy(false);}
  }
- function clearCart(){setCart(null);currentCartId.current=null;write(CART_ID,null);setNotice('');setOpen(false);}
+ function clearCart(){setCart(null);currentCartId.current=null;write(CART_ID,null);setNotice('');setCheckoutIntent(false);setOpen(false);}
  async function updateItem(id,quantity){
   if(locked.current)return;locked.current=true;setBusy(true);setNotice('');
   try{if(demo)saveDemo(demoRef.current.map(line => line.key===id?{...line,quantity}:line).filter(line => line.quantity>0));else saveCart(await requestCart({action:quantity===0?'remove':'update',cartId:currentCartId.current,lineId:id,quantity}));}
   catch(error){if(error.code==='CART_OWNERSHIP'){setCart(null);currentCartId.current=null;write(CART_ID,null);setNotice('Your bag session expired. Please add the item again.');}else setNotice(error.message);}finally{locked.current=false;setBusy(false);}
  }
  const count=demo?demoLines.reduce((sum,line)=>sum+line.quantity,0):(cart?.totalQuantity||0);
- return <Context.Provider value={{cart,demoLines,demo,count,open,setOpen,busy,notice,addItem,addItems,updateItem,clearCart,freeShippingThreshold,partialCodEnabled}}>{children}</Context.Provider>;
+ return <Context.Provider value={{cart,demoLines,demo,count,open,setOpen,openCart,checkoutIntent,busy,notice,addItem,addItems,updateItem,clearCart,freeShippingThreshold,partialCodEnabled}}>{children}</Context.Provider>;
 }
 export const useCart=()=>useContext(Context);
