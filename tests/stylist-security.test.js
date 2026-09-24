@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {seal,unseal,getSession,historyToken,historyFromToken,sameOrigin,validateImage,hash} from '../lib/stylist/security.js';
 import {createDatabase,databaseConfigured} from '../lib/stylist/database.js';
 import {createOpenAI} from '../lib/stylist/openai.js';
-import {searchExpression,productFacts,stylistSkuQuery} from '../lib/stylist/catalog.js';
+import {searchExpression,catalogSearchQueries,productFacts,stylistSkuQuery} from '../lib/stylist/catalog.js';
 const secret='test-only-signing-secret-not-for-deployment';
 
 test('signed sessions reject tampering, wrong keys and expired cookies',()=>{
@@ -40,6 +40,11 @@ test('catalog search quotes customer words instead of accepting search operators
   assert.match(searchExpression('AX-SHT-004'),/tag:"AX-SHT-004"/);
   assert.ok(!searchExpression('AX-SHT-004').includes('sku:'));
   assert.match(stylistSkuQuery,/VARIANTS_SKU/);
+});
+test('catalog search strips conversational filler and retries with the garment category',()=>{
+  assert.deepEqual(catalogSearchQueries('I want a new jacket for this'),['jacket']);
+  assert.deepEqual(catalogSearchQueries('Do you have a black leather jacket?'),['black leather jacket','jacket']);
+  assert.deepEqual(catalogSearchQueries('show me linen shirts'),['linen shirts','shirts']);
 });
 test('catalog facts discard payment helpers and unsafe image links',()=>{
   assert.equal(productFacts({title:'Partial Payment'}),null);
