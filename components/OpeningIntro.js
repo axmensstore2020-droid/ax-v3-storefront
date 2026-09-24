@@ -54,10 +54,10 @@ export default function OpeningIntro(){
       await nextFrame();
       if(disposed || skipped) return;
 
-      await wait(1950);
+      await wait(760);
       if(disposed || skipped) return;
 
-      const fade=track(animate(blocker,{opacity:[1,0]},{duration:.46,ease:[.22,.68,.2,1]}));
+      const fade=track(animate(blocker,{opacity:[1,0]},{duration:.28,ease:[.22,.68,.2,1]}));
 
       await fade;
       if(disposed || skipped) return;
@@ -88,9 +88,9 @@ export default function OpeningIntro(){
           <circle cx="0" cy="0" r="11"/>
           <g className="ax-opening-runner-logo">
             <image href="/ax-logo-160.webp" x="-7" y="-4.1" width="14" height="8.2" preserveAspectRatio="xMidYMid meet"/>
-            <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="1.95s" fill="freeze"/>
+            <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur=".78s" fill="freeze"/>
           </g>
-          <animateMotion dur="1.95s" path="M18 84 C66 84 63 35 116 35 S173 111 225 111 S286 38 382 44" rotate="auto" fill="freeze"/>
+          <animateMotion dur=".78s" path="M18 84 C66 84 63 35 116 35 S173 111 225 111 S286 38 382 44" rotate="auto" fill="freeze"/>
         </g>
       </svg>
     </div>
