@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {normalizeMenuUrl,normalizeMenu,hasUnresolvedTemplate} from '../lib/content-utils.js';
 import {matchesCategory,matchesStyle,navigation} from '../lib/navigation.js';
+import {homepageCampaignsQuery} from '../lib/content-queries.js';
 test('Shopify links stay on AX; external links and unsafe schemes are not misrouted',()=>{
  assert.equal(normalizeMenuUrl('https://axunisexstore.myshopify.com/pages/contact',['axunisexstore.myshopify.com']),'/policies#refund-policy');
  assert.equal(normalizeMenuUrl('/pages/about-us'),'/about');
@@ -29,4 +30,9 @@ test('Shopify policy templates are recognized before rendering',()=>{
  assert.equal(hasUnresolvedTemplate('<p>{{ shop_name }}</p>'),true);
  assert.equal(hasUnresolvedTemplate('{% if selling_to_europe %}Terms{% endif %}'),true);
  assert.equal(hasUnresolvedTemplate('<p>Current policy.</p>'),false);
+});
+
+test('homepage campaign query carries Shopify-hosted video references',()=>{
+ assert.match(homepageCampaignsQuery,/\.\.\. on Video/);
+ assert.match(homepageCampaignsQuery,/sources \{ url mimeType format height width \}/);
 });
