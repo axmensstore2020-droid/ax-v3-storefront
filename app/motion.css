@@ -228,7 +228,7 @@ html[data-ax-intro="play"] .cart-dialog{opacity:0!important;pointer-events:none!
   width:min(76vw,360px);
   display:grid;
   place-items:center;
-  color:#111;
+  color:#f5f5f2;
 }
 .ax-line-loader-svg{
   display:block;
@@ -246,6 +246,7 @@ html[data-ax-intro="play"] .cart-dialog{opacity:0!important;pointer-events:none!
 }
 .ax-line-loader-mark{
   opacity:.98;
+  filter:invert(1);
 }
 .ax-particle-loader{
   --ax-loader-size:84px;
@@ -328,7 +329,7 @@ html[data-ax-intro="play"] .cart-dialog{opacity:0!important;pointer-events:none!
   display:grid;
   place-items:center;
   padding:80px var(--gutter);
-  background:#fff;
+  background:#090a0b;
   opacity:0;
   animation:ax-route-loader-reveal 150ms ease forwards;
 }
