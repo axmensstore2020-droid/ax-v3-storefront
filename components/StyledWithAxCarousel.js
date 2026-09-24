@@ -123,13 +123,14 @@ export default function StyledWithAxCarousel({items=[]}) {
 
  useAnimationFrame((time,delta)=>{
   if(!measuredRef.current) return;
+  const now=performance.now();
   const dt=Math.min(48,Math.max(0,delta));
 
   if(!draggingRef.current){
-   if(!snapDoneRef.current && time-lastInputRef.current>=SNAP_IDLE_MS){
+   if(!snapDoneRef.current && now-lastInputRef.current>=SNAP_IDLE_MS){
     snapNearest();
    }
-   if(!reducedMotionRef.current && time>=autoResumeRef.current){
+   if(!reducedMotionRef.current && now>=autoResumeRef.current){
     targetRef.current+=AUTOPLAY_SPEED*(dt/1000);
    }
   }
