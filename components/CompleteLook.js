@@ -1,5 +1,5 @@
 'use client';
-import {useMemo,useState} from 'react';
+import {useState} from 'react';
 import Link from 'next/link';
 import ProductImage from './ProductImage';
 import {useCart} from './CartProvider';
@@ -23,13 +23,13 @@ function LookItem({product,selection,onChange}){
 export default function CompleteLook({product,mainVariant,mainSelection={},items=[]}){
   const {addItems,busy,openCart,cart,demoLines,demo}=useCart();
   const [selections,setSelections]=useState(()=>Object.fromEntries(items.map(item=>[item.handle,initialSelection(item,'',true)])));
-  if(!items.length)return null;
   const bagVariantIds=new Set(demo
     ? demoLines.map(line=>line.variant?.id||line.key).filter(Boolean)
     : (cart?.lines?.nodes||[]).map(line=>line.merchandise?.id).filter(Boolean));
-  const {missingMain,pending,ready,allInBag,pendingTotal,bundleTotal,currency,linesToAdd}=useMemo(()=>completeLookState({
+  const {missingMain,mainAvailable,pending,ready,allInBag,pendingTotal,bundleTotal,currency,linesToAdd}=completeLookState({
     product,mainVariant,mainSelection,items,selections,bagVariantIds
-  }),[product,mainVariant,mainSelection,items,selections,cart,demoLines,demo]);
+  });
+  if(!items.length)return null;
 
   async function addLook(){
     if(allInBag){openCart();return;}
