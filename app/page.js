@@ -13,6 +13,10 @@ function findTaggedImage(products, pattern, fallback) {
  return match || fallback;
 }
 
+function isCollaboration(product) {
+ return /(^|[\s_-])(collab|collaboration|styled[\s_-]?with[\s_-]?ax)([\s_-]|$)/i.test((product.tags || []).join(' '));
+}
+
 function safeHref(value,fallback) {
  return typeof value==='string' && (/^\/(?!\/)/.test(value) || /^https:\/\//i.test(value)) ? value : fallback;
 }
@@ -65,9 +69,9 @@ export default async function Home() {
  const [products,campaigns]=await Promise.all([getHomepageProducts(),getHomepageCampaigns()]);
  const imagePool=products.filter(product => product.image);
  const hero=findTaggedImage(imagePool,/^(home[-_ ]?hero|editorial[-_ ]?hero)$/i,imagePool[0]);
+ const styledGallery=[...imagePool].sort((a,b)=>Number(isCollaboration(b))-Number(isCollaboration(a))).slice(0,10);
 
  const heroCampaign=campaign(campaigns,'hero',{slot:'hero',eyebrow:'AX MEN’S STORE · COIMBATORE',title:'Inspired by the fear\nof being average.',description:'A considered wardrobe for every version of your day—easy layers, sharper moments and pieces that feel like you.',imageSrc:'',mobileImageSrc:'',imageAlt:'AX hero video',desktopVideoSrc:'',mobileVideoSrc:'',videoEnabled:true,usesCustomVideo:false,ctaLabel:'EXPLORE NEW ARRIVALS',ctaLink:'/products',theme:'editorial-pastel-sage'});
- const newArrivals=campaign(campaigns,'new-arrivals',{slot:'new-arrivals',eyebrow:'NEW IN',title:'New arrivals',description:'Fresh pieces, just landed at AX.',imageSrc:'https://cdn.shopify.com/s/files/1/0859/5216/8176/files/white-wide-leg-jeans-front-model.jpg?v=1789980594',imageAlt:'White Wide Leg Baggy Jeans',ctaLabel:'SHOP NEW ARRIVALS',ctaLink:'/products',theme:'editorial-pastel-sage'});
  const bestSellers=campaign(campaigns,'linen',{slot:'linen',eyebrow:'MOST WANTED',title:'Best sellers',description:'The AX pieces in the spotlight right now.',imageSrc:'https://cdn.shopify.com/s/files/1/0859/5216/8176/files/E5966B24-A17E-4BFF-B98F-50CD9AE9BFDA.png?v=1789567270',imageAlt:'White Premium Linen Button-Down Shirt',ctaLabel:'SHOP BEST SELLERS',ctaLink:'/collections/best-sellers',theme:'editorial-pastel-sage'});
  const special=campaign(campaigns,'special',{slot:'special',eyebrow:'LIMITED TIME',title:'Special prices',description:'Selected pieces at reduced prices.',imageSrc:'',imageAlt:'',ctaLabel:'SHOP SPECIAL PRICES',ctaLink:'/collections/special-prices',theme:'editorial-pastel-red'});
 
@@ -87,9 +91,9 @@ export default async function Home() {
    </div>
   </section>
 
-  <section className="editorial-campaigns" aria-label="AX campaigns">
-   <article className={`editorial-campaign editorial-campaign-large ${newArrivals.theme}`}><div className="editorial-campaign-image"><EditorialImage src={newArrivals.imageSrc} mobileSrc={newArrivals.mobileImageSrc} alt={newArrivals.imageAlt} sizes="(max-width:700px) 100vw, 58vw"/></div><div className="editorial-campaign-copy"><p className="eyebrow">{newArrivals.eyebrow}</p><CampaignTitle value={newArrivals.title}/>{newArrivals.description && <p>{newArrivals.description}</p>}<ArrowLink href={newArrivals.ctaLink}>{newArrivals.ctaLabel}</ArrowLink></div></article>
-   <article className={`editorial-campaign editorial-campaign-small ${bestSellers.theme}`}><div className="editorial-campaign-image"><EditorialImage src={bestSellers.imageSrc} mobileSrc={bestSellers.mobileImageSrc} alt={bestSellers.imageAlt} sizes="(max-width:700px) 100vw, 38vw"/></div><div className="editorial-campaign-copy"><p className="eyebrow">{bestSellers.eyebrow}</p><CampaignTitle value={bestSellers.title}/>{bestSellers.description && <p>{bestSellers.description}</p>}<ArrowLink href={bestSellers.ctaLink}>{bestSellers.ctaLabel}</ArrowLink></div></article>
+  <section className={`editorial-bestsellers ${bestSellers.theme}`} aria-labelledby="best-sellers-title">
+   <div className="editorial-bestsellers-image"><EditorialImage src={bestSellers.imageSrc} mobileSrc={bestSellers.mobileImageSrc} alt={bestSellers.imageAlt} sizes="(max-width:700px) 100vw, 58vw"/></div>
+   <div className="editorial-bestsellers-copy"><p className="eyebrow">{bestSellers.eyebrow}</p><CampaignTitle value={bestSellers.title} id="best-sellers-title"/>{bestSellers.description && <p>{bestSellers.description}</p>}<ArrowLink href={bestSellers.ctaLink}>{bestSellers.ctaLabel}</ArrowLink></div>
   </section>
 
   <section className={`editorial-special-offer ${special.theme}`} aria-labelledby="special-title">
@@ -98,5 +102,15 @@ export default async function Home() {
    {special.description && <p>{special.description}</p>}
    <ArrowLink href={special.ctaLink}>{special.ctaLabel}</ArrowLink>
   </section>
+
+  {styledGallery.length>0 && <section className="styled-with-ax" aria-labelledby="styled-with-ax-title">
+   <div className="styled-with-ax-head"><div><p className="eyebrow">COMMUNITY / EDITORIAL</p><CampaignTitle value="Styled with AX" id="styled-with-ax-title"/></div><p>AX looks, campaign moments and selected collaborations.</p></div>
+   <div className="styled-with-ax-grid">
+    {styledGallery.map((item,index)=><Link className={`styled-with-ax-card styled-card-${(index%5)+1}`} href={`/products/${item.handle}`} key={item.id}>
+     <div className="styled-with-ax-media"><ProductImage src={item.image} alt={item.imageAlt || item.title} sizes="(max-width:700px) 50vw, 25vw"/></div>
+     <div className="styled-with-ax-meta"><span>{isCollaboration(item)?'COLLABORATION':'STYLED WITH AX'}</span><span>{item.title}</span></div>
+    </Link>)}
+   </div>
+  </section>}
  </main>;
 }
