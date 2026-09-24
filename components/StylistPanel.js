@@ -78,9 +78,8 @@ export default function StylistPanel({request,onClose}) {
     if (!grew || messages.at(-1)?.role !== 'assistant') return;
     const frame = requestAnimationFrame(() => {
       if (!transcript.current || !latestReply.current) return;
-      const viewport = transcript.current.getBoundingClientRect();
-      const reply = latestReply.current.getBoundingClientRect();
-      transcript.current.scrollTo({top:Math.max(0,transcript.current.scrollTop + reply.top - viewport.top),behavior:'instant'});
+      // Keep the newest reply's end above the fixed composer on small screens.
+      transcript.current.scrollTo({top:transcript.current.scrollHeight,behavior:'instant'});
     });
     return () => cancelAnimationFrame(frame);
   },[messages]);
