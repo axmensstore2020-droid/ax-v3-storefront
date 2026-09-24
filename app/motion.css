@@ -229,8 +229,32 @@ html[data-ax-intro="play"] .ax-site-shell{
 }
 
 
-/* Shared AX particle loading language.
-   Built from lightweight DOM/CSS so route transitions do not need a video or WebGL runtime. */
+/* Shared AX loading language.
+   Route transitions use a white field, thin black morphing line and the AX mark.
+   Stylist keeps the compact particle loader. */
+.ax-line-loader{
+  width:min(76vw,360px);
+  display:grid;
+  place-items:center;
+  color:#111;
+}
+.ax-line-loader-svg{
+  display:block;
+  width:100%;
+  height:auto;
+  overflow:visible;
+}
+.ax-line-loader-path{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.15;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+}
+.ax-line-loader-mark{
+  opacity:.98;
+}
 .ax-particle-loader{
   --ax-loader-size:84px;
   --ax-loader-dot:4px;
@@ -312,44 +336,29 @@ html[data-ax-intro="play"] .ax-site-shell{
   display:grid;
   place-items:center;
   padding:80px var(--gutter);
-  background:color-mix(in srgb,var(--paper,#f7f7f4) 94%,transparent);
-  backdrop-filter:blur(3px);
+  background:#fff;
   opacity:0;
-  animation:ax-route-loader-reveal 180ms ease forwards;
-}
-.ax-route-transition-loader .ax-particle-loader{
-  --ax-loader-size:96px;
-  --ax-loader-dot:4px;
-  --ax-loader-radius:35px;
+  animation:ax-route-loader-reveal 150ms ease forwards;
 }
 @keyframes ax-particle-sphere-drift{
   0%{transform:rotateZ(0deg) rotateY(0deg)}
   50%{transform:rotateZ(6deg) rotateY(12deg)}
   100%{transform:rotateZ(0deg) rotateY(360deg)}
 }
-@keyframes ax-particle-ring-a{
-  to{transform:rotateX(70deg) rotateZ(368deg)}
-}
-@keyframes ax-particle-ring-b{
-  to{transform:rotateY(68deg) rotateZ(342deg)}
-}
-@keyframes ax-particle-ring-c{
-  to{transform:rotateX(402deg) rotateY(48deg)}
-}
-@keyframes ax-particle-ring-d{
-  to{transform:rotateX(88deg) rotateY(378deg)}
-}
+@keyframes ax-particle-ring-a{to{transform:rotateX(70deg) rotateZ(368deg)}}
+@keyframes ax-particle-ring-b{to{transform:rotateY(68deg) rotateZ(342deg)}}
+@keyframes ax-particle-ring-c{to{transform:rotateX(402deg) rotateY(48deg)}}
+@keyframes ax-particle-ring-d{to{transform:rotateX(88deg) rotateY(378deg)}}
 @keyframes ax-route-loader-reveal{
-  from{opacity:0;transform:translate3d(0,2px,0)}
-  to{opacity:1;transform:translate3d(0,0,0)}
+  from{opacity:0}
+  to{opacity:1}
 }
 @media(max-width:700px){
   .ax-route-transition-loader{
     padding:56px 20px 120px;
   }
-  .ax-route-transition-loader .ax-particle-loader{
-    --ax-loader-size:84px;
-    --ax-loader-radius:30px;
+  .ax-line-loader{
+    width:min(82vw,290px);
   }
 }
 @media(prefers-reduced-motion:reduce){
@@ -360,5 +369,9 @@ html[data-ax-intro="play"] .ax-site-shell{
   .ax-route-transition-loader{
     opacity:1;
     animation:none!important;
+  }
+  .ax-line-loader-path animate,
+  .ax-line-loader-mark animateMotion{
+    display:none;
   }
 }
