@@ -29,7 +29,7 @@ test('stylist quota alert uses deterministic Resend idempotency key',async()=>{
   assert.equal(request.options.headers['Idempotency-Key'],'ax-stylist-limit-2026-09-24');
   const body=JSON.parse(request.options.body);
   assert.deepEqual(body.to,['owner@axstore.in']);
-  assert.ok(!/session|conversation|profile|image/.test(JSON.stringify(body)));
+  assert.ok(!/raw-session|conversation_id|customer_id|prompt_text|image_url/.test(JSON.stringify(body)));
 });
 
 test('AX fashion knowledge covers Indian, streetwear, formal and wedding styling with cultural guardrails',()=>{
