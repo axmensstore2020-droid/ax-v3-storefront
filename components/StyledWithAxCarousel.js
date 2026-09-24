@@ -149,6 +149,7 @@ export default function StyledWithAxCarousel({items=[]}) {
    if(frameRef.current) cancelAnimationFrame(frameRef.current);
    frameRef.current=0;
    lastFrameRef.current=0;
+   track.style.willChange='';
   }
 
   function tick(time){
@@ -174,6 +175,7 @@ export default function StyledWithAxCarousel({items=[]}) {
 
   function startLoop(){
    if(frameRef.current || !activeRef.current || document.hidden) return;
+   track.style.willChange='transform';
    lastFrameRef.current=0;
    frameRef.current=requestAnimationFrame(tick);
   }
