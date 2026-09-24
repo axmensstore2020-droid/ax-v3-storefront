@@ -2,7 +2,7 @@ import Link from 'next/link';
 import {preload} from 'react-dom';
 import {notFound} from 'next/navigation';
 import ProductPurchase from '../../../components/ProductPurchase';
-import {getProduct,getProducts} from '../../../lib/shopify';
+import {getCompleteLookProducts,getMerchandisingProducts,getProduct} from '../../../lib/shopify';
 import {complementaryProducts} from '../../../lib/merchandising';
 import ProductCard from '../../../components/ProductCard';
 import Icon from '../../../components/Icon';
@@ -32,15 +32,15 @@ export default async function ProductPage({params,searchParams}) {
  const selected=initialSelection(product,initialVariantId,chooseSize),variant=findVariant(product.variants || [],selected),primary=selectionImage(product,selected,variant);
  if(primary?.url) preload(imageUrl(primary.url,800),{as:'image',fetchPriority:'high',imageSrcSet:imageSrcSet(primary.url,[320,480,600,720,800,960,1100,1200]),imageSizes:'(max-width:700px) 94vw,50vw'});
  let catalog=[];
- try { catalog=await getProducts(250); } catch {}
+ try { catalog=await getMerchandisingProducts(250); } catch {}
  const colourGroup=String(product.colorGroup||'').trim().toLowerCase();
  const colourwayListings=colourGroup?catalog.filter(item=>item.handle!==product.handle && String(item.colorGroup||'').trim().toLowerCase()===colourGroup):[];
  const colourways=colourwayListings.length?[product,...colourwayListings]:[];
  const colourwayHandles=new Set(colourwayListings.map(item=>item.handle));
  const merchandisingCatalog=catalog.filter(item=>!colourwayHandles.has(item.handle));
  const lookCandidates=complementaryProducts(product,merchandisingCatalog,3);
- const lookResults=await Promise.allSettled(lookCandidates.map(item=>getProduct(item.handle)));
- const completeLook=lookResults.filter(result=>result.status==='fulfilled' && result.value).map(result=>result.value);
+ let completeLook=[];
+ try { completeLook=await getCompleteLookProducts(lookCandidates.map(item=>item.handle)); } catch {}
  const lookHandles=new Set(completeLook.map(item=>item.handle));
  const related=merchandisingCatalog.filter(p => p.handle!==handle && !lookHandles.has(p.handle)).slice(0,4);
  const structured=[
