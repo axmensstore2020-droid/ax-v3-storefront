@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {collectionQuery,productsQuery} from '../lib/shopify-queries.js';
 process.env.SHOPIFY_STORE_DOMAIN='sample-test.myshopify.com';
 process.env.SHOPIFY_STOREFRONT_PRIVATE_TOKEN='test-only-private';
 process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN='test-only-public';
@@ -127,4 +128,10 @@ test('complete-look products are fetched in one targeted batch',async t=>{
  assert.equal(calls,1);
  assert.match(request.query,/PurchaseProductsByHandles/);
  assert.deepEqual(items.map(item=>item.handle),['real-shirt','second-shirt']);
+});
+
+
+test('catalog queries carry sellable variant combinations for stock-aware filters',()=>{
+ assert.ok(productsQuery.includes('variants(first:100){nodes{availableForSale selectedOptions{name value}}}'));
+ assert.ok(collectionQuery.includes('variants(first:100){nodes{availableForSale selectedOptions{name value}}}'));
 });
