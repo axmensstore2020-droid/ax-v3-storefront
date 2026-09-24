@@ -15,12 +15,13 @@ const {CONSENT_VERSION}=await import('../lib/stylist/validation.js');
 const {historyFromToken}=await import('../lib/stylist/security.js');
 const originalFetch=globalThis.fetch;
 const request=(body,method='POST',cookie='',origin='https://ax.test')=>new Request('https://ax.test/api/stylist',{method,headers:{Origin:origin,'Content-Type':'application/json',...(cookie?{Cookie:cookie}:{})},...(method==='GET'?{}:{body:body===undefined?undefined:JSON.stringify(body)})});
-function mockServices(t,{reserve=true}={}) {
+function mockServices(t,{reserve={allowed:true,reason:'ok',dailyUsed:1,dailyLimit:150,hourlyUsed:1,hourlyLimit:12,alert:'none',alertKey:''}}={}) {
   const calls=[],rows=new Map();
   t.after(()=>{globalThis.fetch=originalFetch;});
   globalThis.fetch=async(url,options={})=>{
     calls.push({url,options});
-    if(url.endsWith('/rpc/ax_stylist_reserve'))return Response.json(reserve);
+    if(url.endsWith('/rpc/ax_stylist_reserve_v2'))return Response.json(reserve);
+    if(url.endsWith('/rpc/ax_stylist_release_alert'))return Response.json(true);
     if(url.includes('/rest/v1/ax_stylist_usage'))return Response.json([]);
     if(url.includes('/rest/v1/ax_stylist_profiles')){
       if(options.method==='POST'){const data=JSON.parse(options.body);rows.set(data.id,data);return Response.json([data]);}
@@ -49,10 +50,23 @@ test('chat sets an HttpOnly session and returns only signed continuation',async 
   const raw=JSON.stringify(data);assert.ok(!raw.includes('test-only-ai'));assert.ok(!raw.includes('test-only-db'));
   assert.equal(mock.calls.filter(c=>c.url.endsWith('/responses')).length,0);
 });
-test('shared quota blocks before OpenAI calls even on a newly generated cookie',async t=>{
-  const mock=mockServices(t,{reserve:false});
-  assert.equal((await chat.POST(request({message:'shirt',consent:true}))).status,429);
-  assert.equal(mock.calls.length,1);assert.match(mock.calls[0].url,/reserve/);
+test('shared daily quota blocks before OpenAI calls even on a newly generated cookie',async t=>{
+  const mock=mockServices(t,{reserve:{allowed:false,reason:'daily',dailyUsed:150,dailyLimit:150,hourlyUsed:null,hourlyLimit:12,alert:'none',alertKey:''}});
+  const response=await chat.POST(request({message:'shirt',consent:true}));
+  assert.equal(response.status,429);
+  const data=await response.json();
+  assert.equal(data.code,'STYLIST_DAILY_LIMIT');
+  assert.match(data.error,/daily reset/i);
+  assert.equal(mock.calls.length,1);assert.match(mock.calls[0].url,/reserve_v2/);
+});
+test('visitor hourly quota has a distinct customer message and no OpenAI call',async t=>{
+  const mock=mockServices(t,{reserve:{allowed:false,reason:'visitor_hourly',dailyUsed:5,dailyLimit:150,hourlyUsed:12,hourlyLimit:12,alert:'none',alertKey:''}});
+  const response=await chat.POST(request({message:'shirt',consent:true}));
+  assert.equal(response.status,429);
+  const data=await response.json();
+  assert.equal(data.code,'STYLIST_HOURLY_LIMIT');
+  assert.match(data.error,/this hour/i);
+  assert.equal(mock.calls.length,1);
 });
 test('private profile requires consent, round trips and deletes from the same anonymous session',async t=>{
   const mock=mockServices(t);
