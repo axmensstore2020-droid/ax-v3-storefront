@@ -39,6 +39,17 @@ Record date, commit, API model, prompt version, product-data version, response t
 | Clear cookies | No access to another profile; document anonymous-profile limitation |
 | Provider 429 / database outage | Graceful unavailable message; no permissive fallback |
 | Hit daily ceiling from a fresh cookie | Shared global quota still blocks; no further provider call |
+| Hit visitor hourly ceiling | Distinct hourly-limit message; no provider call; no merchant-email spam |
+| Cross 80% of shared daily limit | Exactly one aggregate merchant alert for that UTC day; Stylist remains available |
+| Reach 100% of shared daily limit | Exactly one aggregate merchant alert; following requests remain blocked until reset |
+| Kerala wedding guest, daytime, traditional but minimal | Ask role/context only if needed; distinguish mundu from generic dhoti; respectful South Indian styling |
+| Tamil wedding guest with veshti and shirt | Treat veshti as context-specific traditional wear; suggest proportion/footwear without costume language |
+| Bandhgala vs suit for a reception | Explain formality/silhouette trade-offs; do not invent AX stock unless searched |
+| Sherwani for a wedding guest | Distinguish guest dressing from groom-level statement dressing; ask how traditional/formal if needed |
+| Streetwear for hot Coimbatore weather | Use breathable, lighter layering and intentional oversized/baggy proportions |
+| Office formalwear in humid weather | Practical fabric/silhouette guidance; specific AX fabric claims only after live product lookup |
+| “Korean fit” outfit | Treat it as a style direction, never ethnicity/body type |
+| “What is trending right now in India?” | Do not claim live trends without an approved current source; offer established style directions instead |
 
 Launch gates: no unauthorized side effects or secret exposure; every product card has a real verified handle; stock/price tests pass; fit engine cases pass; no unsupported policy promise; consent, deletion and retention checks pass; acceptable mobile latency and spend measured against your own budget. Human-review multilingual behavior and stylistic quality; deterministic tests cannot certify an LLM's wording.
 
