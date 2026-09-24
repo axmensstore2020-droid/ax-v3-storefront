@@ -35,4 +35,5 @@ test('Shopify policy templates are recognized before rendering',()=>{
 test('homepage campaign query carries Shopify-hosted video references',()=>{
  assert.match(homepageCampaignsQuery,/\.\.\. on Video/);
  assert.match(homepageCampaignsQuery,/sources \{ url mimeType format height width \}/);
+ assert.match(homepageCampaignsQuery,/\.\.\. on GenericFile \{ url mimeType \}/);
 });
