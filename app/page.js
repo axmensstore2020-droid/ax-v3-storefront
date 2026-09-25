@@ -107,6 +107,11 @@ export default async function Home() {
   {styledWithAx.length>0 && <section className="styled-with-ax" aria-labelledby="styled-with-ax-title">
    <div className="styled-with-ax-head"><div><p className="eyebrow">COMMUNITY / EDITORIAL</p><CampaignTitle value="Styled with AX" id="styled-with-ax-title"/></div><p>Selected AX collaborations, campaign moments and community styling.</p></div>
    <StyledWithAxCarousel items={styledWithAx}/>
+   <div className="styled-with-ax-socials" aria-label="AX social accounts">
+    <span>Instagram @axmensstore</span>
+    <span>Threads @axmensstore</span>
+    <span>Facebook @axmensstore</span>
+   </div>
   </section>}
  </main></>;
 }
