@@ -108,13 +108,13 @@ export default async function Home() {
    <div className="styled-with-ax-head"><div><p className="eyebrow">COMMUNITY / EDITORIAL</p><CampaignTitle value="Styled with AX" id="styled-with-ax-title"/></div><p>Selected AX collaborations, campaign moments and community styling.</p></div>
    <StyledWithAxCarousel items={styledWithAx}/>
    <div className="styled-with-ax-socials" aria-label="AX social accounts">
-    <a href="https://www.instagram.com/axmensstore/" target="_blank" rel="noreferrer" aria-label="AX on Instagram" title="Instagram">
+    <a href="https://www.instagram.com/axmensstore/" target="_blank" rel="noopener noreferrer" aria-label="AX on Instagram" title="Instagram">
      <img src="https://cdn.simpleicons.org/instagram/171717" alt="" aria-hidden="true" loading="lazy"/>
     </a>
-    <a href="https://www.threads.net/@axmensstore" target="_blank" rel="noreferrer" aria-label="AX on Threads" title="Threads">
+    <a href="https://www.threads.net/@axmensstore" target="_blank" rel="noopener noreferrer" aria-label="AX on Threads" title="Threads">
      <img src="https://cdn.simpleicons.org/threads/171717" alt="" aria-hidden="true" loading="lazy"/>
     </a>
-    <a href="https://www.facebook.com/axmensstore" target="_blank" rel="noreferrer" aria-label="AX on Facebook" title="Facebook">
+    <a href="https://www.facebook.com/axmensstore" target="_blank" rel="noopener noreferrer" aria-label="AX on Facebook" title="Facebook">
      <img src="https://cdn.simpleicons.org/facebook/171717" alt="" aria-hidden="true" loading="lazy"/>
     </a>
    </div>

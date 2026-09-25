@@ -131,6 +131,30 @@ test('complete-look products are fetched in one targeted batch',async t=>{
 });
 
 
+test('complete-look recovers missing batch products with purchasable PDP data',async t=>{
+ t.after(()=>{globalThis.fetch=realFetch;});
+ const fallback={...sample,id:'gid://shopify/Product/3',handle:'fallback-pants',title:'Fallback Pants',productType:'Pants',
+  metafields:[{namespace:'ax_data',key:'fit',value:'Baggy'}],images:{nodes:[]},
+  options:[{name:'Size',optionValues:[{name:'M'}]}],
+  variants:{nodes:[{id:'gid://shopify/ProductVariant/31',title:'M',sku:'AX-31',availableForSale:true,price:{amount:'900',currencyCode:'INR'},compareAtPrice:null,selectedOptions:[{name:'Size',value:'M'}],image:null}]}
+ };
+ let calls=0;
+ globalThis.fetch=async(url,init)=>{
+  calls++;
+  const request=JSON.parse(init.body);
+  if(request.query.includes('PurchaseProductsByHandles')) return Response.json({data:{products:{nodes:[{...sample,variants:{nodes:[]},options:[]}]}}});
+  assert.match(request.query,/query Product\(/);
+  assert.equal(request.variables.handle,'fallback-pants');
+  return Response.json({data:{product:fallback}});
+ };
+ const items=await live.getCompleteLookProducts(['real-shirt','fallback-pants']);
+ assert.equal(calls,2);
+ assert.deepEqual(items.map(item=>item.handle),['real-shirt','fallback-pants']);
+ assert.equal(items[1].variants[0].id,'gid://shopify/ProductVariant/31');
+ assert.deepEqual(items[1].options,[{name:'Size',values:['M']}]);
+});
+
+
 test('catalog queries carry sellable variant combinations for stock-aware filters',()=>{
  assert.ok(productsQuery.includes('variants(first:100){nodes{availableForSale selectedOptions{name value}}}'));
  assert.ok(collectionQuery.includes('variants(first:100){nodes{availableForSale selectedOptions{name value}}}'));
