@@ -9,8 +9,15 @@ const GOOGLE_CALENDAR =
   'https://calendar.google.com/calendar/render?action=TEMPLATE' +
   '&text=' + encodeURIComponent('AX Store — Going Live') +
   '&dates=20260927T063000Z/20260927T073000Z' +
-  '&details=' + encodeURIComponent('Inspired by the fear of being average. AX goes live Sunday at 12:00 PM IST. Special offer for the first 10 completed purchases. https://axstore.in') +
+  '&details=' + encodeURIComponent('Inspired by the fear of being average. AX goes live Sunday at 12:00 PM IST. https://axstore.in') +
   '&location=' + encodeURIComponent('https://axstore.in');
+
+const DOSSIER_ROWS = [
+  ['DIVISION', 'AX / PRIVATE RELEASE'],
+  ['ORIGIN', 'COIMBATORE'],
+  ['FILE', 'AX-0927-CBE'],
+  ['ACCESS', 'RESTRICTED'],
+];
 
 function getCountdown(now) {
   const total = Math.max(0, LAUNCH_AT.getTime() - now.getTime());
@@ -75,170 +82,168 @@ export default function ComingSoonClient() {
   }
 
   return (
-    <motion.main
-      ref={rootRef}
-      className={styles.shell}
-      onPointerMove={handlePointerMove}
-      initial={false}
-    >
-      <div className={styles.grid} aria-hidden="true" />
-      <div className={styles.pointerGlow} aria-hidden="true" />
+    <main ref={rootRef} className={styles.shell} onPointerMove={handlePointerMove}>
+      <div className={styles.paperTexture} aria-hidden="true" />
+      <div className={styles.pointerWash} aria-hidden="true" />
+      <div className={styles.scanPass} aria-hidden="true" />
 
       <motion.div
-        className={styles.introCurtain}
-        aria-hidden="true"
-        initial={reduceMotion ? { display: 'none' } : { scaleY: 1 }}
-        animate={{ scaleY: 0 }}
-        transition={{ duration: 0.9, delay: 0.12, ease: [0.76, 0, 0.24, 1] }}
-      />
-
-      <header className={styles.header}>
-        <motion.div
-          className={styles.logoWrap}
-          aria-label="AX Store"
-          initial={reduceMotion ? false : { opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55, duration: 0.5 }}
-        >
-          <img className={styles.logo} src="/ax-logo-160.webp" alt="AX" />
-        </motion.div>
-
-        <motion.div
-          className={styles.topStatus}
-          initial={reduceMotion ? false : { opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.62, duration: 0.5 }}
-        >
-          <span className={styles.liveDot} />
-          <span>{isLive ? 'SIGNAL LIVE' : 'LAUNCH SIGNAL ARMED'}</span>
-        </motion.div>
-      </header>
-
-      <section className={styles.stage}>
-        <div className={styles.copy}>
-          <motion.p
-            className={styles.eyebrow}
-            initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.66, duration: 0.55 }}
+        className={styles.document}
+        initial={reduceMotion ? false : { opacity: 0, y: 14, rotate: -0.35 }}
+        animate={{ opacity: 1, y: 0, rotate: 0 }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <header className={styles.header}>
+          <motion.div
+            className={styles.logoBlock}
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.86 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.22, duration: 0.5 }}
           >
-            AX MEN&apos;S STORE · COIMBATORE
-          </motion.p>
+            <img src="/ax-logo-160.webp" alt="AX" />
+          </motion.div>
 
-          <div className={styles.headline} aria-label="Inspired by the fear of being average">
-            {['INSPIRED BY', 'THE FEAR OF', 'BEING AVERAGE'].map((line, index) => (
-              <div className={styles.lineMask} key={line}>
-                <motion.span
-                  initial={reduceMotion ? false : { y: '110%' }}
-                  animate={{ y: 0 }}
-                  transition={{ delay: 0.68 + index * 0.09, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  {line}
-                </motion.span>
-              </div>
+          <div className={styles.headerMeta}>
+            <span>AX INTERNAL DOSSIER</span>
+            <span>DOCUMENT / 0927</span>
+          </div>
+
+          <motion.div
+            className={styles.stamp}
+            initial={reduceMotion ? false : { opacity: 0, scale: 1.35, rotate: -12 }}
+            animate={{ opacity: 0.72, scale: 1, rotate: -6 }}
+            transition={{ delay: 0.52, duration: 0.28, ease: [0.2, 0.9, 0.2, 1] }}
+            aria-hidden="true"
+          >
+            RESTRICTED
+          </motion.div>
+        </header>
+
+        <section className={styles.fileGrid}>
+          <aside className={styles.fileMeta} aria-label="Document metadata">
+            {DOSSIER_ROWS.map(([label, value], index) => (
+              <motion.div
+                className={styles.metaRow}
+                key={label}
+                initial={reduceMotion ? false : { opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + index * 0.06, duration: 0.42 }}
+              >
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </motion.div>
             ))}
-          </div>
 
-          <motion.div
-            className={styles.launchLine}
-            initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.02, duration: 0.6 }}
-          >
-            <span>GOING LIVE</span>
-            <strong>SUNDAY · 12:00 PM IST</strong>
-          </motion.div>
-
-          <motion.div
-            className={styles.actions}
-            initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.12, duration: 0.6 }}
-          >
-            {isLive ? (
-              <a className={styles.primaryButton} href="/">
-                ENTER AX <span>↗</span>
-              </a>
-            ) : (
-              <button className={styles.primaryButton} type="button" onClick={() => setCalendarOpen(true)}>
-                MARK THE DROP <span>↗</span>
-              </button>
-            )}
-            <button className={styles.textButton} type="button" onClick={copyLaunch}>
-              {copied ? 'DATE COPIED' : 'COPY LAUNCH DATE'}
-            </button>
-          </motion.div>
-        </div>
-
-        <motion.div
-          className={styles.nodeField}
-          initial={reduceMotion ? false : { opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.72, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-          aria-hidden="true"
-        >
-          <div className={styles.orbitOuter}>
-            <span className={styles.nodeA} />
-            <span className={styles.nodeB} />
-          </div>
-          <div className={styles.orbitInner}>
-            <span className={styles.nodeC} />
-          </div>
-          <svg className={styles.network} viewBox="0 0 600 600" role="presentation">
-            <circle cx="300" cy="300" r="214" />
-            <circle cx="300" cy="300" r="142" />
-            <path d="M88 298 L300 156 L510 304 L302 444 Z" />
-            <path d="M160 174 L442 428" />
-          </svg>
-          <div className={styles.core}>
-            <div className={styles.coreHalo} />
-            <div className={styles.coreLogo}>
-              <img src="/ax-logo-160.webp" alt="" />
+            <div className={styles.encryptedBlock} aria-hidden="true">
+              <EncryptedLine delay={0.52} width="86%" />
+              <EncryptedLine delay={0.6} width="64%" />
+              <EncryptedLine delay={0.68} width="92%" />
+              <EncryptedLine delay={0.76} width="46%" />
             </div>
-          </div>
-          <span className={styles.coordinates}>11.0168°N / 76.9558°E</span>
-        </motion.div>
-      </section>
 
-      <section className={styles.bottomRail}>
-        <motion.div
-          className={styles.countdown}
-          initial={reduceMotion ? false : { opacity: 0, y: 22 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2, duration: 0.6 }}
-          aria-label={isLive ? 'AX is live' : 'Countdown to AX launch'}
-        >
+            <div className={styles.microcopy}>
+              <span>ARCHIVE REF. 26/09/AX</span>
+              <span>UNAUTHORISED DETAILS REDACTED</span>
+            </div>
+          </aside>
+
+          <section className={styles.primary}>
+            <motion.p
+              className={styles.eyebrow}
+              initial={reduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.46, duration: 0.4 }}
+            >
+              PUBLIC-FACING EXTRACT / 01
+            </motion.p>
+
+            <div className={styles.headline} aria-label="Inspired by the fear of being average">
+              {['INSPIRED BY', 'THE FEAR OF', 'BEING AVERAGE'].map((line, index) => (
+                <div className={styles.lineMask} key={line}>
+                  <motion.span
+                    initial={reduceMotion ? false : { y: '115%' }}
+                    animate={{ y: 0 }}
+                    transition={{ delay: 0.48 + index * 0.08, duration: 0.78, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    {line}
+                  </motion.span>
+                </div>
+              ))}
+            </div>
+
+            <motion.div
+              className={styles.releasePanel}
+              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+            >
+              <div className={styles.releaseLabel}>PUBLIC RELEASE</div>
+              <div className={styles.releaseDate}>
+                <span>SUNDAY</span>
+                <strong>12:00 PM IST</strong>
+              </div>
+              <div className={styles.releaseRule} />
+              <div className={styles.releaseFooter}>
+                <span>27 / 09 / 2026</span>
+                <span>AXSTORE.IN</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className={styles.actions}
+              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.92, duration: 0.46 }}
+            >
+              {isLive ? (
+                <a className={styles.primaryButton} href="/">
+                  ENTER AX <span>↗</span>
+                </a>
+              ) : (
+                <button className={styles.primaryButton} type="button" onClick={() => setCalendarOpen(true)}>
+                  MARK YOUR CALENDARS <span>↗</span>
+                </button>
+              )}
+              <button className={styles.textButton} type="button" onClick={copyLaunch}>
+                {copied ? 'DATE COPIED' : 'COPY LAUNCH DATE'}
+              </button>
+            </motion.div>
+          </section>
+        </section>
+
+        <section className={styles.countdownSection} aria-label={isLive ? 'AX is live' : 'Countdown to AX launch'}>
+          <div className={styles.countdownHeader}>
+            <span>TIME UNTIL PUBLIC RELEASE</span>
+            <span>LIVE DATA</span>
+          </div>
           {isLive ? (
             <div className={styles.liveMessage}>THE WAIT IS OVER.</div>
           ) : (
-            <>
+            <div className={styles.countdown}>
               <TimeUnit value={countdown.days} label="DAYS" />
               <TimeUnit value={countdown.hours} label="HRS" />
               <TimeUnit value={countdown.minutes} label="MIN" />
               <TimeUnit value={countdown.seconds} label="SEC" />
-            </>
+            </div>
           )}
-        </motion.div>
+        </section>
+
+        <footer className={styles.footer}>
+          <span>AX / COIMBATORE / 2026</span>
+          <strong>THE REST REMAINS ENCRYPTED.</strong>
+          <span>PAGE 01 / 01</span>
+        </footer>
 
         <motion.div
-          className={styles.offer}
-          initial={reduceMotion ? false : { opacity: 0, y: 22 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.28, duration: 0.6 }}
+          className={styles.cornerMark}
+          initial={reduceMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.1, duration: 0.5 }}
+          aria-hidden="true"
         >
-          <div>
-            <span className={styles.offerKicker}>LAUNCH PRIVILEGE</span>
-            <strong>SPECIAL OFFER FOR THE FIRST 10 PURCHASES</strong>
-          </div>
-          <div className={styles.offerIndex}>01—10</div>
-          <span className={styles.scanLine} aria-hidden="true" />
+          AX
         </motion.div>
-      </section>
-
-      <footer className={styles.footer}>
-        <span>AX / 2026</span>
-        <span>A NEW SYSTEM IS ABOUT TO GO LIVE.</span>
-      </footer>
+      </motion.div>
 
       <AnimatePresence>
         {calendarOpen && (
@@ -254,20 +259,20 @@ export default function ComingSoonClient() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="calendar-title"
-              initial={reduceMotion ? { opacity: 1 } : { y: 44, opacity: 0 }}
+              initial={reduceMotion ? { opacity: 1 } : { y: 42, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={reduceMotion ? { opacity: 0 } : { y: 28, opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              exit={reduceMotion ? { opacity: 0 } : { y: 24, opacity: 0 }}
+              transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
               onClick={(event) => event.stopPropagation()}
             >
               <div className={styles.sheetTop}>
                 <div>
-                  <span>REMINDER NODE</span>
-                  <h2 id="calendar-title">MARK SUNDAY, 12 PM.</h2>
+                  <span>CALENDAR ACCESS / AX-0927</span>
+                  <h2 id="calendar-title">MARK YOUR CALENDARS.</h2>
                 </div>
                 <button type="button" onClick={() => setCalendarOpen(false)} aria-label="Close calendar options">×</button>
               </div>
-              <p>27 September 2026 · 12:00 PM IST. The calendar file includes a 15-minute reminder.</p>
+              <p>Sunday, 27 September 2026 · 12:00 PM IST. The calendar file includes a 15-minute reminder.</p>
               <div className={styles.calendarOptions}>
                 <a href={GOOGLE_CALENDAR} target="_blank" rel="noopener noreferrer">
                   <span>GOOGLE CALENDAR</span><span>↗</span>
@@ -276,12 +281,25 @@ export default function ComingSoonClient() {
                   <span>APPLE / OUTLOOK / .ICS</span><span>↓</span>
                 </a>
               </div>
-              <div className={styles.sheetNote}>FIRST 10 PURCHASES · SPECIAL LAUNCH OFFER</div>
+              <div className={styles.sheetFooter}>AX INTERNAL DOSSIER · PUBLIC RELEASE REMINDER</div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.main>
+    </main>
+  );
+}
+
+function EncryptedLine({ delay, width }) {
+  return (
+    <div className={styles.encryptedLine} style={{ width }}>
+      <span>9X7A-██-CBE-██-0927</span>
+      <motion.i
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: 1 }}
+        transition={{ delay, duration: 0.42, ease: [0.65, 0, 0.35, 1] }}
+      />
+    </div>
   );
 }
 
