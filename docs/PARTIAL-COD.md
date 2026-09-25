@@ -10,21 +10,21 @@ The courier COD handling fee charged to the Partial COD order is:
 
 The booking advance is:
 
-`max(₹100, 10% of final order value rounded to the nearest ₹10)`
+`20% of the final order value`
 
 The COD handling fee is disclosed when the customer chooses Partial COD and is shown as its own line before payment. Pay Online does not include this fee. For Partial COD, AX quotes Delhivery freight without embedding a COD overhead, then adds the account's COD handling rule explicitly so it is not double-counted.
 
-The advance is capped at the amount due. The remaining balance is the amount Delhivery should collect as COD.
+The advance is calculated to the nearest paise as 20% of the final order value. The remaining 80% is the amount the delivery partner should collect as COD.
 
 Examples:
 
 | Final order value | Advance | COD balance |
 | ---: | ---: | ---: |
-| ₹749 | ₹100 | ₹649 |
-| ₹1,249 | ₹120 | ₹1,129 |
-| ₹1,299 | ₹130 | ₹1,169 |
-| ₹1,999 | ₹200 | ₹1,799 |
-| ₹3,499 | ₹350 | ₹3,149 |
+| ₹749 | ₹149.80 | ₹599.20 |
+| ₹1,249 | ₹249.80 | ₹999.20 |
+| ₹1,299 | ₹259.80 | ₹1,039.20 |
+| ₹1,999 | ₹399.80 | ₹1,599.20 |
+| ₹3,499 | ₹699.80 | ₹2,799.20 |
 
 The shared calculation lives in `lib/partial-cod.js` and is covered by automated tests.
 
@@ -35,12 +35,12 @@ The shared calculation lives in `lib/partial-cod.js` and is covered by automated
 3. A previously checked delivery pincode is reused automatically. If COD is unavailable, the bag keeps Pay Online available and does not ask for the customer's full address.
 4. After COD eligibility is confirmed, **Partial COD** opens the AX-owned checkout page and reuses the pincode.
 5. AX re-checks COD serviceability and live Standard/Express freight before payment.
-6. The customer sees products, shipping, the exact COD handling fee, final order value, booking advance and remaining COD balance before payment.
-5. Razorpay collects only the booking advance.
-6. AX verifies the Razorpay signature and captured payment server-side.
-7. Shopify receives a real order with the original variant IDs, a successful Razorpay advance transaction and financial status `PARTIALLY_PAID`.
-8. Delhivery receives a COD shipment whose COD amount is the Shopify outstanding balance, not the full invoice value.
-9. A successful order clears the browser bag. If finalization fails after payment, the UI keeps the successful Razorpay response and offers an idempotent **Retry order confirmation** action without asking the customer to pay again.
+6. The customer sees products, shipping, the exact COD handling fee, final order value, the 20% booking advance and remaining 80% COD balance before payment.
+7. Razorpay collects only the 20% booking advance.
+8. AX verifies the Razorpay signature and captured payment server-side.
+9. Shopify receives a real order with the original variant IDs, a successful Razorpay advance transaction and financial status `PARTIALLY_PAID`.
+10. The delivery partner receives a COD shipment whose COD amount is the Shopify outstanding balance, not the full invoice value.
+11. A successful order clears the browser bag. If finalization fails after payment, the UI keeps the successful Razorpay response and offers an idempotent **Retry order confirmation** action without asking the customer to pay again.
 
 The feature is hidden unless every required server-side setting is present and `AX_PARTIAL_COD_ENABLED=true`.
 

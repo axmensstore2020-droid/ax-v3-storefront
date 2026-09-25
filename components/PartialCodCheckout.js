@@ -132,8 +132,8 @@ export default function PartialCodCheckout(){
 
   return <section className="partial-cod-checkout">
     <div className="partial-cod-intro">
-      <div><p className="eyebrow">PARTIAL CASH ON DELIVERY</p><h1 className="editorial">Pay a small advance. Pay the rest on delivery.</h1></div>
-      <div className="partial-cod-intro-copy"><p>Pay a small booking advance securely through Razorpay. The remaining balance is collected by our delivery partner at delivery.</p><p className="partial-cod-fee-notice"><strong>COD handling fee</strong><span>₹40 minimum · 2% of product value above ₹2,000</span></p></div>
+      <div><p className="eyebrow">PARTIAL CASH ON DELIVERY</p><h1 className="editorial">Pay 20% now. Pay the remaining 80% on delivery.</h1></div>
+      <div className="partial-cod-intro-copy"><p>Pay 20% of the final order value securely through Razorpay. The remaining 80% is collected by our delivery partner at delivery.</p><p className="partial-cod-fee-notice"><strong>COD handling fee</strong><span>₹40 minimum · 2% of product value above ₹2,000</span></p></div>
     </div>
 
     <form className="partial-cod-form" onSubmit={checkCod}>
@@ -163,9 +163,9 @@ export default function PartialCodCheckout(){
         <div><span>Shipping</span><strong>{selected.shippingAmount===0?'FREE':formatMoney(selected.shippingAmount,'INR')}</strong></div>
         <div className="cod-handling"><span>COD handling fee</span><strong>{formatMoney(selected.codHandlingFee,'INR')}</strong></div>
         <div className="order-total"><span>Final order value</span><strong>{formatMoney(selected.orderTotal,'INR')}</strong></div>
-        <div className="advance"><span>Pay now via Razorpay</span><strong>{formatMoney(selected.advance,'INR')}</strong></div>
+        <div className="advance"><span>Pay now via Razorpay · 20%</span><strong>{formatMoney(selected.advance,'INR')}</strong></div>
         <div><span>Balance on delivery</span><strong>{formatMoney(selected.codBalance,'INR')}</strong></div>
-        <small>COD handling: ₹40 minimum, or 2% of product value above ₹2,000. Advance: ₹100 minimum, or 10% of the final order value rounded to the nearest ₹10.</small>
+        <small>COD handling: ₹40 minimum, or 2% of product value above ₹2,000. Prepayment: 20% of the final order value; the remaining 80% is due on delivery.</small>
       </div>}
 
       <label className="partial-cod-consent">
@@ -174,7 +174,7 @@ export default function PartialCodCheckout(){
       </label>
 
       <button className="checkout-button partial-cod-pay" type="button" disabled={!selected||!accepted||Boolean(stage)||Boolean(pending)} onClick={payAdvance}>
-        {stage==='prepare'?'PREPARING PAYMENT…':stage==='confirm'?'CONFIRMING ORDER…':selected?'PAY '+formatMoney(selected.advance,'INR')+' ADVANCE':'CHOOSE DELIVERY'}
+        {stage==='prepare'?'PREPARING PAYMENT…':stage==='confirm'?'CONFIRMING ORDER…':selected?'PAY 20% · '+formatMoney(selected.advance,'INR'):'CHOOSE DELIVERY'}
       </button>
       <p className="partial-cod-secure">Secure payment by Razorpay · card, UPI and supported wallets. AX never receives your card number, CVV or UPI PIN.</p>
     </div>}

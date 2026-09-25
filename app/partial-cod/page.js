@@ -4,7 +4,7 @@ import {partialCodConfigured} from '../../lib/partial-cod-server';
 
 export const metadata={
  title:'Partial COD',
- description:'Pay a booking advance securely and pay the remaining eligible order balance to our delivery partner on delivery.'
+ description:'Pay 20% of the final order value securely and pay the remaining 80% to our delivery partner on delivery.'
 };
 
 export default function PartialCodPage(){
