@@ -282,8 +282,7 @@ h1,h2,h3{font-weight:300}
 .styled-with-ax-socials{display:flex;align-items:center;gap:12px;margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
 .styled-with-ax-socials a{display:grid;place-items:center;width:42px;height:42px;border:1px solid var(--line);border-radius:50%;color:var(--ink);transition:transform .18s ease,border-color .18s ease,background .18s ease}
 .styled-with-ax-socials a:hover{transform:translateY(-2px);border-color:var(--ink);background:#fff}
-.styled-with-ax-socials svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.styled-with-ax-socials a:last-child svg{fill:currentColor;stroke:none}
+.styled-with-ax-socials img{display:block;width:20px;height:20px;object-fit:contain}
 .styled-with-ax-carousel::before,.styled-with-ax-carousel::after{content:'';position:absolute;top:0;bottom:22px;width:min(9vw,120px);z-index:3;pointer-events:none}
 .styled-with-ax-carousel::before{left:0;background:linear-gradient(90deg,var(--paper) 0%,rgba(247,247,244,.72) 42%,rgba(247,247,244,0) 100%)}
 .styled-with-ax-carousel::after{right:0;background:linear-gradient(270deg,var(--paper) 0%,rgba(247,247,244,.72) 42%,rgba(247,247,244,0) 100%)}
