@@ -87,8 +87,7 @@ export default function ComingSoonClient() {
       />
 
       <header className={styles.header}>
-        <motion.a
-          href="https://axstore.in"
+        <motion.div
           className={styles.logoWrap}
           aria-label="AX Store"
           initial={reduceMotion ? false : { opacity: 0, y: -12 }}
@@ -96,7 +95,7 @@ export default function ComingSoonClient() {
           transition={{ delay: 0.55, duration: 0.5 }}
         >
           <img className={styles.logo} src="/ax-logo-160.webp" alt="AX" />
-        </motion.a>
+        </motion.div>
 
         <motion.div
           className={styles.topStatus}
