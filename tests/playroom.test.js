@@ -112,6 +112,21 @@ test('Shopify Playroom reward is 10 percent, single-use, seven-day and non-stack
  assert.equal(Date.parse(input.endsAt)-Date.parse(input.startsAt),7*24*60*60*1000);
 });
 
+test('launch Playroom reward activates at launch and expires at end of launch day',async()=>{
+ let captured=null;
+ const fetchImpl=async(url,init)=>{
+  captured=JSON.parse(init.body).variables.basicCodeDiscount;
+  return Response.json({data:{discountCodeBasicCreate:{codeDiscountNode:{id:'gid://shopify/DiscountCodeNode/launch'},userErrors:[]}}});
+ };
+ const now=Date.parse('2026-09-26T12:00:00Z');
+ const reward=await createShopifyPlayroomDiscount('AXPLAY10-LAUNCH1234',{launch:true,env,fetchImpl,now});
+ assert.equal(reward.startsAt,'2026-09-27T06:30:00.000Z');
+ assert.equal(reward.endsAt,'2026-09-27T18:29:59.000Z');
+ assert.equal(captured.startsAt,reward.startsAt);
+ assert.equal(captured.endsAt,reward.endsAt);
+ assert.ok(captured.tags.includes('launch-day'));
+});
+
 test('settled Playroom result maps to the verified board outcome',async()=>{
  const now=Date.parse('2026-09-23T12:00:00Z');
  const round=createPlayroomRound('O',{env,now});
