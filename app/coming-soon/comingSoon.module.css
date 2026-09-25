@@ -35,6 +35,7 @@
     linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
   background-size: 64px 64px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.72) 68%, transparent 100%);
   mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.72) 68%, transparent 100%);
 }
 
@@ -236,6 +237,7 @@
   aspect-ratio: 1;
   border-radius: 50%;
   transform-style: preserve-3d;
+  pointer-events: none;
 }
 
 .network {
@@ -659,7 +661,7 @@
     right: -32vw;
     top: 22%;
     opacity: .55 !important;
-    z-index: -1;
+    z-index: 1;
   }
 
   .core {
