@@ -11,8 +11,8 @@ test('Partial COD advance is exactly 20 percent of final order value',()=>{
 });
 
 test('Partial COD advance never exceeds the order total',()=>{
- assert.equal(partialCodAdvance(0.01),0);
- assert.equal(partialCodAdvance(0.05),0.01);
+ assert.equal(partialCodAdvance(99),19.8);
+ assert.deepEqual(partialCodBreakdown(99),{orderTotal:99,advance:19.8,codBalance:79.2});
 });
 
 test('Partial COD balance is exact to paise',()=>{
