@@ -9,6 +9,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AXIsland from '../components/AXIsland';
 import MetaMarketing from '../components/MetaMarketing';
+import GoogleAnalytics from '../components/GoogleAnalytics';
 import WebVitals from '../components/WebVitals';
 import MotionEnhancer from '../components/MotionEnhancer';
 import RouteMotion from '../components/RouteMotion';
@@ -23,6 +24,7 @@ import {SITE_NAME,SITE_URL,jsonLd,organizationJsonLd,websiteJsonLd} from '../lib
 import {FREE_SHIPPING_THRESHOLD_INR} from '../lib/shipping-policy';
 import {partialCodConfigured} from '../lib/partial-cod-server';
 const indexing=process.env.AX_ALLOW_INDEXING==='true';
+const googleAnalyticsId=/^G-[A-Z0-9]{6,20}$/.test(String(process.env.GOOGLE_ANALYTICS_ID || 'G-G5KHHPKQ3T').trim())?String(process.env.GOOGLE_ANALYTICS_ID || 'G-G5KHHPKQ3T').trim():'';
 const openingIntroBootstrap=`(function(){var root=document.documentElement,key='ax_opening_intro_v3',reduced=false,play=false;try{reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;play=window.location.pathname==='/'&&!reduced&&!window.sessionStorage.getItem(key);if(play)window.sessionStorage.setItem(key,'1');}catch(e){play=false;}root.dataset.axIntro=play?'play':'skip';if(play)window.setTimeout(function(){if(root.dataset.axIntro!=='skip')root.dataset.axIntro='skip';},1450);})();`;
 export const metadata = {
  metadataBase:new URL(SITE_URL),
@@ -46,5 +48,5 @@ export default async function RootLayout({children}) {
  const analyticsEnabled=Boolean(process.env.SUPABASE_URL && (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY) && analyticsSecret.length>=32);
  const freeShippingThreshold=FREE_SHIPPING_THRESHOLD_INR,partialCodEnabled=partialCodConfigured();
  const structured=[organizationJsonLd(),websiteJsonLd()];
- return <html lang="en-IN" suppressHydrationWarning><head><link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous"/><link rel="preload" as="image" href="/ax-logo-160.webp" fetchPriority="high"/><script dangerouslySetInnerHTML={{__html:openingIntroBootstrap}}/></head><body><AuthSuccessOverlay/><WebVitals/><RouteMotion/><MotionEnhancer/><MetaMarketing pixelId={pixelId} capiEnabled={capiEnabled} analyticsEnabled={analyticsEnabled}/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/><a className="skip-link" href="#main-content">Skip to content</a><NavigationProvider value={navigation}><CartProvider demo={demo} freeShippingThreshold={freeShippingThreshold} partialCodEnabled={partialCodEnabled}><StylistProvider><div className="ax-site-shell">{demo && <div className="preview-banner">STORE PREVIEW · SAMPLE CATALOG · CHECKOUT UNAVAILABLE</div>}<Header/>{children}<Footer/></div><AXIsland accountUrl={accountUrl} accountEnabled={customAccount}/><AXPlayroomMount/><CartDrawerMount/></StylistProvider></CartProvider></NavigationProvider></body></html>;
+ return <html lang="en-IN" suppressHydrationWarning><head><link rel="preconnect" href="https://cdn.shopify.com" crossOrigin="anonymous"/><link rel="preload" as="image" href="/ax-logo-160.webp" fetchPriority="high"/><script dangerouslySetInnerHTML={{__html:openingIntroBootstrap}}/></head><body><AuthSuccessOverlay/><WebVitals/><RouteMotion/><MotionEnhancer/><MetaMarketing pixelId={pixelId} capiEnabled={capiEnabled} analyticsEnabled={analyticsEnabled} googleAnalyticsId={googleAnalyticsId}/><GoogleAnalytics measurementId={googleAnalyticsId}/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd(structured)}}/><a className="skip-link" href="#main-content">Skip to content</a><NavigationProvider value={navigation}><CartProvider demo={demo} freeShippingThreshold={freeShippingThreshold} partialCodEnabled={partialCodEnabled}><StylistProvider><div className="ax-site-shell">{demo && <div className="preview-banner">STORE PREVIEW · SAMPLE CATALOG · CHECKOUT UNAVAILABLE</div>}<Header/>{children}<Footer/></div><AXIsland accountUrl={accountUrl} accountEnabled={customAccount}/><AXPlayroomMount/><CartDrawerMount/></StylistProvider></CartProvider></NavigationProvider></body></html>;
 }
