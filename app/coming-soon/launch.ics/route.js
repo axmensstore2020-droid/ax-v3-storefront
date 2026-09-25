@@ -11,7 +11,7 @@ export async function GET() {
     'DTSTART:20260927T063000Z',
     'DTEND:20260927T073000Z',
     'SUMMARY:AX Store — Going Live',
-    'DESCRIPTION:Inspired by the fear of being average. AX goes live Sunday at 12:00 PM IST. Special offer for the first 10 completed purchases. https://axstore.in',
+    'DESCRIPTION:Inspired by the fear of being average. AX goes live Sunday at 12:00 PM IST. https://axstore.in',
     'LOCATION:https://axstore.in',
     'URL:https://axstore.in',
     'BEGIN:VALARM',
