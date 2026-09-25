@@ -37,6 +37,14 @@ export default function ComingSoonClient() {
   const isLive = countdown.total <= 0;
 
   useEffect(() => {
+    const root = document.documentElement;
+    const frame = window.requestAnimationFrame(() => {
+      root.removeAttribute('data-ax-coming-soon-boot');
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
   }, []);
@@ -71,9 +79,7 @@ export default function ComingSoonClient() {
       ref={rootRef}
       className={styles.shell}
       onPointerMove={handlePointerMove}
-      initial={reduceMotion ? false : { opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.45 }}
+      initial={false}
     >
       <div className={styles.grid} aria-hidden="true" />
       <div className={styles.pointerGlow} aria-hidden="true" />
