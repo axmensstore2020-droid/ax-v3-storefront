@@ -41,6 +41,8 @@ test('returns and shipping rules match the current AX operating policy',()=>{
  assert.match(byKey['shipping-policy'].body,/Express/);
  assert.match(byKey['shipping-policy'].body,/above ₹2,000/);
  assert.match(byKey['shipping-policy'].body,/₹40 or 2% of the product bill value, whichever is higher/i);
- assert.match(byKey['shipping-policy'].body,/does not require a Partial COD booking advance/i);
+ assert.match(byKey['shipping-policy'].body,/20% of the final order value/i);
+ assert.match(byKey['shipping-policy'].body,/remaining <strong>80%<\/strong>/i);
+ assert.match(byKey['terms-of-sale'].body,/20% of the final order value/i);
  assert.match(byKey['refund-policy'].body,/cannot lawfully be excluded/i);
 });
