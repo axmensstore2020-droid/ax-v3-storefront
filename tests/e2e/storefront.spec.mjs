@@ -26,7 +26,7 @@ async function expectCriticalA11y(page){
 test('homepage navigation and modal behavior remain usable',async({page})=>{
   await page.goto('/');
   await expect(page.locator('main#main-content')).toHaveCount(1);
-  await expect(page.getByRole('link',{name:'AX home'})).toBeVisible();
+  await expect(page.locator('.header .brand[aria-label="AX home"]')).toBeVisible();
   await page.getByRole('button',{name:'Open categories'}).click();
   const dialog=page.getByRole('dialog',{name:'Categories'});
   await expect(dialog).toBeVisible();
