@@ -30,7 +30,7 @@ export async function POST(request){
   if(!guard.allowed)return json({ok:false,error:'Too many Playroom requests. Try again shortly.'},429,guard);
 
   let body;
-  try{body=await readLimitedJson(request,2048);assertAllowedKeys(body,['action','first','moves','bonus'],'Playroom');}
+  try{body=await readLimitedJson(request,2048);assertAllowedKeys(body,['action','first','moves','bonus','launch'],'Playroom');}
   catch(error){return json({ok:false,error:error.message||'Invalid Playroom request.'},400,guard);}
 
   if(body.action==='start'){
@@ -41,7 +41,7 @@ export async function POST(request){
     if(status.bonusAvailable!==wantsBonus)return json({ok:false,error:status.bonusAvailable?'Your bonus round is ready.':'No bonus round is available.'},409,guard);
     if(!(await playroomDiscountScopeReady()))return json({ok:false,error:'AX Playroom rewards are not enabled in Shopify yet.'},503,guard);
     try{
-      const round=createPlayroomRound(body.first,{bonus:wantsBonus});
+      const round=createPlayroomRound(body.first,{bonus:wantsBonus,launch:body.launch===true});
       const response=json({ok:true,bonus:round.bonus,expiresAt:round.expiresAt},200,guard);
       response.cookies.set(PLAYROOM_GAME_COOKIE,round.token,{...cookieBase,secure:secure(),maxAge:PLAYROOM_GAME_MAX_AGE});
       if(wantsBonus)response.cookies.set(PLAYROOM_BONUS_COOKIE,'',{...cookieBase,secure:secure(),maxAge:0});
