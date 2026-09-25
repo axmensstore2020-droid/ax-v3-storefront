@@ -165,7 +165,7 @@ export default function PartialCodCheckout(){
         <div className="order-total"><span>Final order value</span><strong>{formatMoney(selected.orderTotal,'INR')}</strong></div>
         <div className="advance"><span>Pay now via Razorpay · 20%</span><strong>{formatMoney(selected.advance,'INR')}</strong></div>
         <div><span>Balance on delivery</span><strong>{formatMoney(selected.codBalance,'INR')}</strong></div>
-        <small>COD handling: ₹40 minimum, or 2% of product value above ₹2,000. Advance: ₹100 minimum, or 10% of the final order value rounded to the nearest ₹10.</small>
+        <small>COD handling: ₹40 minimum, or 2% of product value above ₹2,000. Prepayment: 20% of the final order value; the remaining 80% is due on delivery.</small>
       </div>}
 
       <label className="partial-cod-consent">
