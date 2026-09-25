@@ -33,7 +33,8 @@ export function proxy(request) {
   // Keep framework assets and the calendar reminder route reachable.
   if (
     isPublicAsset(pathname) ||
-    pathname.startsWith('/coming-soon')
+    pathname.startsWith('/coming-soon') ||
+    pathname === '/api/playroom'
   ) {
     return NextResponse.next();
   }
