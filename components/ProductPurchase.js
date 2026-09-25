@@ -86,9 +86,8 @@ export default function ProductPurchase({product,initialVariantId,chooseSize=fal
         {recommendations?.completeLook?.length>0
           ? <CompleteLook product={product} mainVariant={variant} mainSelection={selected} items={recommendations.completeLook}/>
           : <section id="complete-look" className="complete-look section-wrap" aria-labelledby="complete-look-title" aria-busy={recommendationsLoading}>
-              <div className="section-head"><div><p className="eyebrow">PAIR WITH THIS PIECE</p><h2 id="complete-look-title" className="editorial">Complete the look.</h2></div><p className="muted small">{recommendationsLoading?'Finding pieces to pair with this item.':'Choose another AX piece to make it your own.'}</p></div>
-              {(recommendations?.preview?.length>0 || recommendations?.related?.length>0) && <div className="product-grid">{(recommendations.preview?.length?recommendations.preview:recommendations.related.slice(0,3)).map(item=><ProductCard key={item.handle} product={item}/>)}</div>}
-              {!recommendationsLoading && !recommendations?.preview?.length && !recommendations?.related?.length && <p className="muted small">More pieces are being added to the store. <Link href="/products">Explore all products →</Link></p>}
+              <div className="section-head"><div><p className="eyebrow">PAIR WITH THIS PIECE</p><h2 id="complete-look-title" className="editorial">Complete the look.</h2></div><p className="muted small">{recommendationsLoading?'Finding purchasable pieces to pair with this item.':'Complete the Look only shows pieces that can be added to your bag.'}</p></div>
+              {!recommendationsLoading && <p className="muted small">{recommendations?.preview?.length?'Product options are temporarily unavailable. ':'More pieces are being added to the store. '}<Link href="/products">Explore all products →</Link></p>}
             </section>}
       </div>
       {afterProductInfo && <div className="pdp-after-product-info">{afterProductInfo}</div>}
