@@ -8,9 +8,15 @@ on:
       - 'app/**'
       - 'components/**'
       - 'lib/**'
+      - 'scripts/lighthouse-budget.mjs'
       - 'next.config.js'
       - 'package*.json'
   workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Optional storefront URL override for this audit'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -23,15 +29,34 @@ jobs:
   lighthouse:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      AX_PERFORMANCE_BASE_URL: ${{ inputs.base_url || vars.AX_PERFORMANCE_BASE_URL || 'https://aqua-oyster-550932.hostingersite.com' }}
+      AX_PERFORMANCE_DEPLOY_WAIT_SECONDS: ${{ vars.AX_PERFORMANCE_DEPLOY_WAIT_SECONDS || '90' }}
+      AX_LH_MIN_PERF: ${{ vars.AX_LH_MIN_PERF || '80' }}
+      AX_LH_MAX_LCP_MS: ${{ vars.AX_LH_MAX_LCP_MS || '3500' }}
+      AX_LH_MAX_CLS: ${{ vars.AX_LH_MAX_CLS || '0.10' }}
+      AX_LH_MAX_TBT_MS: ${{ vars.AX_LH_MAX_TBT_MS || '300' }}
+      AX_LH_MAX_BYTES: ${{ vars.AX_LH_MAX_BYTES || '4500000' }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Audit live AX storefront
+        id: audit
         shell: bash
         run: |
           set -euo pipefail
-          BASE="https://aqua-oyster-550932.hostingersite.com"
+          BASE="${AX_PERFORMANCE_BASE_URL%/}"
+          BUDGET_FAILED=0
 
-          echo "Waiting for the Hostinger deployment to update..."
-          sleep 120
+          if [[ ! "${BASE}" =~ ^https:// ]]; then
+            echo "AX_PERFORMANCE_BASE_URL must be an https URL."
+            exit 1
+          fi
+
+          echo "Performance target: ${BASE}"
+          echo "Waiting ${AX_PERFORMANCE_DEPLOY_WAIT_SECONDS}s for the storefront deployment..."
+          sleep "${AX_PERFORMANCE_DEPLOY_WAIT_SECONDS}"
 
           wait_for_page() {
             label="$1"
@@ -89,7 +114,6 @@ jobs:
             tbt:a['total-blocking-time']?.displayValue,
             cls:a['cumulative-layout-shift']?.displayValue,
             speedIndex:a['speed-index']?.displayValue,
-            tti:a['interactive']?.displayValue,
             serverResponse:a['server-response-time']?.displayValue,
             transferSize:a['total-byte-weight']?.displayValue
           };
@@ -100,13 +124,11 @@ jobs:
             .sort((x,y)=>(y.savingsMs-x.savingsMs)||(y.savingsBytes-x.savingsBytes))
             .slice(0,10);
           console.log('AX_LIGHTHOUSE_FINDINGS '+JSON.stringify({page:label,findings}));
-          for(const id of ['uses-responsive-images','unused-javascript']){
-            const items=a[id]?.details?.items || [];
-            console.log('AX_LIGHTHOUSE_DETAIL '+JSON.stringify({page:label,id,items:items.slice(0,8).map(item=>({
-              url:item.url,wastedBytes:item.wastedBytes,totalBytes:item.totalBytes,node:item.node?.snippet
-            }))}));
-          }
           NODE
+
+            if ! node scripts/lighthouse-budget.mjs "${label}" "${output}"; then
+              BUDGET_FAILED=1
+            fi
           }
 
           resolve_product_path() {
@@ -135,9 +157,23 @@ jobs:
           }
 
           audit_page home "/"
-          sleep 15
+          sleep 10
           audit_page products "/products"
-          sleep 15
+          sleep 10
           PDP_PATH="$(resolve_product_path)"
           echo "Discovered live PDP for audit: ${PDP_PATH}"
           audit_page product-detail "${PDP_PATH}"
+
+          if [ "${BUDGET_FAILED}" -ne 0 ]; then
+            echo "One or more Lighthouse budgets failed."
+            exit 1
+          fi
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-${{ github.sha }}
+          path: lighthouse-*.json
+          if-no-files-found: ignore
+          retention-days: 14

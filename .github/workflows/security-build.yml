@@ -16,7 +16,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       AX_ALLOW_INDEXING: 'false'
       AX_STYLIST_ENABLED: 'false'
@@ -64,3 +64,22 @@ jobs:
 
       - name: Storefront smoke tests
         run: node scripts/smoke.mjs
+
+      - name: Install browser test tooling
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.55.0 @axe-core/playwright@4.10.2
+          npx playwright install --with-deps chromium
+
+      - name: Browser regression and accessibility tests
+        run: npm run test:e2e
+
+      - name: Upload browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-test-artifacts-${{ github.run_id }}
+          path: |
+            test-results
+            playwright-report
+          if-no-files-found: ignore
+          retention-days: 7
