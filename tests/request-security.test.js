@@ -11,6 +11,11 @@ test('same-origin guard accepts AX and rejects cross-site requests',()=>{
  assert.equal(sameOriginRequest(bad,'https://axstore.in'),false);
 });
 
+test('same-origin guard accepts public AX origin behind an internal reverse-proxy URL',()=>{
+ const proxied=new Request('http://127.0.0.1:3000/api/playroom',{method:'POST',headers:{origin:'https://axstore.in','sec-fetch-site':'same-origin'}});
+ assert.equal(sameOriginRequest(proxied,'https://axstore.in'),true);
+});
+
 test('limited JSON reader enforces type and byte limit',async()=>{
  const good=new Request('https://axstore.in/api/cart',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'create'})});
  assert.deepEqual(await readLimitedJson(good,100),{action:'create'});

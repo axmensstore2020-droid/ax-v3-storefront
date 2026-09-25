@@ -24,7 +24,13 @@ export async function GET(request){
 
 export async function POST(request){
   const requestOrigin=new URL(request.url).origin,configuredOrigin=process.env.AX_SITE_ORIGIN;
-  const originAllowed=(configuredOrigin&&sameOriginRequest(request,configuredOrigin))||sameOriginRequest(request,requestOrigin);
+  const allowedOrigins=[
+    configuredOrigin,
+    'https://axstore.in',
+    'https://www.axstore.in',
+    process.env.NODE_ENV!=='production'?requestOrigin:null
+  ].filter(Boolean);
+  const originAllowed=allowedOrigins.some(origin=>sameOriginRequest(request,origin));
   if(!originAllowed)return json({ok:false,error:'Please use the AX store.'},403);
   const guard=reservePlayroomBurst(request,{limit:20,windowMs:60_000});
   if(!guard.allowed)return json({ok:false,error:'Too many Playroom requests. Try again shortly.'},429,guard);
