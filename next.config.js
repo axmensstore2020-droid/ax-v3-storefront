@@ -1,13 +1,14 @@
 const production = process.env.NODE_ENV === 'production';
 const metaPixelConfigured=/^\d{5,30}$/.test(String(process.env.META_PIXEL_ID || '').trim());
+const googleAnalyticsConfigured=/^G-[A-Z0-9]{6,20}$/.test(String(process.env.GOOGLE_ANALYTICS_ID || 'G-G5KHHPKQ3T').trim());
 
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${production ? '' : " 'unsafe-eval'"}${metaPixelConfigured ? ' https://connect.facebook.net' : ''}`,
+  `script-src 'self' 'unsafe-inline'${production ? '' : " 'unsafe-eval'"}${metaPixelConfigured ? ' https://connect.facebook.net' : ''}${googleAnalyticsConfigured ? ' https://www.googletagmanager.com' : ''}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  `connect-src 'self'${metaPixelConfigured ? ' https://www.facebook.com https://connect.facebook.net' : ''}${production ? '' : ' ws: http: https:'}`,
+  `connect-src 'self'${metaPixelConfigured ? ' https://www.facebook.com https://connect.facebook.net' : ''}${googleAnalyticsConfigured ? ' https://www.google-analytics.com https://region1.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com' : ''}${production ? '' : ' ws: http: https:'}`,
   "media-src 'self' blob: https:",
   "object-src 'none'",
   "base-uri 'self'",

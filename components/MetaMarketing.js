@@ -52,26 +52,26 @@ export function trackMarketingEvent(eventName,customData={}){
  return id;
 }
 
-export default function MetaMarketing({pixelId='',capiEnabled=false,analyticsEnabled=false}){
+export default function MetaMarketing({pixelId='',capiEnabled=false,analyticsEnabled=false,googleAnalyticsId=''}){
  const pathname=usePathname();
  const [consent,setConsent]=useState('');
  const [open,setOpen]=useState(false);
  const lastPath=useRef('');
  useEffect(()=>{
-  if(!pixelId&&!analyticsEnabled)return;
+  if(!pixelId&&!analyticsEnabled&&!googleAnalyticsId)return;
   const current=currentConsent();setConsent(current);setOpen(!current);
   window.__axMarketingAvailable=true;window.__axMetaCapiEnabled=Boolean(capiEnabled);
   const reopen=()=>setOpen(true);window.addEventListener('ax:open-marketing-preferences',reopen);
   window.dispatchEvent(new Event('ax:marketing-ready'));
   return()=>window.removeEventListener('ax:open-marketing-preferences',reopen);
- },[pixelId,capiEnabled,analyticsEnabled]);
+ },[pixelId,capiEnabled,analyticsEnabled,googleAnalyticsId]);
  useEffect(()=>{if(pixelId&&consent===MARKETING_GRANTED)ensurePixel(pixelId);},[pixelId,consent]);
  useEffect(()=>{
   if(!pixelId||consent!==MARKETING_GRANTED||!pathname||lastPath.current===pathname)return;
   lastPath.current=pathname;trackMarketingEvent('PageView');
  },[pathname,pixelId,consent]);
- if((!pixelId&&!analyticsEnabled)||!open)return null;
- const choose=value=>{writeConsent(value);if(value===MARKETING_GRANTED)lastPath.current='';setConsent(value);setOpen(false);if(value===MARKETING_GRANTED&&pixelId)ensurePixel(pixelId);};
+ if((!pixelId&&!analyticsEnabled&&!googleAnalyticsId)||!open)return null;
+ const choose=value=>{writeConsent(value);if(value===MARKETING_GRANTED)lastPath.current='';setConsent(value);setOpen(false);if(value===MARKETING_GRANTED&&pixelId)ensurePixel(pixelId);window.dispatchEvent(new Event('ax:marketing-consent-changed'));};
  return <aside className="marketing-consent" role="dialog" aria-label="Marketing cookie choices" aria-live="polite">
   <div><strong>Your privacy choices.</strong><p>Optional analytics and marketing cookies help AX understand site performance, product discovery and which promotions lead to visits or purchases. You can accept them or keep only essential cookies.</p><Link href="/policies">Privacy details</Link></div>
   <div className="marketing-consent-actions"><button type="button" className="underlined-link" onClick={()=>choose(MARKETING_DENIED)}>ONLY ESSENTIAL</button><button type="button" className="solid-button" onClick={()=>choose(MARKETING_GRANTED)}>ACCEPT MARKETING</button>{consent&&<button type="button" className="marketing-close" onClick={()=>setOpen(false)} aria-label="Close marketing preferences">Close</button>}</div>
