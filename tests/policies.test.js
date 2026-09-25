@@ -14,24 +14,33 @@ test('service providers are disclosed inside privacy instead of a standalone pol
  assert.equal(byKey['service-providers'],undefined);
  assert.match(byKey['privacy-policy'].body,/Service providers and third-party processing/i);
  assert.match(byKey['privacy-policy'].body,/OpenAI/);
+ assert.match(byKey['privacy-policy'].body,/Google Analytics/);
  assert.match(byKey['privacy-policy'].body,/Meta Platforms/);
 });
 
 test('AX policies use the confirmed support and NSR fulfilment details',()=>{
  const combined=axLegalPolicies.map(policy=>policy.body).join('\n');
  assert.match(combined,/contact@axstore\.in/);
- assert.match(combined,/\+91 89030 44818/);
+ assert.match(combined,/@axmensstore/);
+ assert.doesNotMatch(combined,/\+91 89030 44818/);
  assert.match(combined,/NSR Rd, Saibaba Colony/);
  assert.match(byKey['contact-information'].body,/Muhammed Nihal AP/);
  assert.match(byKey['contact-information'].body,/48 hours/);
  assert.match(byKey['contact-information'].body,/one month/);
 });
 
-test('returns and shipping rules preserve mandatory consumer remedies',()=>{
+test('returns and shipping rules match the current AX operating policy',()=>{
  assert.match(byKey['refund-policy'].body,/7 days/);
  assert.match(byKey['refund-policy'].body,/original payment method/i);
- assert.match(byKey['shipping-policy'].body,/1 business day/);
- assert.match(byKey['shipping-policy'].body,/3–7 days/);
- assert.match(byKey['shipping-policy'].body,/5–9 days/);
+ assert.match(byKey['refund-policy'].body,/not paid in cash/i);
+ assert.match(byKey['refund-policy'].body,/International orders.*not eligible for ordinary return or exchange/is);
+ assert.match(byKey['shipping-policy'].body,/before 10:00 AM IST/i);
+ assert.match(byKey['shipping-policy'].body,/at or after 10:00 AM IST/i);
+ assert.match(byKey['shipping-policy'].body,/including Sunday/i);
+ assert.match(byKey['shipping-policy'].body,/Standard/);
+ assert.match(byKey['shipping-policy'].body,/Express/);
+ assert.match(byKey['shipping-policy'].body,/above ₹2,000/);
+ assert.match(byKey['shipping-policy'].body,/₹40 or 2% of the product bill value, whichever is higher/i);
+ assert.match(byKey['shipping-policy'].body,/does not require a Partial COD booking advance/i);
  assert.match(byKey['refund-policy'].body,/cannot lawfully be excluded/i);
 });
