@@ -263,7 +263,7 @@ export default function ComingSoonClient() {
               </div>
               <p>27 September 2026 · 12:00 PM IST. The calendar file includes a 15-minute reminder.</p>
               <div className={styles.calendarOptions}>
-                <a href={GOOGLE_CALENDAR} target="_blank" rel="noreferrer">
+                <a href={GOOGLE_CALENDAR} target="_blank" rel="noopener noreferrer">
                   <span>GOOGLE CALENDAR</span><span>↗</span>
                 </a>
                 <a href="/coming-soon/launch.ics">
