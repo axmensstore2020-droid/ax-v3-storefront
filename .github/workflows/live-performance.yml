@@ -39,7 +39,7 @@ jobs:
       AX_LH_MAX_BYTES: ${{ vars.AX_LH_MAX_BYTES || '4500000' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Audit live AX storefront
         id: audit
