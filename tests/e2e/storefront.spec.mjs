@@ -72,7 +72,7 @@ test('PDP requires a size and Add to Bag persists into the drawer',async({page})
   await expect(bag).toBeVisible();
   await expect(bag.getByText('Premium Long Sleeve Polo',{exact:true})).toBeVisible();
   await expect(bag.getByText(/Size: M/)).toBeVisible();
-  await expect(bag.getByText('1',{exact:true})).toBeVisible();
+  await expect(bag.locator('.quantity span')).toHaveText('1');
 });
 
 for(const [name,path] of [['home','/'],['catalog','/products'],['product',PDP]]){
