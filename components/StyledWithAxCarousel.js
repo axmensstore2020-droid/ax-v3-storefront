@@ -300,7 +300,7 @@ export default function StyledWithAxCarousel({items=[]}) {
       <div className="styled-with-ax-media" style={{'--ax-aspect':String(item.aspect || .75)}}>
        <ProductImage src={item.src} alt={item.alt || item.title || 'Styled with AX'} sizes="(max-width:700px) 34vw, 240px"/>
       </div>
-      <div className="styled-with-ax-meta"><span>{item.label || 'STYLED WITH AX'}</span>{item.title && <span>{item.title}</span>}</div>
+      <div className="styled-with-ax-meta"><span>{item.label || 'STYLED WITH AX'}</span>{item.title && <span>{item.title}</span>}{item.credit && <span className="styled-with-ax-credit">{item.credit}</span>}</div>
      </>;
 
      return item.href
