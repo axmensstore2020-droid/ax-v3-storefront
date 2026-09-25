@@ -22,7 +22,7 @@
 .brand{display:flex;align-items:center;gap:22px}
 .brand img{display:block;width:62px;height:auto}
 .brand span{padding-left:21px;border-left:1px solid #c8ccc1;font-size:9px;line-height:1.5;letter-spacing:.16em;text-transform:uppercase}
-.calendarLink{border:0;background:transparent;color:var(--ink);font:500 9px/1 inherit;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 0}
+.calendarLink{border:0;background:transparent;color:var(--ink);font:inherit;font-size:9px;font-weight:500;line-height:1;letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 0}
 .calendarLink span{font-size:14px;transition:transform .2s}
 .calendarLink:hover span{transform:translate(2px,-2px)}
 .hero{position:relative;z-index:2;min-height:calc(100svh - 300px);display:grid;grid-template-columns:minmax(0,1fr) minmax(390px,.78fr);gap:clamp(32px,7vw,110px);align-items:center;padding:clamp(44px,6vw,86px) clamp(20px,5.2vw,80px) 42px}
@@ -35,7 +35,7 @@
 .lede{max-width:480px;margin:25px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
 .lede strong{color:var(--ink);font-weight:500}
 .actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:31px}
-.primaryButton,.secondaryButton{min-height:54px;border-radius:11px;padding:0 19px;font:500 10px/1 inherit;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:space-between;gap:24px;transition:transform .25s,background .25s,border-color .25s}
+.primaryButton,.secondaryButton{min-height:54px;border-radius:11px;padding:0 19px;font:inherit;font-size:10px;font-weight:500;line-height:1;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:space-between;gap:24px;transition:transform .25s,background .25s,border-color .25s}
 .primaryButton{border:1px solid var(--ink);background:var(--ink);color:var(--white)}
 .primaryButton:hover{transform:translateY(-2px);background:#39432f;border-color:#39432f}
 .primaryButton:disabled{opacity:.55;cursor:wait;transform:none}
