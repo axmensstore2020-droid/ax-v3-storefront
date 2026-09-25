@@ -109,13 +109,13 @@ export default async function Home() {
    <StyledWithAxCarousel items={styledWithAx}/>
    <div className="styled-with-ax-socials" aria-label="AX social accounts">
     <a href="https://www.instagram.com/axmensstore/" target="_blank" rel="noreferrer" aria-label="AX on Instagram" title="Instagram">
-     <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+     <img src="https://cdn.simpleicons.org/instagram/171717" alt="" aria-hidden="true" loading="lazy"/>
     </a>
     <a href="https://www.threads.net/@axmensstore" target="_blank" rel="noreferrer" aria-label="AX on Threads" title="Threads">
-     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c-4.8 0-8 3.2-8 8.5 0 5 3 8.5 8 8.5 4.2 0 7-2.2 7-5.6 0-2.7-1.8-4.5-4.7-4.5-2.5 0-4.3 1.3-4.3 3.3 0 1.8 1.4 3 3.3 3 2.7 0 4.4-1.9 4.4-4.7 0-4.6-2.1-8.5-6-8.5-3.3 0-5.3 2.1-5.3 5.2"/></svg>
+     <img src="https://cdn.simpleicons.org/threads/171717" alt="" aria-hidden="true" loading="lazy"/>
     </a>
     <a href="https://www.facebook.com/axmensstore" target="_blank" rel="noreferrer" aria-label="AX on Facebook" title="Facebook">
-     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h3V4.5c-.5-.1-1.8-.2-3.4-.2-3.4 0-5.6 2-5.6 5.8V13H4v4h4v7h5v-7h3.4l.6-4H13v-2.5C13 9.3 13.4 8 14 8z"/></svg>
+     <img src="https://cdn.simpleicons.org/facebook/171717" alt="" aria-hidden="true" loading="lazy"/>
     </a>
    </div>
   </section>}
