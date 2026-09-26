@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import {STORE_PREVIEW_COOKIE,storePreviewTokenValid} from './lib/store-preview.js';
 
 const AX_HOSTS = new Set(['axstore.in', 'www.axstore.in']);
 const LAUNCH_AT_MS = Date.parse('2026-10-01T10:30:00.000Z'); // Thursday, 1 October 2026, 4:00 PM IST
@@ -35,8 +36,15 @@ export function proxy(request) {
     isPublicAsset(pathname) ||
     pathname.startsWith('/coming-soon') ||
     pathname === '/api/playroom' ||
-    pathname === '/api/launch/events'
+    pathname === '/api/launch/events' ||
+    pathname === '/api/store-preview'
   ) {
+    return NextResponse.next();
+  }
+
+  // A short-lived, encrypted owner preview cookie bypasses only the prelaunch rewrite.
+  const previewToken=request.cookies.get(STORE_PREVIEW_COOKIE)?.value||'';
+  if(storePreviewTokenValid(previewToken)){
     return NextResponse.next();
   }
 
