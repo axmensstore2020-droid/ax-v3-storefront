@@ -34,7 +34,8 @@ export function proxy(request) {
   if (
     isPublicAsset(pathname) ||
     pathname.startsWith('/coming-soon') ||
-    pathname === '/api/playroom'
+    pathname === '/api/playroom' ||
+    pathname === '/api/launch/events'
   ) {
     return NextResponse.next();
   }
