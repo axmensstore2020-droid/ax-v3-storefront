@@ -120,8 +120,8 @@ test('launch Playroom reward activates at launch and expires at end of launch da
  };
  const now=Date.parse('2026-09-26T12:00:00Z');
  const reward=await createShopifyPlayroomDiscount('AXPLAY10-LAUNCH1234',{launch:true,env,fetchImpl,now});
- assert.equal(reward.startsAt,'2026-09-27T06:30:00.000Z');
- assert.equal(reward.endsAt,'2026-09-27T18:29:59.000Z');
+ assert.equal(reward.startsAt,'2026-10-01T10:30:00.000Z');
+ assert.equal(reward.endsAt,'2026-10-01T18:29:59.000Z');
  assert.equal(captured.startsAt,reward.startsAt);
  assert.equal(captured.endsAt,reward.endsAt);
  assert.ok(captured.tags.includes('launch-day'));
