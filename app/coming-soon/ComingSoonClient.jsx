@@ -110,7 +110,7 @@ export default function ComingSoonClient(){
           </h1>
           <p className={styles.lede}>
             AX goes live Sunday at 12:00 PM IST.<br/>
-            Beat AX before launch and unlock <strong>10% off for launch day.</strong>
+            Beat AX in a best-of-three match and unlock <strong>10% off for launch day.</strong>
           </p>
 
           <div className={styles.actions}>
@@ -150,10 +150,10 @@ export default function ComingSoonClient(){
         </div>
         <i/>
         <div className={styles.reward}>
-          <span className={styles.rewardNumber}>1<small>×</small></span>
-          <p><strong>First draw</strong>One Bonus Round.</p>
+          <span className={styles.rewardNumber}>3</span>
+          <p><strong>Best of three</strong>First to 2 wins.</p>
         </div>
-        <div className={styles.rewardNote}>WIN 10% · FIRST DRAW UNLOCKS ONE BONUS ROUND</div>
+        <div className={styles.rewardNote}>BEST OF 3 · FIRST TO 2 WINS · UNLOCK 10%</div>
       </section>
 
       <section className={styles.countdownSection} aria-label={isLive?'AX is live':'Countdown to AX launch'}>

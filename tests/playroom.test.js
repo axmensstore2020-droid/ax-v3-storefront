@@ -29,15 +29,15 @@ function replayState(first,moves){
  return {board,turn,result:playroomOutcome(board)};
 }
 
-function findOutcomeRound(first,seed,target,moves=[]){
+function findOutcomeRound(first,seed,target,moves=[],friendly=false){
  const state=replayState(first,moves);
  if(state.result)return state.result.winner===target?moves:null;
  if(state.turn==='X'){
-  const index=nextPlayroomAxMove({first,moves,seed});
-  return findOutcomeRound(first,seed,target,[...moves,index]);
+  const index=nextPlayroomAxMove({first,moves,seed,friendly});
+  return findOutcomeRound(first,seed,target,[...moves,index],friendly);
  }
  for(const index of playroomEmpty(state.board)){
-  const found=findOutcomeRound(first,seed,target,[...moves,index]);
+  const found=findOutcomeRound(first,seed,target,[...moves,index],friendly);
   if(found)return found;
  }
  return null;
@@ -140,6 +140,53 @@ test('settled Playroom result maps to the verified board outcome',async()=>{
  if(expected==='loss')assert.ok(Date.parse(settled.nextEligibleAt)>now);
 });
 
+
+test('launch Playroom requires two verified wins before issuing the 10 percent reward',async()=>{
+ const now=Date.parse('2026-09-26T12:00:00Z');
+ let creates=0;
+ const fetchImpl=async()=>{creates+=1;return Response.json({data:{discountCodeBasicCreate:{codeDiscountNode:{id:'gid://shopify/DiscountCodeNode/launch-bo3'},userErrors:[]}}});};
+ const first=createPlayroomRound('O',{launch:true,env,now});
+ const firstMoves=findOutcomeRound('O',first.seed,'O',[],true);
+ assert.ok(firstMoves);
+ const firstSettled=await settlePlayroomRound(first.token,firstMoves,{env,fetchImpl,now:now+60_000});
+ assert.equal(firstSettled.matchComplete,false);
+ assert.equal(firstSettled.series.you,1);
+ assert.equal(firstSettled.series.ax,0);
+ assert.equal(firstSettled.rewardCode,null);
+ assert.ok(firstSettled.seriesToken);
+ assert.equal(creates,0);
+ const secondNow=now+120_000;
+ const second=createPlayroomRound('O',{launch:true,env,now:secondNow});
+ const secondMoves=findOutcomeRound('O',second.seed,'O',[],true);
+ assert.ok(secondMoves);
+ const secondSettled=await settlePlayroomRound(second.token,secondMoves,{seriesToken:firstSettled.seriesToken,env,fetchImpl,now:secondNow+60_000});
+ assert.equal(secondSettled.matchComplete,true);
+ assert.equal(secondSettled.matchOutcome,'win');
+ assert.equal(secondSettled.series.you,2);
+ assert.match(secondSettled.rewardCode,/^AXPLAY10-[A-F0-9]{10}$/);
+ assert.equal(creates,1);
+});
+
+test('launch Playroom draw awards no point and no bonus round',async()=>{
+ const now=Date.parse('2026-09-26T12:00:00Z');
+ let found=null;
+ for(let index=0;index<120&&!found;index++){
+  const seed='launch-draw-'+index;
+  const moves=findOutcomeRound('O',seed,'draw',[],true);
+  if(moves)found={seed,moves};
+ }
+ assert.ok(found);
+ const token=sealEncryptedToken({kind:'playroom-game',first:'O',seed:found.seed,nonce:'1234567890abcdef',bonus:false,launch:true,iat:now,exp:now+20*60*1000},env.AX_PLAYROOM_SECRET,'pxg1');
+ const settled=await settlePlayroomRound(token,found.moves,{env,now:now+60_000});
+ assert.equal(settled.outcome,'draw');
+ assert.equal(settled.matchComplete,false);
+ assert.equal(settled.series.you,0);
+ assert.equal(settled.series.ax,0);
+ assert.equal(settled.series.draws,1);
+ assert.equal(settled.bonusAvailable,false);
+ assert.equal(settled.bonusToken,null);
+ assert.equal(settled.nextEligibleAt,null);
+});
 
 test('first draw grants exactly one signed Bonus Round and no immediate cooldown',async()=>{
  const now=Date.parse('2026-09-23T12:00:00Z'),{seed,moves}=findDrawSeed();

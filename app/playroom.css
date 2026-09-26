@@ -94,12 +94,12 @@
 
 /* Launch-only polish: keep the Playroom neutral and reserve neon for "move." and the 10% reward. */
 .ax-xo-modal.launch-mode .ax-xo-editorial h1 em{
- color:#b8ff19;
- text-shadow:0 0 26px rgba(184,255,25,.16);
+ color:#9fd34f;
+ text-shadow:0 0 26px rgba(159,211,79,.16);
 }
 .ax-xo-modal.launch-mode .ax-xo-neon-reward{
- color:#b8ff19;
- text-shadow:0 0 20px rgba(184,255,25,.13);
+ color:#9fd34f;
+ text-shadow:0 0 20px rgba(159,211,79,.13);
 }
 
 /* Premium verified-win popup treatment for launch mode. */
@@ -153,8 +153,8 @@
 }
 .ax-xo-result-stage.premium-win .ax-xo-ticket-percent b,
 .ax-xo-result-stage.premium-win .ax-xo-ticket-percent small{
- color:#b8ff19;
- text-shadow:0 0 18px rgba(184,255,25,.14);
+ color:#9fd34f;
+ text-shadow:0 0 18px rgba(159,211,79,.14);
 }
 .ax-xo-result-stage.premium-win .ax-xo-ticket-percent>span,
 .ax-xo-result-stage.premium-win .ax-xo-ticket-info p{
