@@ -6,12 +6,12 @@ import AXPlayroom from '../../components/AXPlayroom';
 import {trackLaunchEvent} from '../../lib/launch-analytics';
 import styles from './comingSoon.module.css';
 
-const LAUNCH_AT=new Date('2026-09-27T06:30:00.000Z');
+const LAUNCH_AT=new Date('2026-10-01T10:30:00.000Z');
 const GOOGLE_CALENDAR=
   'https://calendar.google.com/calendar/render?action=TEMPLATE'+
   '&text='+encodeURIComponent('AX Store — Going Live')+
-  '&dates=20260927T063000Z/20260927T073000Z'+
-  '&details='+encodeURIComponent('AX goes live Sunday at 12:00 PM IST. Beat AX before launch and unlock 10% off for launch day. https://axstore.in')+
+  '&dates=20261001T103000Z/20261001T113000Z'+
+  '&details='+encodeURIComponent('AX goes live Thursday, 1 October at 4:00 PM IST. Beat AX before launch and unlock 10% off for launch day. https://axstore.in')+
   '&location='+encodeURIComponent('https://axstore.in');
 
 function getCountdown(now){
@@ -97,7 +97,7 @@ export default function ComingSoonClient(){
           transition={{duration:.45}}
         >
           <img src="/ax-logo-160.webp" alt="AX"/>
-          <span>WEBSITE LAUNCH<br/>SUNDAY · 12 PM</span>
+          <span>WEBSITE LAUNCH<br/>01 OCT · 4 PM</span>
         </motion.div>
         <button className={styles.calendarLink} type="button" onClick={()=>openCalendar('header')}>
           MARK YOUR CALENDARS <span>↗</span>
@@ -117,7 +117,7 @@ export default function ComingSoonClient(){
             <span className={styles.script}>move.</span>
           </h1>
           <p className={styles.lede}>
-            AX goes live Sunday at 12:00 PM IST.<br/>
+            AX goes live Thursday, 1 October at 4:00 PM IST.<br/>
             Beat AX in a best-of-three match and unlock <strong>10% off for launch day.</strong>
           </p>
 
@@ -167,7 +167,7 @@ export default function ComingSoonClient(){
       <section className={styles.countdownSection} aria-label={isLive?'AX is live':'Countdown to AX launch'}>
         <div className={styles.countdownTop}>
           <span>TIME UNTIL AX GOES LIVE</span>
-          <span>SUNDAY · 12:00 PM IST</span>
+          <span>01 OCT · 4:00 PM IST</span>
         </div>
         {isLive?(
           <div className={styles.liveMessage}>WE&apos;RE LIVE.</div>
@@ -183,8 +183,8 @@ export default function ComingSoonClient(){
 
       <footer className={styles.footer}>
         <span>AX / COIMBATORE</span>
-        <strong>BEAT AX · WIN 10% · SEE YOU SUNDAY</strong>
-        <span>27 · 09 · 2026</span>
+        <strong>BEAT AX · WIN 10% · SEE YOU 1 OCT</strong>
+        <span>01 · 10 · 2026</span>
       </footer>
 
       {playOpen&&<AXPlayroom initialStatus={playStatus} launchMode/>}
@@ -216,7 +216,7 @@ export default function ComingSoonClient(){
                 </div>
                 <button type="button" onClick={()=>setCalendarOpen(false)} aria-label="Close calendar options">×</button>
               </div>
-              <p>Sunday, 27 September 2026 · 12:00 PM IST. The calendar file includes a 15-minute reminder.</p>
+              <p>Thursday, 1 October 2026 · 4:00 PM IST. The calendar file includes a 15-minute reminder.</p>
               <div className={styles.calendarOptions}>
                 <a href={GOOGLE_CALENDAR} target="_blank" rel="noopener noreferrer" onClick={()=>trackLaunchEvent('launch_calendar_click',{metadata:{source:'calendar-sheet',provider:'google'}})}><span>GOOGLE CALENDAR</span><span>↗</span></a>
                 <a href="/coming-soon/launch.ics" onClick={()=>trackLaunchEvent('launch_calendar_click',{metadata:{source:'calendar-sheet',provider:'ics'}})}><span>APPLE / OUTLOOK / .ICS</span><span>↓</span></a>

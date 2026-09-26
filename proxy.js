@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 const AX_HOSTS = new Set(['axstore.in', 'www.axstore.in']);
-const LAUNCH_AT_MS = Date.parse('2026-09-27T06:30:00.000Z'); // Sunday, 12:00 PM IST
+const LAUNCH_AT_MS = Date.parse('2026-10-01T10:30:00.000Z'); // Thursday, 1 October 2026, 4:00 PM IST
 
 function isPublicAsset(pathname) {
   return (
@@ -23,7 +23,7 @@ export function proxy(request) {
     return NextResponse.next();
   }
 
-  // At exactly Sunday 12:00 PM IST, axstore.in automatically opens the V3 store.
+  // At exactly Thursday, 1 October 2026 at 4:00 PM IST, axstore.in automatically opens the V3 store.
   if (Date.now() >= LAUNCH_AT_MS) {
     return NextResponse.next();
   }
