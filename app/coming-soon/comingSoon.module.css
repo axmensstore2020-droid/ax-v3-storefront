@@ -31,7 +31,7 @@
 .eyebrow:before{content:"";width:24px;height:1px;background:var(--sage-dark)}
 .copy h1{margin:0;font-size:clamp(82px,10vw,164px);line-height:.82;letter-spacing:-.075em;font-weight:500}
 .copy h1>span{display:block}
-.script{font:italic 1.23em/.85 Georgia,"Times New Roman",serif;letter-spacing:-.055em;padding-right:.08em;color:#b8ff19;text-shadow:0 0 28px rgba(184,255,25,.16)}
+.script{font:italic 1.23em/.85 Georgia,"Times New Roman",serif;letter-spacing:-.055em;padding-right:.08em;color:#9fd34f;text-shadow:0 0 28px rgba(159,211,79,.16)}
 .lede{max-width:480px;margin:25px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
 .lede strong{color:var(--ink);font-weight:500}
 .actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:31px}
@@ -54,7 +54,7 @@
 .rewardRail{position:relative;z-index:2;margin:0 clamp(20px,5.2vw,80px);padding:18px 0;border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);display:flex;align-items:center;gap:30px}
 .reward{display:flex;align-items:center;gap:12px}
 .rewardRail>i{width:1px;height:46px;background:var(--hairline)}
-.rewardNumber{font-size:34px;line-height:1;font-weight:500;letter-spacing:-.06em}.rewardNeon{color:#b8ff19;text-shadow:0 0 22px rgba(184,255,25,.14)}
+.rewardNumber{font-size:34px;line-height:1;font-weight:500;letter-spacing:-.06em}.rewardNeon{color:#9fd34f;text-shadow:0 0 22px rgba(159,211,79,.14)}
 .rewardNumber small{font-size:18px}
 .reward p{margin:0;font-size:9px;line-height:1.55;color:var(--muted)}
 .reward p strong{display:block;color:var(--ink);font-weight:500}
