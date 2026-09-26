@@ -17,13 +17,15 @@ const cookieOptions={
   secure:process.env.NODE_ENV==='production'
 };
 
-function redirectHome(request){
-  return NextResponse.redirect(new URL('/',request.url),303);
+function redirectHome(){
+  // Hostinger forwards requests to Next.js through an internal 0.0.0.0:3000 origin.
+  // Always send the browser back to the public AX origin instead of request.url.
+  return NextResponse.redirect('https://axstore.in/',303);
 }
 
 export async function GET(request){
   const url=new URL(request.url);
-  const response=redirectHome(request);
+  const response=redirectHome();
   response.headers.set('Cache-Control','no-store, max-age=0');
   response.headers.set('Referrer-Policy','no-referrer');
 
