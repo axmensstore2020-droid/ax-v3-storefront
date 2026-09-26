@@ -19,17 +19,17 @@ export default function AXPlayroom({initialStatus=null,launchMode=false}){
  const [line,setLine]=useState([]);
  const [lastMove,setLastMove]=useState(-1);
  const [rounds,setRounds]=useState(0);
- const [scores,setScores]=useState({O:0,X:0,draw:0});
+ const [scores,setScores]=useState({O:Number(initialStatus?.series?.you)||0,X:Number(initialStatus?.series?.ax)||0,draw:Number(initialStatus?.series?.draws)||0});
  const [result,setResult]=useState(null);
  const [thinking,setThinking]=useState(false);
  const [starting,setStarting]=useState(false);
- const [bonusRound,setBonusRound]=useState(Boolean(initialStatus?.bonusAvailable));
+ const [bonusRound,setBonusRound]=useState(launchMode?false:Boolean(initialStatus?.bonusAvailable));
  const [showRules,setShowRules]=useState(false);
  const [toast,setToast]=useState('');
  const [motionOn,setMotionOn]=useState(true);
  const [soundOn,setSoundOn]=useState(false);
  const [focusCell,setFocusCell]=useState(4);
- const [settlement,setSettlement]=useState({state:'idle',outcome:null,bonusAvailable:false,rewardCode:null,rewardEndsAt:null,nextEligibleAt:null,error:''});
+ const [settlement,setSettlement]=useState({state:'idle',outcome:null,matchComplete:false,matchOutcome:null,series:initialStatus?.series||null,bonusAvailable:false,rewardCode:null,rewardEndsAt:null,nextEligibleAt:null,error:''});
  const cells=useRef([]);
  const endTimer=useRef(null);
  const audioRef=useRef(null);
@@ -89,13 +89,13 @@ export default function AXPlayroom({initialStatus=null,launchMode=false}){
   if(phase!=='choose'||starting)return;
   setStarting(true);setToast('');
   try{
-   const response=await fetch('/api/playroom',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'start',first:mark,bonus:bonusRound,launch:launchMode})});
+   const response=await fetch('/api/playroom',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'start',first:mark,bonus:launchMode?false:bonusRound,launch:launchMode})});
    const data=await response.json().catch(()=>null);
    if(!response.ok||!data?.ok)throw new Error(data?.error||'The Playroom round could not start.');
-   setBonusRound(Boolean(data.bonus));
+   setBonusRound(launchMode?false:Boolean(data.bonus));
    if(endTimer.current)window.clearTimeout(endTimer.current);
    movesRef.current=[];settledRef.current=false;
-   setSettlement({state:'idle',outcome:null,bonusAvailable:false,rewardCode:null,rewardEndsAt:null,nextEligibleAt:null,error:''});
+   setSettlement({state:'idle',outcome:null,matchComplete:false,matchOutcome:null,series:settlement.series||initialStatus?.series||null,bonusAvailable:false,rewardCode:null,rewardEndsAt:null,nextEligibleAt:null,error:''});
    setRounds(value=>value+1);setBoard(Array(9).fill(''));setLine([]);setLastMove(-1);setResult(null);setPhase('playing');setFocusCell(4);playSound('place');setTurn(mark);
   }catch(error){
    setToast(error.message||'The Playroom round could not start.');
@@ -124,13 +124,14 @@ export default function AXPlayroom({initialStatus=null,launchMode=false}){
 
  async function settle(nextMoves,nextOutcome){
   const expected=outcomeName(nextOutcome.winner);
-  setSettlement({state:'loading',outcome:expected,bonusAvailable:false,rewardCode:null,rewardEndsAt:null,nextEligibleAt:null,error:''});
+  setSettlement(current=>({state:'loading',outcome:expected,matchComplete:false,matchOutcome:null,series:current.series||null,bonusAvailable:false,rewardCode:null,rewardEndsAt:null,nextEligibleAt:null,error:''}));
   try{
    const response=await fetch('/api/playroom',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'finish',moves:nextMoves})});
    const data=await response.json().catch(()=>null);
    if(!response.ok||!data?.ok)throw new Error(data?.error||'Your Playroom result could not be verified.');
    if(data.outcome!==expected)throw new Error('Your Playroom result could not be verified.');
-   setSettlement({state:'ready',outcome:data.outcome,bonusAvailable:Boolean(data.bonusAvailable),rewardCode:data.rewardCode||null,rewardEndsAt:data.rewardEndsAt||null,nextEligibleAt:data.nextEligibleAt||null,error:''});
+   if(launchMode&&data.series)setScores({O:Number(data.series.you)||0,X:Number(data.series.ax)||0,draw:Number(data.series.draws)||0});
+   setSettlement({state:'ready',outcome:data.outcome,matchComplete:Boolean(data.matchComplete),matchOutcome:data.matchOutcome||null,series:data.series||null,bonusAvailable:launchMode?false:Boolean(data.bonusAvailable),rewardCode:data.rewardCode||null,rewardEndsAt:data.rewardEndsAt||null,nextEligibleAt:data.nextEligibleAt||null,error:''});
   }catch(error){
    setSettlement(current=>({...current,state:'error',error:error.message||'Your result could not be verified.'}));
   }
@@ -143,9 +144,9 @@ export default function AXPlayroom({initialStatus=null,launchMode=false}){
 
  function resetRound(asBonus=false){
   if(endTimer.current)window.clearTimeout(endTimer.current);
-  movesRef.current=[];settledRef.current=false;setBonusRound(Boolean(asBonus));
+  movesRef.current=[];settledRef.current=false;setBonusRound(launchMode?false:Boolean(asBonus));
   setBoard(Array(9).fill(''));setPhase('choose');setTurn('');setLine([]);setLastMove(-1);setResult(null);setThinking(false);setFocusCell(4);
-  setSettlement({state:'idle',outcome:null,bonusAvailable:false,rewardCode:null,rewardEndsAt:null,nextEligibleAt:null,error:''});
+  setSettlement(current=>({state:'idle',outcome:null,matchComplete:false,matchOutcome:null,series:current.series||null,bonusAvailable:false,rewardCode:null,rewardEndsAt:null,nextEligibleAt:null,error:''}));
  }
 
  function keyMove(index,event){
@@ -155,7 +156,7 @@ export default function AXPlayroom({initialStatus=null,launchMode=false}){
 
  function minimizeGame(){
   if(result&&settlement.state==='loading'){setToast('Finishing your verified result…');window.setTimeout(()=>setToast(''),1800);return;}
-  const cooldownStarted=result&&settlement.state==='ready'&&(settlement.outcome==='win'||settlement.outcome==='loss'||(settlement.outcome==='draw'&&!settlement.bonusAvailable&&Boolean(settlement.nextEligibleAt)));
+  const cooldownStarted=result&&settlement.state==='ready'&&(launchMode?Boolean(settlement.matchComplete&&settlement.nextEligibleAt):(settlement.outcome==='win'||settlement.outcome==='loss'||(settlement.outcome==='draw'&&!settlement.bonusAvailable&&Boolean(settlement.nextEligibleAt))));
   setOpen(false);setVisible(!cooldownStarted);setShowRules(false);
  }
  function openGame(){setVisible(true);setOpen(true);}
@@ -166,12 +167,15 @@ export default function AXPlayroom({initialStatus=null,launchMode=false}){
   window.setTimeout(()=>setToast(''),2200);
  }
 
- const finalDraw=result?.winner==='draw'&&settlement.state==='ready'&&!settlement.bonusAvailable;
- const resultTitle=result?.winner==='O'?'You beat AX.':result?.winner==='draw'?(finalDraw?'Still evenly matched.':'Perfectly matched.'):'AX got this one.';
- const resultKicker=result?.winner==='O'?(launchMode?'10% off unlocked':'10% unlocked'):result?.winner==='draw'?(finalDraw?'Good game':'Bonus round unlocked'):'Good game';
- const resultCopy=result?.winner==='O'?(launchMode?'Limited stock only. Mark your calendars for launch — your 10% reward is ready for checkout.':'Your verified 10% code is ready for your next AX order.'):result?.winner==='draw'?(finalDraw?'That was your bonus round. AX Playroom returns tomorrow.':(launchMode?'Your draw unlocked one Bonus Round — one last shot at the launch-day 10%.':'No discount used. Your draw unlocked one Bonus Round — one last shot at 10%.')):(launchMode?'No reward yet. Come back for another shot before launch.':'No penalty. The Playroom will be back tomorrow.');
- const miniTitle=phase==='result'&&settlement.state==='loading'?'Checking your result':phase==='result'&&settlement.outcome==='win'?'10% reward ready':phase==='result'&&settlement.outcome==='draw'?(settlement.bonusAvailable?'BONUS ROUND ready':'Good game'):phase==='result'&&settlement.outcome==='loss'?'Good game':bonusRound?'BONUS ROUND ready':'Play AX XO';
- const miniCopy=phase==='result'&&settlement.state==='loading'?'Tap to reopen':phase==='result'&&settlement.outcome==='win'?'Tap to copy your code':phase==='result'&&settlement.outcome==='draw'?(settlement.bonusAvailable?'One last shot at 10%':'Returns tomorrow'):phase==='result'&&settlement.outcome==='loss'?'Tap to view your result':bonusRound?'One last shot at 10%':'Win 10% off';
+ const launchMatchComplete=launchMode&&settlement.state==='ready'&&settlement.matchComplete;
+ const launchWonMatch=launchMatchComplete&&settlement.matchOutcome==='win'&&Boolean(settlement.rewardCode);
+ const launchSeriesActive=launchMode&&settlement.state==='ready'&&!settlement.matchComplete;
+ const finalDraw=!launchMode&&result?.winner==='draw'&&settlement.state==='ready'&&!settlement.bonusAvailable;
+ const resultTitle=launchMode?(launchWonMatch?'You beat AX.':launchMatchComplete?'AX takes the match.':result?.winner==='O'?'Round to you.':result?.winner==='X'?'Round to AX.':'Draw.'):result?.winner==='O'?'You beat AX.':result?.winner==='draw'?(finalDraw?'Still evenly matched.':'Perfectly matched.'):'AX got this one.';
+ const resultKicker=launchMode?(launchWonMatch?'10% off unlocked':launchMatchComplete?'Match complete':'Best of three'):result?.winner==='O'?'10% unlocked':result?.winner==='draw'?(finalDraw?'Good game':'Bonus round unlocked'):'Good game';
+ const resultCopy=launchMode?(launchWonMatch?'Limited stock only. Mark your calendars for launch — your 10% reward is ready for checkout.':launchMatchComplete?'Good match. No reward this time.':result?.winner==='draw'?'No point awarded. Next round decides it.':'First to 2 wins the match. Keep going.'):result?.winner==='O'?'Your verified 10% code is ready for your next AX order.':result?.winner==='draw'?(finalDraw?'That was your bonus round. AX Playroom returns tomorrow.':'No discount used. Your draw unlocked one Bonus Round — one last shot at 10%.'):'No penalty. The Playroom will be back tomorrow.';
+ const miniTitle=phase==='result'&&settlement.state==='loading'?'Checking your result':launchMode&&phase==='result'&&settlement.matchComplete&&settlement.matchOutcome==='win'?'10% reward ready':launchMode&&phase==='result'&&!settlement.matchComplete?'Best of three continues':phase==='result'&&settlement.outcome==='win'?'10% reward ready':phase==='result'&&settlement.outcome==='draw'?(settlement.bonusAvailable?'BONUS ROUND ready':'Good game'):phase==='result'&&settlement.outcome==='loss'?'Good game':bonusRound?'BONUS ROUND ready':'Play AX XO';
+ const miniCopy=phase==='result'&&settlement.state==='loading'?'Tap to reopen':launchMode&&phase==='result'&&settlement.matchComplete&&settlement.matchOutcome==='win'?'Tap to copy your code':launchMode&&phase==='result'&&!settlement.matchComplete?'First to 2 wins':phase==='result'&&settlement.outcome==='win'?'Tap to copy your code':phase==='result'&&settlement.outcome==='draw'?(settlement.bonusAvailable?'One last shot at 10%':'Returns tomorrow'):phase==='result'&&settlement.outcome==='loss'?'Tap to view your result':bonusRound?'One last shot at 10%':'Win 10% off';
 
  return <>
   {visible&&!open&&<div className="ax-play-teaser ax-play-teaser-minimized" role="region" aria-label="AX Playroom"><button type="button" className="ax-play-card" onClick={openGame}><span className="ax-play-mark">XO</span><span><strong>{miniTitle}</strong><small>{miniCopy}</small></span><Icon name="arrow" size={15}/></button></div>}
