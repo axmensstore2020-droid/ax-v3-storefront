@@ -3,6 +3,7 @@
 import {AnimatePresence, motion, useReducedMotion} from 'motion/react';
 import {useEffect,useMemo,useState} from 'react';
 import AXPlayroom from '../../components/AXPlayroom';
+import {trackLaunchEvent} from '../../lib/launch-analytics';
 import styles from './comingSoon.module.css';
 
 const LAUNCH_AT=new Date('2026-09-27T06:30:00.000Z');
@@ -40,6 +41,7 @@ export default function ComingSoonClient(){
   useEffect(()=>{
     const root=document.documentElement;
     const frame=window.requestAnimationFrame(()=>root.removeAttribute('data-ax-coming-soon-boot'));
+    trackLaunchEvent('launch_visit',{metadata:{surface:'coming-soon'}});
     return()=>window.cancelAnimationFrame(frame);
   },[]);
 
@@ -53,6 +55,11 @@ export default function ComingSoonClient(){
     document.body.style.overflow='hidden';
     return()=>{document.body.style.overflow=previous;};
   },[]);
+
+  function openCalendar(source){
+    trackLaunchEvent('launch_calendar_click',{metadata:{source}});
+    setCalendarOpen(true);
+  }
 
   async function enterPlayroom(){
     setPlayError('');
@@ -68,6 +75,7 @@ export default function ComingSoonClient(){
       }
       setPlayStatus(data);
       setPlayOpen(true);
+      trackLaunchEvent('launch_playroom_open',{metadata:{series_you:Number(data?.series?.you)||0,series_ax:Number(data?.series?.ax)||0}});
     }catch(error){
       setPlayError(error.message||'The Playroom is unavailable right now.');
     }finally{
@@ -91,7 +99,7 @@ export default function ComingSoonClient(){
           <img src="/ax-logo-160.webp" alt="AX"/>
           <span>WEBSITE LAUNCH<br/>SUNDAY · 12 PM</span>
         </motion.div>
-        <button className={styles.calendarLink} type="button" onClick={()=>setCalendarOpen(true)}>
+        <button className={styles.calendarLink} type="button" onClick={()=>openCalendar('header')}>
           MARK YOUR CALENDARS <span>↗</span>
         </button>
       </header>
@@ -121,7 +129,7 @@ export default function ComingSoonClient(){
                 {playLoading?'OPENING…':'ENTER PLAYROOM'} <span>↗</span>
               </button>
             )}
-            <button className={styles.secondaryButton} type="button" onClick={()=>setCalendarOpen(true)}>
+            <button className={styles.secondaryButton} type="button" onClick={()=>openCalendar('hero')}>
               MARK YOUR CALENDARS
             </button>
           </div>
@@ -210,8 +218,8 @@ export default function ComingSoonClient(){
               </div>
               <p>Sunday, 27 September 2026 · 12:00 PM IST. The calendar file includes a 15-minute reminder.</p>
               <div className={styles.calendarOptions}>
-                <a href={GOOGLE_CALENDAR} target="_blank" rel="noopener noreferrer"><span>GOOGLE CALENDAR</span><span>↗</span></a>
-                <a href="/coming-soon/launch.ics"><span>APPLE / OUTLOOK / .ICS</span><span>↓</span></a>
+                <a href={GOOGLE_CALENDAR} target="_blank" rel="noopener noreferrer" onClick={()=>trackLaunchEvent('launch_calendar_click',{metadata:{source:'calendar-sheet',provider:'google'}})}><span>GOOGLE CALENDAR</span><span>↗</span></a>
+                <a href="/coming-soon/launch.ics" onClick={()=>trackLaunchEvent('launch_calendar_click',{metadata:{source:'calendar-sheet',provider:'ics'}})}><span>APPLE / OUTLOOK / .ICS</span><span>↓</span></a>
               </div>
             </motion.div>
           </motion.div>
