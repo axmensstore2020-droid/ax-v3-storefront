@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server';
 import {assertAllowedKeys} from '../../../lib/request-body.js';
 import {cookieValue,PLAYROOM_GUARD_COOKIE,readLimitedJson,reservePlayroomBurst,sameOriginRequest} from '../../../lib/request-security.js';
-import {createPlayroomRound,getPlayroomAxMove,PLAYROOM_BONUS_COOKIE,PLAYROOM_COOLDOWN_COOKIE,PLAYROOM_GAME_COOKIE,PLAYROOM_GAME_MAX_AGE,playroomDiscountScopeReady,playroomStatusFromTokens,settlePlayroomRound} from '../../../lib/playroom-server.js';
+import {createPlayroomRound,getPlayroomAxMove,PLAYROOM_BONUS_COOKIE,PLAYROOM_COOLDOWN_COOKIE,PLAYROOM_GAME_COOKIE,PLAYROOM_GAME_MAX_AGE,PLAYROOM_SERIES_COOKIE,PLAYROOM_SERIES_MAX_AGE,playroomDiscountScopeReady,playroomSeriesFromToken,playroomStatusFromTokens,settlePlayroomRound} from '../../../lib/playroom-server.js';
 
 export const dynamic='force-dynamic';
 
@@ -15,8 +15,8 @@ function json(body,status=200,guard=null){
 }
 
 export async function GET(request){
-  const cooldown=cookieValue(request,PLAYROOM_COOLDOWN_COOKIE),bonus=cookieValue(request,PLAYROOM_BONUS_COOKIE);
-  const status=playroomStatusFromTokens(cooldown,bonus);
+  const cooldown=cookieValue(request,PLAYROOM_COOLDOWN_COOKIE),bonus=cookieValue(request,PLAYROOM_BONUS_COOKIE),seriesToken=cookieValue(request,PLAYROOM_SERIES_COOKIE);
+  const status={...playroomStatusFromTokens(cooldown,bonus),series:playroomSeriesFromToken(seriesToken)};
   if(!status.available)return json(status);
   if(!(await playroomDiscountScopeReady()))return json({available:false,eligible:false,bonusAvailable:false,nextEligibleAt:null,lastOutcome:null});
   return json(status);
@@ -41,16 +41,16 @@ export async function POST(request){
 
   if(body.action==='start'){
     const cooldown=cookieValue(request,PLAYROOM_COOLDOWN_COOKIE),bonus=cookieValue(request,PLAYROOM_BONUS_COOKIE);
-    const status=playroomStatusFromTokens(cooldown,bonus),wantsBonus=body.bonus===true;
+    const status=playroomStatusFromTokens(cooldown,bonus),launch=body.launch===true,wantsBonus=!launch&&body.bonus===true;
     if(!status.available)return json({ok:false,error:'AX Playroom rewards are not available yet.'},503,guard);
     if(!status.eligible)return json({ok:false,error:'Your next Playroom round is not ready yet.',nextEligibleAt:status.nextEligibleAt,lastOutcome:status.lastOutcome},409,guard);
-    if(status.bonusAvailable!==wantsBonus)return json({ok:false,error:status.bonusAvailable?'Your bonus round is ready.':'No bonus round is available.'},409,guard);
+    if(!launch&&status.bonusAvailable!==wantsBonus)return json({ok:false,error:status.bonusAvailable?'Your bonus round is ready.':'No bonus round is available.'},409,guard);
     if(!(await playroomDiscountScopeReady()))return json({ok:false,error:'AX Playroom rewards are not enabled in Shopify yet.'},503,guard);
     try{
-      const round=createPlayroomRound(body.first,{bonus:wantsBonus,launch:body.launch===true});
-      const response=json({ok:true,bonus:round.bonus,expiresAt:round.expiresAt},200,guard);
+      const round=createPlayroomRound(body.first,{bonus:wantsBonus,launch});
+      const response=json({ok:true,bonus:round.bonus,launch:round.launch,expiresAt:round.expiresAt},200,guard);
       response.cookies.set(PLAYROOM_GAME_COOKIE,round.token,{...cookieBase,secure:secure(),maxAge:PLAYROOM_GAME_MAX_AGE});
-      if(wantsBonus)response.cookies.set(PLAYROOM_BONUS_COOKIE,'',{...cookieBase,secure:secure(),maxAge:0});
+      if(launch||wantsBonus)response.cookies.set(PLAYROOM_BONUS_COOKIE,'',{...cookieBase,secure:secure(),maxAge:0});
       return response;
     }catch(error){return json({ok:false,error:error.message||'The round could not start.'},503,guard);}
   }
@@ -72,9 +72,16 @@ export async function POST(request){
     const token=cookieValue(request,PLAYROOM_GAME_COOKIE);
     if(!token)return json({ok:false,error:'This Playroom round expired. Start a new round.'},409,guard);
     try{
-      const settled=await settlePlayroomRound(token,body.moves);
-      const response=json({ok:true,outcome:settled.outcome,bonusAvailable:Boolean(settled.bonusAvailable),rewardCode:settled.rewardCode,rewardEndsAt:settled.rewardEndsAt,nextEligibleAt:settled.nextEligibleAt},200,guard);
+      const seriesToken=cookieValue(request,PLAYROOM_SERIES_COOKIE);
+      const settled=await settlePlayroomRound(token,body.moves,{seriesToken});
+      const response=json({ok:true,outcome:settled.outcome,matchComplete:Boolean(settled.matchComplete),matchOutcome:settled.matchOutcome||null,series:settled.series||null,bonusAvailable:Boolean(settled.bonusAvailable),rewardCode:settled.rewardCode,rewardEndsAt:settled.rewardEndsAt,nextEligibleAt:settled.nextEligibleAt},200,guard);
       response.cookies.set(PLAYROOM_GAME_COOKIE,'',{...cookieBase,secure:secure(),maxAge:0});
+      if(settled.seriesToken&&settled.seriesEndsAt){
+        const maxAge=Math.max(1,Math.min(PLAYROOM_SERIES_MAX_AGE,Math.ceil((Date.parse(settled.seriesEndsAt)-Date.now())/1000)));
+        response.cookies.set(PLAYROOM_SERIES_COOKIE,settled.seriesToken,{...cookieBase,secure:secure(),maxAge});
+      }else if(settled.matchComplete){
+        response.cookies.set(PLAYROOM_SERIES_COOKIE,'',{...cookieBase,secure:secure(),maxAge:0});
+      }
       if(settled.cooldownToken&&settled.cooldownEndsAt){
         const maxAge=Math.max(1,Math.ceil((Date.parse(settled.cooldownEndsAt)-Date.now())/1000));
         response.cookies.set(PLAYROOM_COOLDOWN_COOKIE,settled.cooldownToken,{...cookieBase,secure:secure(),maxAge});
