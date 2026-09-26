@@ -145,7 +145,7 @@ export default function ComingSoonClient(){
 
       <section className={styles.rewardRail}>
         <div className={styles.reward}>
-          <span className={styles.rewardNumber}>10<small>%</small></span>
+          <span className={styles.rewardNumber+' '+styles.rewardNeon}>10<small>%</small></span>
           <p><strong>Beat AX</strong>Launch-day reward.</p>
         </div>
         <i/>

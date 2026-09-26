@@ -31,7 +31,7 @@
 .eyebrow:before{content:"";width:24px;height:1px;background:var(--sage-dark)}
 .copy h1{margin:0;font-size:clamp(82px,10vw,164px);line-height:.82;letter-spacing:-.075em;font-weight:500}
 .copy h1>span{display:block}
-.script{font:italic 1.23em/.85 Georgia,"Times New Roman",serif;letter-spacing:-.055em;padding-right:.08em}
+.script{font:italic 1.23em/.85 Georgia,"Times New Roman",serif;letter-spacing:-.055em;padding-right:.08em;color:#b8ff19;text-shadow:0 0 28px rgba(184,255,25,.16)}
 .lede{max-width:480px;margin:25px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
 .lede strong{color:var(--ink);font-weight:500}
 .actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:31px}
@@ -43,7 +43,7 @@
 .secondaryButton{border:1px solid var(--hairline);background:var(--white);color:var(--ink)}
 .secondaryButton:hover{transform:translateY(-2px);border-color:#aeb5a7;background:#f0f3e8}
 .playError{margin:12px 0 0;color:#7d5148;font-size:11px}
-.art{position:relative;justify-self:end;width:min(41vw,520px);height:360px;isolation:isolate;perspective:1000px}
+.art{position:relative;justify-self:end;width:min(41vw,520px);height:360px;isolation:isolate;perspective:1000px;pointer-events:none}
 .orbit{position:absolute;width:92%;height:46%;border:1px solid #d7dccb;border-radius:50%;left:1%;top:27%;transform:rotate(-10deg);z-index:-1}
 .shadow{position:absolute;width:62%;height:28px;left:18%;top:75%;background:#3b4a3120;filter:blur(18px);border-radius:50%}
 .oShape{position:absolute;width:180px;height:180px;left:10%;top:14%;border:34px solid #cbd7ae;border-radius:50%;transform:rotateY(-23deg) rotateZ(-18deg);box-shadow:inset 6px 6px 8px #f5ffe4,inset -8px -6px 8px #879d60,6px 8px 0 #acbd8a,10px 15px 0 #a4b784,16px 26px 24px #44592d28;animation:floatO 7s ease-in-out infinite}
@@ -54,7 +54,7 @@
 .rewardRail{position:relative;z-index:2;margin:0 clamp(20px,5.2vw,80px);padding:18px 0;border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);display:flex;align-items:center;gap:30px}
 .reward{display:flex;align-items:center;gap:12px}
 .rewardRail>i{width:1px;height:46px;background:var(--hairline)}
-.rewardNumber{font-size:34px;line-height:1;font-weight:500;letter-spacing:-.06em}
+.rewardNumber{font-size:34px;line-height:1;font-weight:500;letter-spacing:-.06em}.rewardNeon{color:#b8ff19;text-shadow:0 0 22px rgba(184,255,25,.14)}
 .rewardNumber small{font-size:18px}
 .reward p{margin:0;font-size:9px;line-height:1.55;color:var(--muted)}
 .reward p strong{display:block;color:var(--ink);font-weight:500}
